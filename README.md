@@ -1,3 +1,15 @@
+# Create T3 Clean Architecture Implementation
+
+I implemented the clean architecture in the Create T3 App. The clean architecture is a software design philosophy that separates the software into layers.
+The layers i implemented are the presentation layer,
+use case layer, and entity(data) layer. The presentation layer is responsible for the UI and user interactions. in this case, the presentation layer is pages+trpc
+The use case layer is responsible for the business logic.
+is located at src/layer/use-cases.
+The entity(data) layer is responsible for the entity(data) access.
+is located at src/layer/entities
+
+I also implemented a custom jwt authentication 
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
