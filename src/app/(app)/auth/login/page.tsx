@@ -45,8 +45,12 @@ const Page = ({ }: IPageProps) => {
 
             <div className="p-6 border rounded-lg w-[400px] mx-auto bg-slate-100 flex flex-col gap-y-3">
                 <h1 className='text-center text-xl font-normal'>Login</h1>
-                <input className='p-4 border-b-2' type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <input className='p-4 border-b-2' type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <input
+                placeholder='email'
+                className='p-4 border-b-2' type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <input
+                placeholder='password'
+                className='p-4 border-b-2' type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <button
 
 
