@@ -17,7 +17,8 @@ look .env.example for reference
 
 
 # run scripts
-bun run re-create-db # to create the database and migrate the tables
+bun run re-create-db # to create the database and migrate the tables <br>
+
 bun run init-db # to seed the database with some data
 
 user:user@gmail.com password:user
