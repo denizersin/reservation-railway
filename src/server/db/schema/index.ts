@@ -1,8 +1,13 @@
 import { tblUser, tblRefreshToken } from "./user"
-import { posts } from "./posts"
-export {
+import {
+    tblResturant,
+    tblRestaurantTranslations
+} from "./restaurant"
+
+
+export const schema={
     tblUser,
     tblRefreshToken,
-
-    posts
+    tblResturant,
+    tblRestaurantTranslations
 }

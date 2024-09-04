@@ -2,7 +2,7 @@ import TUserValidator from "@/validators/user";
 import { userEntities } from "../entities/user/user";
 import { jwtEntities } from "../entities/jwt/jwt";
 import { TUser } from "@/server/db/schema/user";
-import { TRPCError } from "@trpc/server";
+import { TRPCError } from "@trpc/server";   
 
 async function createUser({
     userData

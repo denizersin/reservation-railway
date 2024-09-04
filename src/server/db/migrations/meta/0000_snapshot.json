@@ -1,24 +1,142 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "889940c2-5754-4c81-8059-b521fac34377",
+  "id": "c270d2b8-faf5-4889-bca6-cc9365f11a43",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "restaurant_translations": {
+      "name": "restaurant_translations",
+      "columns": {
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_code": {
+          "name": "language_code",
+          "type": "varchar(5)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "restaurant_translations_restaurant_id_restaurants_id_fk": {
+          "name": "restaurant_translations_restaurant_id_restaurants_id_fk",
+          "tableFrom": "restaurant_translations",
+          "tableTo": "restaurants",
+          "columnsFrom": [
+            "restaurant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "id": {
+          "name": "id",
+          "columns": [
+            "restaurant_id",
+            "language_code"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "restaurants": {
+      "name": "restaurants",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "phone_number": {
+          "name": "phone_number",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "restaurants_id": {
+          "name": "restaurants_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "refresh_token": {
       "name": "refresh_token",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
           "type": "int",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "token": {
@@ -144,10 +262,11 @@
         },
         "role": {
           "name": "role",
-          "type": "enum('admin','user')",
+          "type": "enum('admin','owner','user')",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'user'"
         },
         "created_at": {
           "name": "created_at",
@@ -185,6 +304,107 @@
         }
       },
       "uniqueConstraints": {}
+    },
+    "user_personal_settings": {
+      "name": "user_personal_settings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sound_for_notifications": {
+          "name": "sound_for_notifications",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "reservation_listing_type": {
+          "name": "reservation_listing_type",
+          "type": "enum('smart_list','newest_on_top')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'smart_list'"
+        },
+        "guest_selection_side": {
+          "name": "guest_selection_side",
+          "type": "enum('left','right')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'left'"
+        },
+        "corporate_information_selectable": {
+          "name": "corporate_information_selectable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "open_reservation_window_on_call": {
+          "name": "open_reservation_window_on_call",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "open_reservation_window_full_screen": {
+          "name": "open_reservation_window_full_screen",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "reservation_screen_follow_main_calendar": {
+          "name": "reservation_screen_follow_main_calendar",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "hide_daily_summary_section": {
+          "name": "hide_daily_summary_section",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "user_personal_settings_id": {
+          "name": "user_personal_settings_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "user_personal_settings_user_id_unique": {
+          "name": "user_personal_settings_user_id_unique",
+          "columns": [
+            "user_id"
+          ]
+        }
+      }
     }
   },
   "_meta": {
