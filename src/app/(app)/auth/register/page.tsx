@@ -1,6 +1,6 @@
 "use client";
 import useAuth from '@/app/providers/AuthProvider';
-import { api } from '@/trpc/react';
+import { api } from '@/server/trpc/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getQueryKey } from '@trpc/react-query';
 import { useRouter } from 'next/navigation';

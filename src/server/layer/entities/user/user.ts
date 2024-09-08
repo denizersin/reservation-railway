@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { db } from "@/server/db";
 import { tblRefreshToken, tblUser, TUserInsert } from "@/server/db/schema/user";
-import { REFRESH_TOKEN_EXPIRY_DAYS } from "@/server/server-utils";
+import { REFRESH_TOKEN_EXPIRY_DAYS } from "@/server/utils/server-utils";
 import { eq } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 

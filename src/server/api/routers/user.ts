@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { userUseCases } from "@/layer/use-cases/user";
+import { userUseCases } from "@/server/layer/use-cases/user";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
-import { userValidator } from "@/validators/user";
+import { userValidator } from "@/shared/validators/user";
 
 
 
@@ -28,7 +28,6 @@ export const userRouter = createTRPCRouter({
             return token
         }),
     getSession: protectedProcedure.query(async ({ ctx }) => {
-        
         const session = await userUseCases.getSession({ headers: ctx.headers })
         return session
     }),

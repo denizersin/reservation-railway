@@ -13,7 +13,8 @@
     "lint": "next lint",
     "start": "next start",
     "re-create-db": "bun run src/server/db/scripts/reCreateDb.ts && rm -rf src/server/db/migrations && drizzle-kit generate && drizzle-kit migrate",
-    "init-db": "bun run src/server/db/scripts/initDb.ts"
+    "init-db": "bun run src/server/db/scripts/initDb.ts",
+    "test-db": "bun run src/server/db/scripts/testDb.ts"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.10.1",

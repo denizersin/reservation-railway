@@ -1,7 +1,7 @@
 // not db
 
 import { env } from "@/env";
-import { JWT_EXPIRY_DAYS } from "@/server/server-utils";
+import { JWT_EXPIRY_DAYS } from "@/server/utils/server-utils";
 import jwt from "jsonwebtoken";
 
 export type jwtBody = {

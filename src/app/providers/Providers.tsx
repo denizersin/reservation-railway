@@ -1,6 +1,6 @@
 "use clinet";
 
-import { TRPCReactProvider } from '@/trpc/react';
+import { TRPCReactProvider } from '@/server/trpc/react';
 import React from 'react'
 import { AuthProvider } from './AuthProvider';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'

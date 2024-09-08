@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from "react";
 
-import { api } from "@/trpc/react";
+import { api } from "@/server/trpc/react";
 import useAuth from "../providers/AuthProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";

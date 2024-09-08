@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
-import { userUseCases } from "@/layer/use-cases/user";
+import { userUseCases } from "@/server/layer/use-cases/user";
 
 /**
  * 1. CONTEXT

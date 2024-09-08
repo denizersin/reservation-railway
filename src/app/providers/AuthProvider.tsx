@@ -1,7 +1,7 @@
 "use client";
-import { TSession } from "@/layer/use-cases/user";
+import { TSession } from "@/server/layer/use-cases/user";
 import { TUser } from "@/server/db/schema/user"
-import { api } from "@/trpc/react";
+import { api } from "@/server/trpc/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import React, { useContext, useEffect } from "react";

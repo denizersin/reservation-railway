@@ -3,7 +3,7 @@ import Providers from "@/app/providers/Providers"
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
-import { TRPCReactProvider } from "@/trpc/react";
+import { TRPCReactProvider } from "@/server/trpc/react";
 
 export const metadata: Metadata = {
   title: "Create T3 App",

@@ -1,13 +1,12 @@
-import { tblUser, tblRefreshToken } from "./user"
-import {
-    tblResturant,
-    tblRestaurantTranslations
-} from "./restaurant"
+import * as userSchema from "./user"
+
+import * as restaurantSchema from "./restaurant"
+
+import * as restaurantSettingSchema from "./restaurant-setting"
 
 
-export const schema={
-    tblUser,
-    tblRefreshToken,
-    tblResturant,
-    tblRestaurantTranslations
+export const schema = {
+    ...userSchema,
+    ...restaurantSchema,
+    ...restaurantSettingSchema,
 }

@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react'
 import useAuth from '../providers/AuthProvider';
 import { useRouter } from 'next/navigation';
-import { api } from '@/trpc/react';
+import { api } from '@/server/trpc/react';
 import { EnumUserRole } from '@/server/db/schema/user';
 
 interface IRoleRequiredComponentProps {

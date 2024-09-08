@@ -1,4 +1,4 @@
-import TUserValidator from "@/validators/user";
+import TUserValidator from "@/shared/validators/user";
 import { userEntities } from "../entities/user/user";
 import { jwtEntities } from "../entities/jwt/jwt";
 import { TUser } from "@/server/db/schema/user";
