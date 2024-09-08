@@ -4,6 +4,7 @@ import useAuth from "@/app/providers/AuthProvider"
 import { useRouter } from 'next/navigation';
 import AuthRequiredComponent from '@/app/ProtectedComponents/AuthRequiredComponent';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface IPageProps {
     children?: React.ReactNode | React.ReactNode[];
@@ -21,6 +22,7 @@ const Page = ({ }: IPageProps) => {
                     <li><button onClick={logout} className="text-white hover:text-gray-300">Logout</button></li>
                 </ul>
             </nav>
+            <Button children="qweqwe"/>
             <div className="p-4">
                 <h1 className="text-2xl font-bold mb-4">Welcome to Home</h1>
                 <p>{session?.user?.email}</p>
