@@ -1,4 +1,3 @@
-"use client"
 
 import Sidebar from "@/components/layout/sidebar";
 import RoleRequiredPage from "@/components/server/protected-components/role-required-page";
