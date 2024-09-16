@@ -4,6 +4,7 @@ import { TRPCReactProvider } from '@/server/trpc/react';
 import React from 'react'
 import { AuthProvider } from './AuthProvider';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import LoadingModalWrapper from '../modal/loading';
 
 
 interface IProvidersProps {
@@ -16,6 +17,7 @@ const Providers = ({ children }: IProvidersProps) => {
             <AuthProvider>
                 {children}
                 <ReactQueryDevtools initialIsOpen={false} />
+                <LoadingModalWrapper/>
             </AuthProvider>
         </TRPCReactProvider>
     )

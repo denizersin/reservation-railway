@@ -1,34 +1,74 @@
-// not db
-
-import { env } from "@/env";
-import { JWT_EXPIRY_DAYS } from "@/server/utils/server-utils";
-import jwt from "jsonwebtoken";
+import { env } from "@/env"
+import { TUser } from "@/server/db/schema/user"
+import { JWT_EXPIRY_DAYS } from "@/server/utils/server-utils"
+import { SignJWT, jwtVerify } from 'jose'
+import { cookies, headers } from 'next/headers';
+import { TSession } from "../../use-cases/user/user";
 
 export type jwtBody = {
     userId: number;
+    userRole: TUser['role'];
 }
 
-export const generateUserToken = ({
-    jwtBody,
+const secretKey = new TextEncoder().encode(env.JWT_SECRET)
+
+export const generateUserToken = async ({
+    jwtBody
 }: {
-    jwtBody: jwtBody;
-}): string => {
- const token = jwt.sign(jwtBody, env.JWT_SECRET, {
-    expiresIn: `${JWT_EXPIRY_DAYS}d`,
-})
+    jwtBody: jwtBody
+}): Promise<string> => {
+    const token = await new SignJWT(jwtBody)
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime(`${JWT_EXPIRY_DAYS}d`)
+        .sign(secretKey)
     return token
 }
 
-export const verifyUserToken = ({
-    token,
+export const verifyUserToken = async ({
+    token
 }: {
-    token: string;
-}): jwtBody => {
-    return jwt.verify(token, env.JWT_SECRET) as jwtBody
+    token: string
+}): Promise<jwtBody> => {
+    const { payload } = await jwtVerify(token, secretKey, {
+        algorithms: ['HS256'],
+    })
+    return payload as jwtBody
+}
+
+export const getJwtBody = async ({
+    token
+}: {
+    token: string
+}): Promise<jwtBody | null> => {
+    try {
+        const { payload } = await jwtVerify(token, secretKey, {
+            algorithms: ['HS256'],
+        })
+        return payload as jwtBody
+    } catch (err) {
+        console.error('JWT verification failed:', err)
+        return null
+    }
 }
 
 
-export const jwtEntities = {
-    generateUserToken,
-    verifyUserToken
+
+export const getServerSession = async (): Promise<TSession | null> => {
+
+    const cookieStore = cookies();
+    const token = cookieStore.get('token')?.value ?? "";
+
+    try {
+        const { payload } = await jwtVerify(token, secretKey, {
+            algorithms: ['HS256'],
+        })
+        console.log(payload, 'payload')
+        return {
+            user:payload,
+        }
+    } catch (err) {
+        console.error('JWT verification failed:', err)
+        return null
+    }
 }
+

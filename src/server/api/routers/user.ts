@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 import { userUseCases } from "@/server/layer/use-cases/user";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { userValidator } from "@/shared/validators/user";
+import { cookies } from "next/headers";
+import { jwtEntities } from "@/server/layer/entities/jwt";
 
 
 
@@ -18,18 +20,45 @@ export const userRouter = createTRPCRouter({
         .input(userValidator.registerSchema)
         .mutation(async ({ ctx, input }) => {
             const new_Session = await userUseCases.createUser({ userData: input })
-            console.log(new_Session, 'new_Session');
             return new_Session
         }),
     login: publicProcedure
         .input(userValidator.loginSchema)
         .mutation(async ({ ctx, input }) => {
-            const token = await userUseCases.loginUser({ userData: input })
-            return token
+            const session = await userUseCases.loginUser({ userData: input })
+            return session
         }),
     getSession: protectedProcedure.query(async ({ ctx }) => {
-        const session = await userUseCases.getSession({ headers: ctx.headers })
+        const session = await jwtEntities.getServerSession()
         return session
     }),
-    
+    createUser: adminProcedure
+        .input(userValidator.registerSchema)
+        .mutation(async ({ input }) => {
+            const session = await userUseCases.createUser({ userData: input })
+            return session
+        }),
+    updateUserByAdmin: adminProcedure
+        .input(userValidator.updateUserByAdmin)
+        .mutation(async ({ input }) => {
+
+            const user = await userUseCases.updateUserByAdmin({
+                userData: input
+            })
+            return user
+        }),
+    getAllUsers: adminProcedure
+        .input(userValidator.getAllUsersValidator)
+        .query(async ({ input }) => {
+            const users = await userUseCases.getAllUsers(input)
+            return users
+        }),
+
+    logout: protectedProcedure.mutation(async ({ ctx }) => {
+        await userUseCases.logoutUser()
+        return true
+    })
+
+
+
 });

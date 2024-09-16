@@ -12,6 +12,7 @@ import { ZodError } from "zod";
 
 import { db } from "@/server/db";
 import { userUseCases } from "@/server/layer/use-cases/user";
+import { jwtEntities } from "../layer/entities/jwt";
 
 /**
  * 1. CONTEXT
@@ -27,7 +28,7 @@ import { userUseCases } from "@/server/layer/use-cases/user";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
 
-  const session = await userUseCases.getSession({ headers: opts.headers })
+  const session = await jwtEntities.getServerSession()
 
   return {
     db,
@@ -130,4 +131,19 @@ export const protectedProcedure = t.procedure
     });
   });
 
+
+  export const adminProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user || ctx.session.user.userRole !== 'admin') {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        ...ctx,
+        // infers the `session` as non-nullable
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
 

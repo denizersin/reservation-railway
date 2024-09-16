@@ -1,10 +1,11 @@
 "use client";
-import { TSession } from "@/server/layer/use-cases/user";
 import { TUser } from "@/server/db/schema/user"
 import { api } from "@/server/trpc/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import React, { useContext, useEffect } from "react";
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
+import { TSession } from "@/server/layer/use-cases/user/user";
 
 type TAuthContext = {
     session: TSession | null;
@@ -21,26 +22,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAuthenticated = Boolean(data && !isError)
     const session = isAuthenticated ? data as TSession : null
 
-    console.log(isAuthenticated,'useauth');
+    console.log(isAuthenticated, 'useauth');
+    const logoutMutation = api.user.logout.useMutation();
 
     function logout() {
-        localStorage.removeItem('token')
-        queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.user.getSession)
-        })
+        logoutMutation.mutate()
     }
 
-    useEffect(() => {
-        if (isError)
-            localStorage.removeItem('token')
-    }, [isError]);
+ 
 
-    useEffect(() => {
-        if (isSuccess && session) {
-            localStorage.setItem('token', session?.token)
-            
-        }
-    }, [isSuccess, session]);
+    useShowLoadingModal([isLoading])
 
 
     return (

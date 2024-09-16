@@ -1,28 +1,31 @@
 import { int, mysqlEnum, mysqlTable, uniqueIndex, varchar, serial, timestamp, unique, boolean } from 'drizzle-orm/mysql-core';
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { getEnumValues } from '@/server/utils/server-utils';
+import { EnumGuestSelectionSide, EnumReservationListingType, EnumUserRole } from '@/shared/enums/predefined-enums';
+import { tblResturant } from './restaurant';
 // declaring enum in database
 
-export enum EnumLanguage {
-    en = "en",
-    tr = "tr",
-}
-export enum EnumUserRole {
-    admin = "admin",
-    owner = "owner",
-    user = "user"
-}
+
 
 export const tblUser = mysqlTable('user', {
     id: int("id").autoincrement().primaryKey(),
     name: varchar('name', { length: 256 }),
-    email: varchar('email', { length: 256 }),
+    email: varchar('email', { length: 256 }).notNull().unique(),
     password: varchar('password', { length: 256 }).notNull(),
     role: mysqlEnum('role', getEnumValues(EnumUserRole)).notNull().default(EnumUserRole.user),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
-    optionalField: varchar('optional_field', { length: 256 })
 });
+
+export const tblUserRelations = relations(tblUser, ({ one, many }) => ({
+    // reservations: many(tblReservation),
+    // restaurant: one(tblResturant),
+    // userPersonalSettings: one(userPersonalSettings),
+    // refreshToken: many(tblRefreshToken),
+    restaurant: one(tblResturant, { fields: [tblUser.id], references: [tblResturant.ownerId] }),
+}));
+
+
 
 export const tblRefreshToken = mysqlTable('refresh_token', {
     id: int("id").autoincrement().primaryKey(),
@@ -39,15 +42,7 @@ export const tblRefreshToken = mysqlTable('refresh_token', {
     unq: unique('unique_refresh_token_and_user_id').on(t.token, t.userId),
 }));
 
-export enum EnumReservationListingType {
-    smartList = 'smartList',
-    newestOnTop = 'newestOnTop',
-}
 
-export enum EnumGuestSelectionSide {
-    left = 'left',
-    right = 'right',
-}
 
 export const userPersonalSettings = mysqlTable('user_personal_settings', {
     id: int('id').primaryKey().autoincrement(),

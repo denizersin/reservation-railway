@@ -1,8 +1,8 @@
 import "@/styles/globals.css";
-import Providers from "@/app/providers/Providers"
+import Providers from "@/components/providers/Providers"
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-
+import NextTopLoader from 'nextjs-toploader';
 import { TRPCReactProvider } from "@/server/trpc/react";
 
 export const metadata: Metadata = {
@@ -16,7 +16,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
+      <body className="min-h-dvh">
+        <NextTopLoader
+          // color="bla"
+          showSpinner={false}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -1,8 +1,5 @@
 import { env } from "@/env";
 import mysql from "mysql2/promise";
-import { EnumUserRole, tblUser } from "../schema/user";
-import { drizzle } from "drizzle-orm/mysql2";
-import { schema } from "../schema";
 
 
 const connection = await mysql.createConnection({

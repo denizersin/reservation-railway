@@ -1,35 +1,33 @@
+"use client"
 import Link from "next/link";
 
-import { LatestPost } from "@/app/_components/post";
-import { api, HydrateClient } from "@/server/trpc/server";
+import { HydrateClient } from "@/server/trpc/server";
+import Nav from "@/components/layout/nav";
+import { sidelinks } from "@/data/sidelinks";
+import Sidebar from "@/components/layout/sidebar";
+import useIsCollapsed from "@/hooks/useIsCollapsed";
 
-export default async function Home() {
+export default function Home() {
 
   // void api.post.getLatest.prefetch();
-  
-    
+
+
 
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100,70%)]">T3</span> App
-          </h1>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-            </p>
-          </div>
-          <div className="">
-            <Link href={"/home"}>
-              go to homepage
-            </Link>
-          </div>
-
-          {/* <LatestPost /> */}
-        </div>
-      </main>
-    </HydrateClient>
+    <div className='relative h-full overflow-hidden bg-background flex'>
+      <Sidebar
+        sidelinks={sidelinks}
+      />
+      <div className="main h-screen overflow-y-scroll flex-1">
+        <div className="text-5xl h-[200vh]">HELO</div>
+      </div>
+      {/* <main
+        id='content'
+        className={`overflow-x-hidden pt-16 transition-[margin] md:overflow-y-hidden md:pt-0 ${isCollapsed ? 'md:ml-14' : 'md:ml-64'} h-full`}
+      >
+        <div className="text-4xl">HELLo</div>
+      </main> */}
+    </div>
   );
 }

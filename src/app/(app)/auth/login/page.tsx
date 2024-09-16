@@ -1,5 +1,5 @@
 "use client";
-import useAuth from '@/app/providers/AuthProvider';
+import useAuth from '@/components/providers/AuthProvider';
 import { api } from '@/server/trpc/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getQueryKey } from '@trpc/react-query';
@@ -19,8 +19,7 @@ const Page = ({ }: IPageProps) => {
         mutate: login,
         isPending: isLoggingIn
     } = api.user.login.useMutation({
-        onSuccess(data, variables, context) {
-            localStorage.setItem('token', data.token);
+        onSuccess() {
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.user.getSession)
             })
@@ -28,11 +27,18 @@ const Page = ({ }: IPageProps) => {
     })
     const router = useRouter();
 
-    const { isAuthenticated, isLoading } = useAuth()
-
+    const { isAuthenticated, isLoading, session } = useAuth()
     useEffect(() => {
-        if (isLoading) return
-        if (isAuthenticated) {
+        
+        if (isLoading || !session) return
+        const role = session.user.userRole
+
+        if (role === 'admin') {
+            router.push('/admin')
+        } else if (role === 'owner') {
+            router.push('/owner')
+        }
+        else {
             router.push('/home')
         }
     }, [isAuthenticated]);
@@ -46,11 +52,11 @@ const Page = ({ }: IPageProps) => {
             <div className="p-6 border rounded-lg w-[400px] mx-auto bg-slate-100 flex flex-col gap-y-3">
                 <h1 className='text-center text-xl font-normal'>Login</h1>
                 <input
-                placeholder='email'
-                className='p-4 border-b-2' type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    placeholder='email'
+                    className='p-4 border-b-2' type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
                 <input
-                placeholder='password'
-                className='p-4 border-b-2' type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    placeholder='password'
+                    className='p-4 border-b-2' type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <button
 
 

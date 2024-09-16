@@ -1,20 +1,30 @@
-import { int, mysqlEnum, mysqlTable, varchar, serial, datetime, timestamp, primaryKey, foreignKey, unique } from 'drizzle-orm/mysql-core';
-import { EnumLanguage } from './user';
-import { relations } from 'drizzle-orm';
 import { getEnumValues } from '@/server/utils/server-utils';
-import { tblRestaurantSetting } from './restaurant-setting';
+import { EnumLanguage, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { relations } from 'drizzle-orm';
+import { datetime, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
+import { tblRestaurantGeneralSetting } from './restaurant-general-setting';
+import { tblUser } from './user';
 
 export const tblResturant = mysqlTable('restaurant', {
     id: int('id').autoincrement().primaryKey(),
     phoneNumber: varchar('phone_number', { length: 20 }).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     name: varchar('name', { length: 255 }).notNull(),
+    ownerId: int('owner_id').notNull()
 
 },);
+
 export const restaurantRelations = relations(tblResturant, ({ many, one }) => ({
     translations: many(tblRestaurantTranslations),
-    restaurantSettings:one(tblRestaurantSetting),
+    restaurantGeneralSetting: one(tblRestaurantGeneralSetting),
+    owner: one(tblUser, { fields: [tblResturant.ownerId], references: [tblUser.id] }),
+
+    // defaultCountry: one(tblCountry, { fields: [tblRestaurantGeneralSetting.defaultCountryId], references: [tblCountry.id] }),
+    // 
 }));
+
+
+
 
 
 
@@ -26,6 +36,17 @@ export const tblRestaurantTranslations = mysqlTable('restaurant_translation', {
     description: varchar('description', { length: 500 }).notNull(),
 }, (t) => ({
     // pk: primaryKey({ columns: [t.restaurantId, t.languageCode], }),
+}));
+
+
+export const tblReservation = mysqlTable('reservation', {
+    id: int('id').autoincrement().primaryKey(),
+    restaurantId: int('restaurant_id').notNull(),
+    userId: int('user_id').notNull(),
+    reservationDate: datetime('reservation_date').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => ({
+    unq: unique('unique_user_reservation').on(t.userId, t.reservationDate),
 }));
 
 

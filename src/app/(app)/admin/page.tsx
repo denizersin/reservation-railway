@@ -1,18 +1,14 @@
-import RoleRequiredComponent from '@/app/ProtectedComponents/RoleRequiredComponent'
-import { EnumUserRole } from '@/server/db/schema/user'
-import React from 'react'
+import RoleRequiredPage from "@/components/server/protected-components/role-required-page"
+import { EnumUserRole } from "@/shared/enums/predefined-enums"
+import { Suspense } from "react"
 
 type Props = {}
 
 const Page = (props: Props) => {
     return (
-        <RoleRequiredComponent
-            requiredRole={EnumUserRole.admin}
-        >
-            <div className='text-4xl text-red-400'>
-                Admin Page
-            </div>
-        </RoleRequiredComponent>
+        <div className='text-4xl text-red-400 h-[200vh]'>
+            Admin Page
+        </div>
     )
 }
 

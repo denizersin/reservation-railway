@@ -1,0 +1,56 @@
+import { env } from "@/env"
+import { db } from "@/server/db"
+import { tblCountry, tblLanguage, tblReserVationStatus } from "@/server/db/schema/predefined"
+import { EnumReservationStatus } from "@/shared/enums/predefined-enums"
+import { eq } from "drizzle-orm"
+
+
+const secretKey = new TextEncoder().encode(env.JWT_SECRET)
+
+export const getCountryByName = async ({
+    countryName
+}: {
+    countryName: string
+}) => {
+
+    const country = await db.query.tblCountry.findFirst({
+        where: eq(tblCountry.name, countryName)
+    })
+
+    return country
+
+}
+
+//get language by code
+
+export const getLanguageByCode = async ({
+    languageCode
+}: {
+    languageCode: string
+}) => {
+
+    const language = await db.query.tblLanguage.findFirst({
+        where: eq(tblLanguage.languageCode, languageCode)
+    })
+
+    return language
+
+}
+
+
+//get reservation status by status
+
+export const getReservationStatusByStatus = async ({
+    status
+}: {
+    status: EnumReservationStatus
+}) => {
+
+    const reservationStatus = await db.query.tblReserVationStatus.findFirst({
+        where: eq(tblReserVationStatus.status, status)
+    })
+
+    return reservationStatus
+
+}
+

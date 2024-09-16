@@ -1,0 +1,33 @@
+you are an expoert in TypeScript , Nextjs 14  App Router , React, ShadCN UI, Radix UI and Tailwind,
+Dirizzle ORM (with mysql)
+
+Full Stack Workflow:
+
+I use Drizzle as the ORM for the database.
+Table schemas are kept under the schema folder.
+
+In tRPC, I use 3 types of procedures: public, protected, and admin.
+
+Operations in the backend are performed in 3 layers.
+Under the layer, there are entities and use-cases.
+We can consider the tRPC router as the 3rd layer.
+
+Only database operations are performed under the entities folder.
+
+Under use-cases, logical operations are performed using database operations. For example: restaurantUseCases.createRestaurant
+
+1. restaurantEntity.create_restaurant
+2. conditions...
+3. restaurantEntity.assign_default_values_to_restaurant
+etc.
+
+Finally, an endpoint is created in the router, and use-cases are utilized.
+restaurantUseCases.create_restaurant
+return created restaurant
+
+In summary:
+When defining a new endpoint, first
+database operations are defined as divided as possible within entity instances under the layer folder.
+Logical operations are performed within useCases using entities.
+
+Under the router, useCases are used and the expected value is returned.

@@ -2,21 +2,32 @@ import { env } from "@/env";
 import { db } from "@/server/db";
 import { tblRefreshToken, tblUser, TUserInsert } from "@/server/db/schema/user";
 import { REFRESH_TOKEN_EXPIRY_DAYS } from "@/server/utils/server-utils";
-import { eq } from "drizzle-orm";
+import TUserValidator from "@/shared/validators/user";
+import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
 
 
 
-async function createUser({
+export async function createUser({
     userData,
 }: {
-    userData: TUserInsert,
+    userData: TUserValidator.RegisterInput,
 }) {
     const result = await db.insert(tblUser).values(userData).$returningId()
     return result[0]?.id
 }
 
-async function createNewRefreshToken({
+export async function updateUserByAdmin({
+    userData
+}: {
+    userData: TUserValidator.UpdateUserByAdminInput
+}) {
+    await db.update(tblUser).set(userData).where(eq(tblUser.id, userData.id))
+
+}
+
+export async function createNewRefreshToken({
     userId
 }: {
     userId: number
@@ -31,7 +42,7 @@ async function createNewRefreshToken({
     })
 }
 
-async function getUserById({
+export async function getUserById({
     userId
 }: {
     userId: number
@@ -42,7 +53,7 @@ async function getUserById({
     return user
 }
 
-async function getUserByEmail({
+export async function getUserByEmail({
     email
 }: {
     email: string
@@ -55,9 +66,56 @@ async function getUserByEmail({
 
 
 
-export const userEntities = {
-    getUserById,
-    createUser,
-    createNewRefreshToken,
-    getUserByEmail
+
+
+
+
+export const getAllUsers = async ({
+    page, limit, name, email, role
+}: TUserValidator.GetAllUsersInput) => {
+
+    const offset = (page - 1) * limit;
+
+    const whereConditions = [];
+    if (name) {
+        whereConditions.push(like(tblUser.name, `%${name}%`))
+    }
+    if (email) {
+        whereConditions.push(like(tblUser.email, `%${email}%`))
+    }
+    if (role) {
+        whereConditions.push(eq(tblUser.role, role))
+    }
+
+    let query = db.query.tblUser.findMany({
+        where: and(...whereConditions),
+        limit,
+        offset: (page - 1) * limit,
+        orderBy: desc(tblUser.id)
+    });
+
+    const countQuery = db.query.tblUser.findMany({
+        where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
+    });
+    const totalCount = await countQuery.execute().then(res => res.length);
+
+    const users = await query;
+
+    return {
+        data: users,
+        pagination: {
+            page,
+            limit,
+            total: totalCount,
+            totalPages: Math.ceil(totalCount / limit)
+        }
+    };
+
+
+
+
+
+
 }
+
+

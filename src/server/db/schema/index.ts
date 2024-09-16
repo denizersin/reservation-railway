@@ -1,12 +1,29 @@
 import * as userSchema from "./user"
 
-import * as restaurantSchema from "./restaurant"
+import * as restaurantSchema from "@/server/db/schema/restaurant"
 
-import * as restaurantSettingSchema from "./restaurant-setting"
+import * as restaurantSettingSchema from "./restaurant-general-setting"
+
+import * as  predefinedTablesShema from "./predefined"
 
 
 export const schema = {
     ...userSchema,
     ...restaurantSchema,
     ...restaurantSettingSchema,
+    ...predefinedTablesShema
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,5 @@
 "use client";
-import useAuth from '@/app/providers/AuthProvider';
+import useAuth from '@/components/providers/AuthProvider';
 import { api } from '@/server/trpc/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getQueryKey } from '@trpc/react-query';
@@ -21,13 +21,10 @@ const Page = ({ }: IPageProps) => {
         mutate: register,
         isPending: isRegistering
     } = api.user.register.useMutation({
-        onSuccess(data, variables, context) {
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                queryClient.invalidateQueries({
-                    queryKey: getQueryKey(api.user.getSession)
-                })
-            }
+        onSuccess() {
+            queryClient.invalidateQueries({
+                queryKey: getQueryKey(api.user.getSession)
+            })
         },
     })
     const router = useRouter();
@@ -47,19 +44,19 @@ const Page = ({ }: IPageProps) => {
 
             <div className="p-6 border rounded-lg w-[400px] mx-auto bg-slate-100 flex flex-col gap-y-3">
                 <h1 className='text-center text-xl font-normal'>Register</h1>
-                <input 
-                placeholder='name'
-                className='p-4 border-b-2' type="text" value={name} onChange={(e) => setName(e.target.value)} />
                 <input
-                placeholder='email'
-                className='p-4 border-b-2' type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <input 
-                placeholder='password'
-                className='p-4 border-b-2' type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    placeholder='name'
+                    className='p-4 border-b-2' type="text" value={name} onChange={(e) => setName(e.target.value)} />
+                <input
+                    placeholder='email'
+                    className='p-4 border-b-2' type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <input
+                    placeholder='password'
+                    className='p-4 border-b-2' type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <button
                     disabled={isRegistering}
-                    className='bg-slate-500 py-4 text-white rounded-lg' onClick={() => { 
-                        register({ email, password,name })
+                    className='bg-slate-500 py-4 text-white rounded-lg' onClick={() => {
+                        register({ email, password, name })
                     }}>
                     {isRegistering ? 'Registering...' : 'Register'}
                 </button>
