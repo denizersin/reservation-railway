@@ -10,7 +10,7 @@ import { jwtBody } from "../../entities/jwt/jwt";
 export async function createUser({
     userData
 }: {
-    userData: TUserValidator.RegisterInput
+    userData: TUserValidator.registerSchema
 }): Promise<TSession> {
     const isExist = await userEntities.getUserByEmail({ email: userData.email })
 
@@ -27,23 +27,48 @@ export async function createUser({
         throw new Error('User not created')
     }
 
-    const user = await userEntities.getUserById({ userId }) as TUser
 
-    const jwtBody : jwtBody = {
-        userId: user.id,
-        userRole: user.role
-    }
+    const jwtBody = await userEntities.generateJWTBody({ userId })
+
 
     const token = await jwtEntities.generateUserToken({
         jwtBody
     })
 
-    const sessionUserData = getSessionUserData({ user })
     const session: TSession = {
         user: jwtBody,
     }
 
     cookies().set('token', token)
+
+    return session
+}
+export async function createUserByAdmin({
+    userData
+}: {
+    userData: TUserValidator.registerSchema
+}): Promise<TSession> {
+    const isExist = await userEntities.getUserByEmail({ email: userData.email })
+
+    if (isExist) {
+        throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'User already exists',
+        })
+    }
+
+    const userId = await userEntities.createUser({ userData })
+
+    if (!userId) {
+        throw new Error('User not created')
+    }
+
+    const jwtBody = await userEntities.generateJWTBody({ userId })
+
+
+    const session: TSession = {
+        user: jwtBody,
+    }
 
     return session
 }
@@ -53,9 +78,10 @@ export const updateUserByAdmin = userEntities.updateUserByAdmin
 export async function loginUser({
     userData
 }: {
-    userData: TUserValidator.LoginInput
+    userData: TUserValidator.loginSchema
 }): Promise<TSession> {
     const user = await userEntities.getUserByEmail({ email: userData.email })
+
 
     if (!user) {
         throw new TRPCError({
@@ -68,17 +94,12 @@ export async function loginUser({
         throw new Error('Invalid password')
     }
 
-    const jwtBody : jwtBody = {
-        userId: user.id,
-        userRole: user.role
-    }
+    const jwtBody = await userEntities.generateJWTBody({ userId: user?.id })
 
-    const token = await jwtEntities.generateUserToken({
-        jwtBody
-    })
+    const token = await jwtEntities.generateUserToken({ jwtBody })
 
     const session: TSession = {
-        user:jwtBody
+        user: jwtBody
     }
 
     cookies().set('token', token)

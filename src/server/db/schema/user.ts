@@ -2,7 +2,7 @@ import { int, mysqlEnum, mysqlTable, uniqueIndex, varchar, serial, timestamp, un
 import { relations, sql } from "drizzle-orm";
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumGuestSelectionSide, EnumReservationListingType, EnumUserRole } from '@/shared/enums/predefined-enums';
-import { tblResturant } from './restaurant';
+import { tblRestaurant } from './restaurant';
 // declaring enum in database
 
 
@@ -19,10 +19,10 @@ export const tblUser = mysqlTable('user', {
 
 export const tblUserRelations = relations(tblUser, ({ one, many }) => ({
     // reservations: many(tblReservation),
-    // restaurant: one(tblResturant),
+    // restaurant: one(tblRestaurant),
     // userPersonalSettings: one(userPersonalSettings),
     // refreshToken: many(tblRefreshToken),
-    restaurant: one(tblResturant, { fields: [tblUser.id], references: [tblResturant.ownerId] }),
+    restaurant: one(tblRestaurant, { fields: [tblUser.id], references: [tblRestaurant.ownerId] }),
 }));
 
 
@@ -67,4 +67,5 @@ export type TUserInsert = typeof tblUser.$inferInsert
 
 export type TRefreshToken = typeof tblRefreshToken.$inferSelect
 export type TRefreshTokenInsert = typeof tblRefreshToken.$inferInsert
+
 

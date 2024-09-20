@@ -6,12 +6,15 @@ import * as restaurantSettingSchema from "./restaurant-general-setting"
 
 import * as  predefinedTablesShema from "./predefined"
 
+import * as restaurantTagSchema from "./restaurant-tags"
+
 
 export const schema = {
     ...userSchema,
     ...restaurantSchema,
     ...restaurantSettingSchema,
-    ...predefinedTablesShema
+    ...predefinedTablesShema,
+    ...restaurantTagSchema
 }
 
 

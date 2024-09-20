@@ -1,5 +1,5 @@
 import { TCountryInsert, TLanguageInsert } from "../schema/predefined"
-import { TResturantInsert } from "../schema/restaurant"
+import { TRestaurantInsert } from "../schema/restaurant"
 
 const countries = [
     {
@@ -45,7 +45,7 @@ export const restaurant = [
         phoneNumber: '+905555555555',
     }
 
-] as TResturantInsert[]
+] as TRestaurantInsert[]
 
 
 

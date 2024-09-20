@@ -22,13 +22,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAuthenticated = Boolean(data && !isError)
     const session = isAuthenticated ? data as TSession : null
 
-    console.log(isAuthenticated, 'useauth');
     const logoutMutation = api.user.logout.useMutation();
 
     function logout() {
         logoutMutation.mutate()
     }
 
+    
+    console.log(session?.user,'USERR')
  
 
     useShowLoadingModal([isLoading])

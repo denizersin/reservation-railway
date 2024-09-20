@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { boolean, int, mysqlEnum, mysqlTable, unique } from 'drizzle-orm/mysql-core';
 import { tblCountry, tblLanguage, tblMeal, tblReserVationStatus, TMeal } from './predefined';
-import { tblResturant } from './restaurant';
+import { tblRestaurantLanguage, tblRestaurant } from './restaurant';
 import { EnumTableViewType } from '@/shared/enums/predefined-enums';
 import { getEnumValues } from '@/server/utils/server-utils';
 
@@ -21,12 +21,18 @@ export const tblRestaurantGeneralSetting = mysqlTable('restaurant_general_settin
 },);
 
 export const tblRestaurantGeneralSettingRelations = relations(tblRestaurantGeneralSetting, ({ one, many }) => ({
-    restaurant: one(tblResturant, { fields: [tblRestaurantGeneralSetting.restaurantId], references: [tblResturant.id] }),
-    //generalsettings 
+
+    //general settings
+    //many
     meals: many(tblRestaurantGeneralSettingToMeal),
+
+    //one
+    restaurant: one(tblRestaurant, { fields: [tblRestaurantGeneralSetting.restaurantId], references: [tblRestaurant.id] }),
     newReservationState: one(tblReserVationStatus, { fields: [tblRestaurantGeneralSetting.newReservationStatusId], references: [tblReserVationStatus.id] }),
-    defaultLanguage: one(tblLanguage, { fields: [tblRestaurantGeneralSetting.defaultLanguageId], references: [tblLanguage.id] }),
+    defaultLanguage: one(tblRestaurantLanguage, { fields: [tblRestaurantGeneralSetting.defaultLanguageId], references: [tblRestaurantLanguage.id] }),
     defaultCountry: one(tblCountry, { fields: [tblRestaurantGeneralSetting.defaultCountryId], references: [tblCountry.id] }),
+
+    
 }));
 
 export const tblRestaurantGeneralSettingToMeal = mysqlTable('restaurant_general_setting_to_meal', {
@@ -54,3 +60,7 @@ export type TRestaurantGeneralSettingToMealInsert = typeof tblRestaurantGeneralS
 
 
 
+type GeneralSettingUpdate = Omit<TRestaurantGeneralSetting, 'id'|'restaurantId'> & {
+    meals: number[]
+}
+export type TUpdateGeneralSetting = Partial<GeneralSettingUpdate> 

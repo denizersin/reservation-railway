@@ -119,7 +119,7 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user ) {
+    if (!ctx.session || !ctx.session.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     return next({
@@ -132,7 +132,7 @@ export const protectedProcedure = t.procedure
   });
 
 
-  export const adminProcedure = t.procedure
+export const adminProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
     if (!ctx.session || !ctx.session.user || ctx.session.user.userRole !== 'admin') {
@@ -146,4 +146,26 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+
+export const ownerProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user || ctx.session.user.userRole !== 'owner') {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        ...ctx,
+        // infers the `session` as non-nullable
+        session: {
+          user: {
+            ...ctx.session.user,
+            restaurantId: ctx.session.user.restaurantId!,
+          },
+        },
+      },
+    });
+  });
+
 

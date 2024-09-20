@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "cd2ae717-afd1-4eb8-807d-940a4f796a18",
+  "id": "e88c4d8f-171a-4a02-aac0-eceae5aa1322",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "country": {
@@ -134,7 +134,7 @@
         },
         "status": {
           "name": "status",
-          "type": "enum('draft','reservation','provision','confirmation','cancel','waitApprove')",
+          "type": "enum('draft','reservation','provision','confirmation','cancel','wait approve')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -170,16 +170,16 @@
           "notNull": true,
           "autoincrement": true
         },
-        "is_auto_check_out": {
-          "name": "is_auto_check_out",
-          "type": "boolean",
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "restaurant_id": {
-          "name": "restaurant_id",
-          "type": "int",
+        "is_auto_check_out": {
+          "name": "is_auto_check_out",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -271,6 +271,95 @@
         }
       }
     },
+    "restaurant_tags": {
+      "name": "restaurant_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "restaurant_tags_id": {
+          "name": "restaurant_tags_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "restaurant_tag_translation": {
+      "name": "restaurant_tag_translation",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "restaurant_tag_translation_id": {
+          "name": "restaurant_tag_translation_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_tag_translation": {
+          "name": "unique_tag_translation",
+          "columns": [
+            "tag_id",
+            "language_id"
+          ]
+        }
+      }
+    },
     "reservation": {
       "name": "reservation",
       "columns": {
@@ -331,51 +420,6 @@
         }
       }
     },
-    "restaurant_translation": {
-      "name": "restaurant_translation",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "restaurant_id": {
-          "name": "restaurant_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "language_code": {
-          "name": "language_code",
-          "type": "enum('en','tr')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'tr'"
-        },
-        "description": {
-          "name": "description",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "restaurant_translation_id": {
-          "name": "restaurant_translation_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {}
-    },
     "restaurant": {
       "name": "restaurant",
       "columns": {
@@ -421,6 +465,96 @@
       "compositePrimaryKeys": {
         "restaurant_id": {
           "name": "restaurant_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "restaurant_language": {
+      "name": "restaurant_language",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "restaurant_language_id": {
+          "name": "restaurant_language_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_restaurant_language": {
+          "name": "unique_restaurant_language",
+          "columns": [
+            "restaurant_id",
+            "language_id"
+          ]
+        }
+      }
+    },
+    "restaurant_translation": {
+      "name": "restaurant_translation",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_code": {
+          "name": "language_code",
+          "type": "enum('en','tr')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'tr'"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "restaurant_translation_id": {
+          "name": "restaurant_translation_id",
           "columns": [
             "id"
           ]
@@ -556,7 +690,7 @@
           "name": "email",
           "type": "varchar(256)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "password": {
@@ -590,13 +724,6 @@
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
-        },
-        "optional_field": {
-          "name": "optional_field",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {},
@@ -609,7 +736,14 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ]
+        }
+      }
     },
     "user_personal_settings": {
       "name": "user_personal_settings",

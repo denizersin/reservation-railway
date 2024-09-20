@@ -4,8 +4,10 @@ import { relations } from 'drizzle-orm';
 import { datetime, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 import { tblRestaurantGeneralSetting } from './restaurant-general-setting';
 import { tblUser } from './user';
+import { tblLanguage, TLanguage } from './predefined';
+import { tblRestaurantTag } from './restaurant-tags';
 
-export const tblResturant = mysqlTable('restaurant', {
+export const tblRestaurant = mysqlTable('restaurant', {
     id: int('id').autoincrement().primaryKey(),
     phoneNumber: varchar('phone_number', { length: 20 }).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -14,11 +16,12 @@ export const tblResturant = mysqlTable('restaurant', {
 
 },);
 
-export const restaurantRelations = relations(tblResturant, ({ many, one }) => ({
+export const restaurantRelations = relations(tblRestaurant, ({ many, one }) => ({
     translations: many(tblRestaurantTranslations),
     restaurantGeneralSetting: one(tblRestaurantGeneralSetting),
-    owner: one(tblUser, { fields: [tblResturant.ownerId], references: [tblUser.id] }),
-
+    owner: one(tblUser, { fields: [tblRestaurant.ownerId], references: [tblUser.id] }),
+    languages: many(tblRestaurantLanguage),
+    tags: many(tblRestaurantTag),
     // defaultCountry: one(tblCountry, { fields: [tblRestaurantGeneralSetting.defaultCountryId], references: [tblCountry.id] }),
     // 
 }));
@@ -50,6 +53,17 @@ export const tblReservation = mysqlTable('reservation', {
 }));
 
 
+export const tblRestaurantLanguage = mysqlTable('restaurant_language', {
+    id: int('id').autoincrement().primaryKey(),
+    restaurantId: int('restaurant_id').notNull(),
+    languageId: int('language_id').notNull(),
+}, (t) => ({
+    unq: unique('unique_restaurant_language').on(t.restaurantId, t.languageId),
+}));
+export const tblRestaurantLanguageRelations = relations(tblRestaurantLanguage, ({ one }) => ({
+    restaurant: one(tblRestaurant, { fields: [tblRestaurantLanguage.restaurantId], references: [tblRestaurant.id] }),
+    language: one(tblLanguage, { fields: [tblRestaurantLanguage.languageId], references: [tblLanguage.id] }),
+}));
 
 
 
@@ -57,18 +71,25 @@ export const tblReservation = mysqlTable('reservation', {
 
 
 
+type TRestaurantWithoutTrns = typeof tblRestaurant.$inferSelect
+type TRestaurantWithoutTrnsInsert = typeof tblRestaurant.$inferInsert
 
-type TResturantWithoutTrns = typeof tblResturant.$inferSelect
-type TResturantWithoutTrnsInsert = typeof tblResturant.$inferInsert
-
-type TResturantTranslations = typeof tblRestaurantTranslations.$inferSelect
-type TResturantTranslationsInsert = typeof tblRestaurantTranslations.$inferInsert
-
+type TRestaurantTranslations = typeof tblRestaurantTranslations.$inferSelect
+type TRestaurantTranslationsInsert = typeof tblRestaurantTranslations.$inferInsert
 
 
-export type TResturant = TResturantWithoutTrns & TResturantTranslations & {
+
+
+export type TRestaurant = TRestaurantWithoutTrns & TRestaurantTranslations & {
 }
 
-export type TResturantInsert = TResturantWithoutTrnsInsert & {
-    translations: TResturantTranslationsInsert[]
+export type TRestaurantInsert = TRestaurantWithoutTrnsInsert & {
+    translations: TRestaurantTranslationsInsert[]
 }
+
+
+export type TRestaurantLanguage = typeof tblRestaurantLanguage.$inferSelect
+
+export type TRestaurantLanguages = (TRestaurantLanguage & {
+    language: TLanguage
+})[]

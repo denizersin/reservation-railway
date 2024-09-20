@@ -2,7 +2,7 @@
 import Sidebar from "@/components/layout/sidebar";
 import RoleRequiredPage from "@/components/server/protected-components/role-required-page";
 import { adminSidelinks } from "@/data/admin-side-links";
-import { sidelinks } from "@/data/sidelinks";
+import { ownerSidelinks } from "@/data/owner-side-links";
 import { EnumUserRole } from "@/shared/enums/predefined-enums";
 
 export default function Layout({
@@ -18,7 +18,7 @@ export default function Layout({
 
     return (
         <RoleRequiredPage
-            role={EnumUserRole.admin}
+            roles={[EnumUserRole.admin]}
             redirectPath="/">
             <div className='relative h-full overflow-hidden bg-background flex'>
                 <Sidebar

@@ -1,18 +1,20 @@
 import { env } from "@/env";
 import { db } from "@/server/db";
-import { tblRefreshToken, tblUser, TUserInsert } from "@/server/db/schema/user";
+import { tblRestaurant } from "@/server/db/schema/restaurant";
+import { tblRefreshToken, tblUser, TUser, TUserInsert } from "@/server/db/schema/user";
 import { REFRESH_TOKEN_EXPIRY_DAYS } from "@/server/utils/server-utils";
 import TUserValidator from "@/shared/validators/user";
 import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
+import { jwtBody } from "../jwt/jwt";
 
 
 
 export async function createUser({
     userData,
 }: {
-    userData: TUserValidator.RegisterInput,
+    userData: TUserValidator.registerSchema,
 }) {
     const result = await db.insert(tblUser).values(userData).$returningId()
     return result[0]?.id
@@ -21,7 +23,7 @@ export async function createUser({
 export async function updateUserByAdmin({
     userData
 }: {
-    userData: TUserValidator.UpdateUserByAdminInput
+    userData: TUserValidator.updateUserByAdminSchema
 }) {
     await db.update(tblUser).set(userData).where(eq(tblUser.id, userData.id))
 
@@ -65,14 +67,44 @@ export async function getUserByEmail({
 }
 
 
+export const getUserRestaurant = async ({
+    userId
+}: {
+    userId: number
+}) => {
+    const restaurant = await db.query.tblRestaurant.findFirst({
+        where: eq(tblRestaurant.ownerId, userId)
+    })
+    return restaurant
+}
 
+export const generateJWTBody = async ({
+    userId
+}: {
+    userId: number,
+}): Promise<jwtBody> => {
+
+    const user = await getUserById({ userId });
+    const restaurant = await getUserRestaurant({ userId });
+    
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+
+    return {
+        userId,
+        userRole: user.role,
+        restaurantId: restaurant?.id
+    }
+}
 
 
 
 
 export const getAllUsers = async ({
     page, limit, name, email, role
-}: TUserValidator.GetAllUsersInput) => {
+}: TUserValidator.getAllUsersValidatorSchema) => {
 
     const offset = (page - 1) * limit;
 

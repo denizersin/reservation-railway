@@ -8,6 +8,7 @@ import { TSession } from "../../use-cases/user/user";
 export type jwtBody = {
     userId: number;
     userRole: TUser['role'];
+    restaurantId?: number;
 }
 
 const secretKey = new TextEncoder().encode(env.JWT_SECRET)
@@ -23,6 +24,8 @@ export const generateUserToken = async ({
         .sign(secretKey)
     return token
 }
+
+
 
 export const verifyUserToken = async ({
     token
@@ -64,7 +67,7 @@ export const getServerSession = async (): Promise<TSession | null> => {
         })
         console.log(payload, 'payload')
         return {
-            user:payload,
+            user:payload as jwtBody
         }
     } catch (err) {
         console.error('JWT verification failed:', err)

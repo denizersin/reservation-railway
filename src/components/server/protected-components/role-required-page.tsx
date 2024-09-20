@@ -1,20 +1,25 @@
 import { jwtEntities } from '@/server/layer/entities/jwt';
-import { EnumUserRole } from '@/shared/enums/predefined-enums';
+import { EnumUserRole, TEnumUserRole } from '@/shared/enums/predefined-enums';
 import { redirect } from 'next/navigation';
 
 export default async function RoleRequiredPage({
     children,
-    role,
+    roles,
     redirectPath
 }: {
     children: React.ReactElement,
-    role: EnumUserRole,
+    roles: TEnumUserRole[],
     redirectPath: string
 }): Promise<React.ReactElement> {
 
+    
+
     const session = await jwtEntities.getServerSession();
 
-    if (!session || session.user.userRole !== role) {
+    console.log(session,roles,'qweqwe')
+    
+
+    if (!session || !roles.includes(session.user.userRole)) {
         redirect(redirectPath);
     }
 

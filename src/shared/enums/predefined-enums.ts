@@ -7,6 +7,7 @@ export enum EnumUserRole {
     owner = "owner",
     user = "user"
 }
+export type TEnumUserRole = keyof typeof EnumUserRole;
 
 export enum EnumMeals {
     breakfast = "breakfast",
@@ -20,7 +21,7 @@ export enum EnumReservationStatus {
     provision = 'provision',
     confirmation = 'confirmation',
     cancel = 'cancel',
-    waitApprove = 'waitApprove',
+    waitApprove = 'wait approve',
 }
 
 export enum EnumTableViewType {

@@ -7,7 +7,6 @@ export function useShowLoadingModal(loading: boolean[]) {
 
     const wilShow = loading.filter(Boolean).length > 0
 
-    console.log(wilShow, 'wilShow', loading);
 
     useEffect(() => {
 
@@ -17,7 +16,6 @@ export function useShowLoadingModal(loading: boolean[]) {
         }
 
         if (LoadingModal.isOpen && !wilShow) {
-            console.log('HIDEEE')
             LoadingModal.hide()
         }
 

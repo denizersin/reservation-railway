@@ -6,9 +6,11 @@ import { eq } from "drizzle-orm";
 import { EnumDays, EnumMeals, EnumReservationStatus, EnumUserRole } from "@/shared/enums/predefined-enums";
 import { tblCountry, tblLanguage, tblMeal, tblReserVationStatus } from "../schema/predefined";
 import { tblUser } from "../schema/user";
-import { tblRestaurantTranslations, tblResturant } from "../schema/restaurant";
+import { tblRestaurantTranslations, tblRestaurant } from "../schema/restaurant";
 import { seedDatas } from "./seedData";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
+import { exit } from "process";
+import { getEnumValues } from "@/server/utils/server-utils";
 const connection = await mysql.createConnection({
     uri: env.DATABASE_URL,
 });
@@ -19,6 +21,24 @@ const db = drizzle(connection, {
 });
 
 const seedFunctions = [
+    async function createPredefinedData() {
+        //meal
+        Object.values(EnumMeals).forEach(async (meal) => {
+            await db.insert(tblMeal).values({
+                name: meal,
+            })
+        })
+        await db.insert(tblCountry).values(seedDatas.countries)
+        await db.insert(tblLanguage).values(seedDatas.languages)
+        getEnumValues(EnumReservationStatus).forEach(async (status) => {
+            await db.insert(tblReserVationStatus).values({
+                status: status,
+            })
+        })
+
+
+
+    },
     async function createUsers() {
         const result_admin = await db.insert(tblUser).values({
             email: 'admin@gmail.com',
@@ -48,24 +68,7 @@ const seedFunctions = [
 
         if (result2[0]?.id) console.log('Owner2 created')
     },
-    async function createPredefinedData() {
-        //meal
-        Object.values(EnumMeals).forEach(async (meal) => {
-            await db.insert(tblMeal).values({
-                name: meal,
-            })
-        })
-        await db.insert(tblCountry).values(seedDatas.countries)
-        await db.insert(tblLanguage).values(seedDatas.languages).$returningId()
-        Object.values(EnumReservationStatus).forEach(async (status) => {
-            await db.insert(tblReserVationStatus).values({
-                status: status,
-            })
-        })
 
-
-
-    },
     async function createRestaurant() {
         const owner = await db.query.tblUser.findFirst({ where: eq(tblUser.email, 'owner@gmail.com') })
         const owner2 = await db.query.tblUser.findFirst({ where: eq(tblUser.email, 'owner2@gmail.com') })
@@ -74,25 +77,22 @@ const seedFunctions = [
         await restaurantEntities.createRestaurant({
             restaurant: {
                 ...seedDatas.restaurant[0]!,
+                id:2,
                 ownerId: owner?.id!
             }
         })
 
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
         await restaurantEntities.createRestaurant({
             restaurant: {
                 ...seedDatas.restaurant[1]!,
+                id:3,
                 ownerId: owner2?.id!
             }
         })
 
-        const kfcRestaurant = (await db.query.tblResturant.findFirst({ where: eq(tblResturant.name, 'kfc') }))
-        //set owner to restaurant
-        if (!kfcRestaurant) return console.error('Restaurant not found')
-
-
-        await restaurantEntities.setDefaultsToRestaurant({ restaurantId: kfcRestaurant?.id! })
-
-        console.log('restaurant created')
+        console.log('Restaurants created')
 
     }
 ].filter(Boolean)
@@ -109,6 +109,7 @@ async function initDb() {
     }
     finally {
         await connection.end()
+        exit()
     }
 }
 

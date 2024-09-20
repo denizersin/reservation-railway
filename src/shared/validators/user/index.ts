@@ -4,7 +4,8 @@ import { z } from 'zod';
 
 // Register Validator
 const registerSchema = z.object({
-    name: z.string().min(1, "Name is required").max(256, "Name cannot exceed 256 characters"),
+    name: z.string().max(256, "Name cannot exceed 256 characters").optional(),
+
     email: z.string().email("Invalid email address").max(256, "Email cannot exceed 256 characters"),
     password: z.string().min(4, "Password must be at least 8 characters long").max(256, "Password cannot exceed 256 characters"),
     role: z.enum(getEnumValues(EnumUserRole)).default(EnumUserRole.user), // Default role as 'user'
@@ -17,17 +18,18 @@ const loginSchema = z.object({
     password: z.string().min(4, "Password must be at least 8 characters long").max(256, "Password cannot exceed 256 characters"),
 });
 
-const updateUserByAdmin= z.object({
-    id: z.number().int().positive(),
+const updateUserByAdminSchema= z.object({
     name: z.string().optional(),
-    email: z.string().optional(),
-    password: z.string().optional(),
-    role: z.enum(getEnumValues(EnumUserRole)).optional(), 
+
+    id: z.number().int().positive(),
+    email: z.string(),
+    password: z.string(),
+    role: z.enum(getEnumValues(EnumUserRole)), 
 
 })
 
 
-export const getAllUsersValidator = z.object({
+export const getAllUsersValidatorSchema = z.object({
     page: z.number().int().positive(),
     limit: z.number().int().positive(),
     name: z.string().optional(),
@@ -39,17 +41,18 @@ export const getAllUsersValidator = z.object({
 export const userValidator = {
     registerSchema,
     loginSchema,
-    getAllUsersValidator,
-    updateUserByAdmin
+    updateUserByAdminSchema,
+    getAllUsersValidatorSchema
+
 }
 
 
 
 namespace TUserValidator{
-    export type LoginInput = z.infer<typeof userValidator.loginSchema>
-    export type RegisterInput = z.infer<typeof userValidator.registerSchema>
-    export type GetAllUsersInput = z.infer<typeof userValidator.getAllUsersValidator>
-    export type UpdateUserByAdminInput = z.infer<typeof userValidator.updateUserByAdmin>
+    export type registerSchema = z.infer<typeof registerSchema>
+    export type loginSchema = z.infer<typeof loginSchema>
+    export type updateUserByAdminSchema = z.infer<typeof updateUserByAdminSchema>
+    export type getAllUsersValidatorSchema = z.infer<typeof getAllUsersValidatorSchema>
 }
 
 export default TUserValidator

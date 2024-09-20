@@ -35,11 +35,11 @@ export const userRouter = createTRPCRouter({
     createUser: adminProcedure
         .input(userValidator.registerSchema)
         .mutation(async ({ input }) => {
-            const session = await userUseCases.createUser({ userData: input })
+            const session = await userUseCases.createUserByAdmin({ userData: input })
             return session
         }),
-    updateUserByAdmin: adminProcedure
-        .input(userValidator.updateUserByAdmin)
+    updateUser: adminProcedure
+        .input(userValidator.updateUserByAdminSchema)
         .mutation(async ({ input }) => {
 
             const user = await userUseCases.updateUserByAdmin({
@@ -48,7 +48,7 @@ export const userRouter = createTRPCRouter({
             return user
         }),
     getAllUsers: adminProcedure
-        .input(userValidator.getAllUsersValidator)
+        .input(userValidator.getAllUsersValidatorSchema)
         .query(async ({ input }) => {
             const users = await userUseCases.getAllUsers(input)
             return users

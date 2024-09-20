@@ -1,23 +1,29 @@
 import { db } from '@/server/db';
-import { tblRestaurantTranslations, tblResturant, TResturantInsert } from '@/server/db/schema/restaurant';
-import { tblRestaurantGeneralSetting, tblRestaurantGeneralSettingToMeal, TRestaurantGeneralSettingInsert } from '@/server/db/schema/restaurant-general-setting';
-import { EnumLanguage, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { tblRestaurantLanguage, tblRestaurantTranslations, tblRestaurant, TRestaurantInsert, TRestaurantLanguages } from '@/server/db/schema/restaurant';
+import { tblRestaurantGeneralSetting, tblRestaurantGeneralSettingToMeal, TRestaurantGeneralSettingInsert, TUpdateGeneralSetting } from '@/server/db/schema/restaurant-general-setting';
+import { EnumLanguage, EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
 import { and, eq } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
-import { TMeal } from '@/server/db/schema/predefined';
+import { tblMeal, TMeal } from '@/server/db/schema/predefined';
+import { restaurantSettingEntities } from '../restaurant-setting';
 
 export const createRestaurant = async ({
     restaurant,
 }: {
-    restaurant: TResturantInsert
+    restaurant: TRestaurantInsert
 }) => {
     const { translations, ...tblRestaurantValues } = restaurant
-    const [newRestaurant] = await db.insert(tblResturant).values(tblRestaurantValues).$returningId()
-    if (!newRestaurant?.id) return;
+    const [newRestaurant] = await db.insert(tblRestaurant).values(tblRestaurantValues).$returningId()
+    if (!newRestaurant?.id) {
+        console.log('restaurant not created')
+        throw new Error('Restaurant not created')
+    };
 
     if (translations && translations.length > 0) {
         await db.insert(tblRestaurantTranslations).values(translations)
     }
+
+    await setDefaultsToRestaurant({ restaurantId: newRestaurant.id })
 
     return newRestaurant.id
 }
@@ -35,8 +41,8 @@ export const getRestaurant = async ({
     languageCode: EnumLanguage
 }) => {
 
-    const restaurant = await db.query.tblResturant.findFirst({
-        where: eq(tblResturant.id, restaurantId),
+    const restaurant = await db.query.tblRestaurant.findFirst({
+        where: eq(tblRestaurant.id, restaurantId),
         with: {
             translations: {
                 where: eq(tblRestaurantTranslations.languageCode, languageCode)
@@ -71,95 +77,60 @@ export const setDefaultsToRestaurant = async ({
 }: {
     restaurantId: number
 }) => {
-    db.transaction(async (trx) => {
 
-        //default settings
-        try {
-            const generalSetting = await trx.insert(tblRestaurantGeneralSetting).values({
-                defaultCountryId: (await predefinedEntities.getCountryByName({ countryName: 'turkey' }))?.id!,
-                defaultLanguageId: (await predefinedEntities.getLanguageByCode({ languageCode: EnumLanguage.tr }))?.id!,
-                newReservationStatusId: (await predefinedEntities.getReservationStatusByStatus({ status: EnumReservationStatus.confirmation }))?.id!,
-                restaurantId: restaurantId
+    //default settings
+    try {
 
-            })
+
+        const trLanguage = await predefinedEntities.getLanguageByCode({ languageCode: EnumLanguage.tr })
+        const enLanguage = await predefinedEntities.getLanguageByCode({ languageCode: EnumLanguage.en })
+
+        const [generalSetting] = await db.insert(tblRestaurantGeneralSetting).values({
+            defaultCountryId: (await predefinedEntities.getCountryByName({ countryName: 'turkey' }))?.id!,
+            newReservationStatusId: (await predefinedEntities.getReservationStatusByStatus({ status: EnumReservationStatus.confirmation }))?.id!,
+            defaultLanguageId: trLanguage?.id!,
+            restaurantId: restaurantId
+        }).$returningId()
+
+        if (!generalSetting) {
+            return
         }
-        catch (e) {
-            console.log(e)
-            trx.rollback()
-        }
+
+        const dinner = (await db.query.tblMeal.findFirst({
+            where: eq(tblMeal.name, EnumMeals.dinner)
+        }))!
+
+        //add default meal to restaurant
+        await db.insert(tblRestaurantGeneralSettingToMeal).values([{
+            mealId: dinner.id,
+            restaurantSettingId: generalSetting.id
+        },])
 
 
-    })
-}
-
-
-export const getGeneralSettings = async ({
-    restaurantId
-}: {
-    restaurantId: number
-}) => {
-
-    const restaurantGeneralSetting = await db.query.tblRestaurantGeneralSetting.findFirst({
-        where: eq(tblResturant.id, restaurantId),
-        with: {
-            meals: { with: { meal: true } },
-            defaultCountry: true,
-            defaultLanguage: true,
-            newReservationState: true,
-        }
-    })
-
-    if (!restaurantGeneralSetting) {
-        return
-    }
-
-    const { meals } = restaurantGeneralSetting
-
-    return {
-        ...restaurantGeneralSetting,
-        meals: meals.map((m) => m.meal)
-    }
-}
-
-export const updateGeneralSettings = async ({
-    restaurantId,
-    generalSettings,
-    meals
-}: {
-    restaurantId: number,
-    generalSettings?: Partial<TRestaurantGeneralSettingInsert>
-    meals?: TMeal[]
-}) => {
-
-    db.transaction(async (trx) => {
-
-        //update general settings
-        try {
-            await trx.update(tblRestaurantGeneralSetting).set({ ...generalSettings })
-                .where(eq(tblRestaurantGeneralSetting.restaurantId, restaurantId))
-
-
-            //update meals
-            await trx.delete(tblRestaurantGeneralSettingToMeal).where(eq(tblRestaurantGeneralSettingToMeal.restaurantSettingId, restaurantId))
-
-            if (meals && meals.length > 0) {
-                await trx.insert(tblRestaurantGeneralSettingToMeal).values(
-                    meals.map((meal) => ({
-                        mealId: meal.id,
-                        restaurantSettingId: restaurantId
-                    }))
-                );
+        //restaurant languages
+        await db.insert(tblRestaurantLanguage).values([
+            {
+                restaurantId: restaurantId,
+                languageId: trLanguage?.id!
+            },
+            {
+                restaurantId: restaurantId,
+                languageId: enLanguage?.id!
             }
-        }
 
-        catch (e) {
-            console.log(e)
-            trx.rollback()
-        }
+        ])
 
-    })
+    }
+    catch (e) {
+        console.log(e)
+    }
+
 
 }
+
+
+
+
 
 
 export const getRestaurantWithSettings = async ({
@@ -168,11 +139,11 @@ export const getRestaurantWithSettings = async ({
     restaurantId: number
 }) => {
 
-    const restaurantWithSettings = await db.query.tblResturant.findFirst({
-        where: eq(tblResturant.id, restaurantId),
+    const restaurantWithSettings = await db.query.tblRestaurant.findFirst({
+        where: eq(tblRestaurant.id, restaurantId),
     })
 
-    const generalSettings = await getGeneralSettings({ restaurantId })
+    const generalSettings = await restaurantSettingEntities.getGeneralSettings({ restaurantId })
 
     return {
         ...restaurantWithSettings,
@@ -181,10 +152,62 @@ export const getRestaurantWithSettings = async ({
 }
 
 
+export const getRestaurantLanguages = async ({
+    restaurantId
+}: {
+    restaurantId: number
+}): Promise<TRestaurantLanguages> => {
+
+    const restaurantLanguages = await db.query.tblRestaurantLanguage.findMany({
+        where: eq(tblRestaurantLanguage.restaurantId, restaurantId),
+        with: {
+            language: true
+        }
+    })
+
+    return restaurantLanguages
+}
 
 
 
 
 
+export const updateRestaurantMeals = async ({
+    restaurantId,
+    meals
+}: {
+    restaurantId: number,
+    meals?: number[]
+}) => {
+
+    console.log(restaurantId, meals, 'restaurantId, meals')
+
+    //update meals
+    if (meals && meals.length > 0) {
+        await db.delete(tblRestaurantGeneralSettingToMeal)
+            .where(eq(tblRestaurantGeneralSettingToMeal.restaurantSettingId, restaurantId))
+        await db.insert(tblRestaurantGeneralSettingToMeal)
+            .values(meals.map(mealId => ({ mealId, restaurantSettingId: restaurantId })))
+    }
+
+}
 
 
+
+
+export const updateRestaurantLanguages = async ({
+    restaurantId,
+    languages
+}: {
+    restaurantId: number,
+    languages: number[]
+}) => {
+
+    //update languages
+    if (languages && languages.length > 0) {
+        await db.delete(tblRestaurantLanguage)
+            .where(eq(tblRestaurantLanguage.restaurantId, restaurantId))
+        await db.insert(tblRestaurantLanguage)
+            .values(languages.map(languageId => ({ languageId, restaurantId })))
+    }
+}

@@ -7,6 +7,30 @@ import { eq } from "drizzle-orm"
 
 const secretKey = new TextEncoder().encode(env.JWT_SECRET)
 
+
+export const getCountries = async () => {
+
+    const countries = await db.query.tblCountry.findMany()
+
+    //language properties
+
+    return countries
+
+}
+
+export const getLanguages = async () => {
+
+    const languages = await db.query.tblLanguage.findMany()
+
+    //language properties
+
+    return languages
+
+}
+
+
+
+
 export const getCountryByName = async ({
     countryName
 }: {
@@ -43,7 +67,7 @@ export const getLanguageByCode = async ({
 export const getReservationStatusByStatus = async ({
     status
 }: {
-    status: EnumReservationStatus
+    status: keyof typeof EnumReservationStatus
 }) => {
 
     const reservationStatus = await db.query.tblReserVationStatus.findFirst({
@@ -54,3 +78,20 @@ export const getReservationStatusByStatus = async ({
 
 }
 
+export const getMeals = async () => {
+
+    const meals = await db.query.tblMeal.findMany()
+
+    return meals
+
+}
+
+
+
+export const getReservationSatues = async () => {
+    
+        const reservationStatus = await db.query.tblReserVationStatus.findMany()
+    
+        return reservationStatus
+    
+    }

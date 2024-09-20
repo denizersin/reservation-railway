@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { api } from '@/server/trpc/react';
 import { UsersDataTable } from './_components/data-table';
-import { columns } from './_components/colums';
+import { columns } from './_components/columns';
 import { Button } from '@/components/custom/button';
 import { UserCurdModal } from './_components/user-crud-modal';
 

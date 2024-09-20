@@ -1,6 +1,7 @@
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
-import { boolean, int, mysqlEnum, mysqlTable, timestamp, varchar } from 'drizzle-orm/mysql-core';
+import { relations } from 'drizzle-orm';
+import { boolean, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 
 
 
@@ -19,6 +20,8 @@ export const tblLanguage = mysqlTable('language', {
     name: varchar('name', { length: 50 }).notNull(),
     isRtl: boolean('is_rtl').notNull(),
 })
+
+
 
 
 export const tblMeal = mysqlTable('meal', {
@@ -49,6 +52,8 @@ export type TCountry = typeof tblCountry.$inferSelect
 export type TCountryInsert = typeof tblCountry.$inferInsert
 
 
+export type TReservationStatus = typeof tblReserVationStatus.$inferSelect
+export type TReservationStatusInsert = typeof tblReserVationStatus.$inferInsert
 
 
 

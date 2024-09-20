@@ -41,7 +41,6 @@ const LoadingModalWrapper: React.FC = () => {
     const dialogRef = React.useRef<DialogRef>(null)
 
     const setRef = (ref: DialogRef) => {
-        console.log(ref, 'refff')
         LoadingModal = ref
     }
 

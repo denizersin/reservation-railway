@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -19,7 +19,7 @@ export function UserCurdModal({
 }: {
     isOpen: boolean,
     setOpen: (value: boolean) => void,
-    user?: TUserValidator.UpdateUserByAdminInput
+    user?: TUserValidator.updateUserByAdminSchema
 }) {
 
 
@@ -29,7 +29,7 @@ export function UserCurdModal({
     const onSuccessCrud = () => {
         queryClient.invalidateQueries({
             queryKey: getQueryKey(api.user.getAllUsers)
-            
+
         })
         setOpen(false)
     }
@@ -38,13 +38,13 @@ export function UserCurdModal({
         onSuccess: onSuccessCrud
     })
 
-    const updateUserMutation = api.user.updateUserByAdmin.useMutation({
+    const updateUserMutation = api.user.updateUser.useMutation({
         onSuccess: onSuccessCrud
     })
 
 
 
-    const form = useForm<TUserValidator.RegisterInput>({
+    const form = useForm<TUserValidator.registerSchema>({
         resolver: zodResolver(userValidator.registerSchema),
         defaultValues: {
             name: user?.name ?? '',
@@ -54,18 +54,27 @@ export function UserCurdModal({
         },
     })
 
-    const onSubmit = (data: TUserValidator.RegisterInput) => {
+    const onSubmit = (data: TUserValidator.registerSchema) => {
 
         if (isUpdate && user) {
             updateUserMutation.mutate({
                 id: user.id,
-                ...data
+                ...data,
             })
         } else {
-            createUserMutation.mutate(data)
+            createUserMutation.mutate({
+                ...data,
+            })
         }
 
     }
+
+    useEffect(() => {
+        if (!isOpen) {
+            form.reset()
+        }
+    }, [isOpen])
+
 
     return (
         <Dialog

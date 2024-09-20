@@ -5,5 +5,8 @@ export const JWT_EXPIRY_DAYS = 5
 
 export const getEnumValues = <T extends object>(enumType: T) => {
     type Key = keyof typeof enumType;
-    return Object.values(enumType) as [Key, ...Key[]];
+    return Object.values(enumType) as [Key, ...Key[]] 
 }
+
+
+
