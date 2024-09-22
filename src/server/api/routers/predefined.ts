@@ -8,5 +8,10 @@ export const predefinedRouter = createTRPCRouter({
     getLanguages: publicProcedure
         .query(async () => {
             return await predefinedEntities.getLanguages()
-        })
+        }),
+    getMeals: publicProcedure
+        .query(async () => {
+            return await predefinedEntities.getMeals()
+        }),
+    
 });

@@ -10,30 +10,10 @@ type Props = {}
 
 const Page = async (props: Props) => {
 
-    const session = (await jwtEntities.getServerSession())!
-
-    const currentRestaurant = (await db.query.tblRestaurant.findFirst({
-        where: eq(tblRestaurant.ownerId, session.user.userId)
-    }))!
-
-
-    const meals = await db.query.tblMeal.findMany()
-    const countries = await db.query.tblCountry.findMany()
-    const restauratnLanguages = await restaurantEntities.getRestaurantLanguages(({ restaurantId: currentRestaurant.id }))
-    const reservationStatues = await db.query.tblReserVationStatus.findMany()
-
-    console.log(
-        reservationStatues, 'reservationStatues',
-    )
+  
 
     return (
-        <GeneralSettings
-            meals={meals}
-            countries={countries}
-            restaurantLanguages={restauratnLanguages}
-            reservationStatues={reservationStatues}
-        />
-
+        <GeneralSettings/>
     )
 }
 

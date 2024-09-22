@@ -15,13 +15,12 @@ import { useForm } from "react-hook-form"
 
 
 type Props = {
-    meals: TMeal[]
-    countries: TCountry[]
-    restaurantLanguages: TRestaurantLanguages
-    reservationStatues: TReservationStatus[]
 }
 
-export const GeneralSettings = ({ meals, countries, restaurantLanguages, reservationStatues }: Props) => {
+export const GeneralSettings = ({ }: Props) => {
+
+    const { data: reservationStatues } = api.reservation.getReservationSatues.useQuery()
+    const { data: meals } = api.predefiend.getMeals.useQuery()
 
     const {
         data: generalSettings,
@@ -35,7 +34,7 @@ export const GeneralSettings = ({ meals, countries, restaurantLanguages, reserva
 
 
     const onSubmit = (data: TRestaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema) => {
-        
+
 
         const changedFields = getChangedFields(data, generalSettings!)
 
@@ -58,10 +57,6 @@ export const GeneralSettings = ({ meals, countries, restaurantLanguages, reserva
     })
 
 
-    console.log(form.getValues(), 'values')
-    console.log(form.formState.errors, 'errors')
-
-    console.log(generalSettings, 'generalSettings')
 
     useEffect(() => {
         console.log(generalSettings, 'generalSettings')
@@ -125,7 +120,7 @@ export const GeneralSettings = ({ meals, countries, restaurantLanguages, reserva
                             <div className="mb-4">
                                 <FormLabel className="text-base">Meals</FormLabel>
                             </div>
-                            {meals.map((meal) => (
+                            {meals?.map((meal) => (
                                 <FormField
                                     key={meal.id}
                                     control={form.control}
