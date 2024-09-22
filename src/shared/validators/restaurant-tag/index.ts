@@ -13,18 +13,19 @@ export const createRestaurantTagSchema = z.object({
     languageId: z.number().int().positive()
 })
 
+const translationSchema = z.array(z.object({
+    name: z.string().max(50, "Name cannot exceed 50 characters").min(3, "Name must be at least 3 characters"),
+    code: z.string().max(10, "Code cannot exceed 10 characters").min(3, "Code must be at least 3 characters"),
+    languageId: z.number().int().positive()
+}))
+
 export const createRestaurantFormSchema = z.object({
-    translations: z.array(z.object({
-        name: z.string().max(50, "Name cannot exceed 50 characters").min(3, "Name must be at least 3 characters"),
-        code: z.string().max(10, "Code cannot exceed 10 characters").min(3, "Code must be at least 3 characters"),
-        languageId: z.number().int().positive()
-    }))
+    translations: translationSchema
 })
 
 export const updateRestaurantTagSchema = z.object({
     id: z.number().int().positive(),
-    name: z.string().max(256, "Name cannot exceed 256 characters"),
-    languageId: z.number().int().positive()
+    translations: translationSchema
 })
 
 

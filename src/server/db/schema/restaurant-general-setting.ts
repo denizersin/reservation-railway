@@ -10,7 +10,7 @@ import { getEnumValues } from '@/server/utils/server-utils';
 export const tblRestaurantGeneralSetting = mysqlTable('restaurant_general_setting', {
     id: int('id').autoincrement().primaryKey(),
     restaurantId: int('restaurant_id').notNull(),
-
+    
     //general settings
     isAutoCheckOut: boolean('is_auto_check_out').$default(() => false).notNull(),
     newReservationStatusId: int('new_reservation_state_id').notNull(),

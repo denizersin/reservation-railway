@@ -50,3 +50,9 @@ export enum EnumGuestSelectionSide {
     left = 'left',
     right = 'right',
 }
+
+export enum EnumTableShape {
+    square = 'square',
+    rectangle = 'rectangle',
+    round = 'round',
+}

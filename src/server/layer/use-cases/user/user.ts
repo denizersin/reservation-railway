@@ -108,7 +108,7 @@ export async function loginUser({
 }
 
 export function logoutUser() {
-    cookies().set('token', '')
+    cookies().delete('token')
     return true
 }
 

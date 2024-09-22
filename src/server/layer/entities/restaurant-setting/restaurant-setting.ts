@@ -11,7 +11,7 @@ export const getGeneralSettings = async ({
 }) => {
 
     const restaurantGeneralSetting = await db.query.tblRestaurantGeneralSetting.findFirst({
-        where: eq(tblRestaurant.id, restaurantId),
+        where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId),
         with: {
             meals: { with: { meal: true } },
             defaultCountry: true,
@@ -20,7 +20,7 @@ export const getGeneralSettings = async ({
         }
     })
 
-    console.log(restaurantGeneralSetting, 'restaurantGeneralSetting')
+    console.log(restaurantGeneralSetting, '12restaurantGeneralSetting')
 
     if (!restaurantGeneralSetting) {
         return
@@ -35,12 +35,14 @@ export const getGeneralSettings = async ({
 }
 
 
+
+
 export const updateRestaurantGeneralSettings = async ({
     generalSetting,
-    restaurantId
+    generalSettingID
 }: {
-    restaurantId: number,
-    generalSetting: TUpdateGeneralSetting
+    generalSetting: TUpdateGeneralSetting,
+    generalSettingID: number
 }) => {
 
     //seperate many 
@@ -58,10 +60,12 @@ export const updateRestaurantGeneralSettings = async ({
 
     if (Object.keys(fields).length !== 0) {
         await db.update(tblRestaurantGeneralSetting).set(fields)
-            .where(eq(tblRestaurantGeneralSetting.restaurantId, restaurantId))
+            .where(eq(tblRestaurantGeneralSetting.id, generalSettingID))
     }
 
-    await updateRestaurantMeals({ restaurantId, meals })
+    if (Array.isArray(meals)) {
+        await updateRestaurantMeals({ generalSettingID, meals })
+    }
 
 
 
@@ -70,4 +74,34 @@ export const updateRestaurantGeneralSettings = async ({
 
 
 
+
+}
+
+
+
+export const getGeneralSettingsToUpdate = async ({
+    restaurantId
+}: {
+    restaurantId: number
+}) => {
+
+    const restaurantGeneralSetting = await db.query.tblRestaurantGeneralSetting.findFirst({
+        where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId),
+        with: {
+            meals: { with: { meal: true } },
+        }
+    })
+
+    console.log(restaurantGeneralSetting, '12restaurantGeneralSetting')
+
+    if (!restaurantGeneralSetting) {
+        return
+    }
+
+    const { meals } = restaurantGeneralSetting
+
+    return {
+        ...restaurantGeneralSetting,
+        meals: meals.map((m) => m.meal.id)
+    }
 }

@@ -1,9 +1,9 @@
 "use client";
-import { EnumUserRole } from '@/server/db/schema/user';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import useAuth from '../providers/AuthProvider';
 import { withAuth } from './AuthRequiredComponent';
+import { EnumUserRole } from '@/shared/enums/predefined-enums';
 
 interface IRoleRequiredComponentProps {
     children: React.ReactNode | React.ReactNode[];
@@ -17,7 +17,7 @@ const RoleRequiredComponent = ({
 }: IRoleRequiredComponentProps) => {
     const router = useRouter();
     const { session } = useAuth();
-    const role = session?.user.role
+    const role = session?.user.userRole
 
     useEffect(() => {
         if (!session) {

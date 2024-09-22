@@ -1,11 +1,12 @@
 "use client";
-import { TUser } from "@/server/db/schema/user"
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
+import { TSession } from "@/server/layer/use-cases/user/user";
 import { api } from "@/server/trpc/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useContext, useEffect } from "react";
-import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
-import { TSession } from "@/server/layer/use-cases/user/user";
 
 type TAuthContext = {
     session: TSession | null;
@@ -22,17 +23,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAuthenticated = Boolean(data && !isError)
     const session = isAuthenticated ? data as TSession : null
 
-    const logoutMutation = api.user.logout.useMutation();
+    const logoutMutation = api.user.logout.useMutation({
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getQueryKey(api.user.getSession) })
+        }
+    });
 
     function logout() {
         logoutMutation.mutate()
     }
 
-    
-    console.log(session?.user,'USERR')
- 
+    const pathname = usePathname();
+    const router = useRouter()
 
-    useShowLoadingModal([isLoading])
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated && !pathname?.includes('auth')) {
+            router.push('/auth/login')
+        }
+    }, [isAuthenticated, isLoading])
+
+
+
+
+    useShowLoadingModal([isLoading,logoutMutation.isPending])
 
 
     return (

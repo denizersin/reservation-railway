@@ -1,18 +1,18 @@
 "use client"
-import useAuth from '@/components/providers/AuthProvider'
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/custom/button'
 import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getChangedFields } from '@/lib/utils'
 import { TCountry, TMeal, TReservationStatus } from '@/server/db/schema/predefined'
 import { TRestaurantLanguages } from '@/server/db/schema/restaurant'
 import { api } from '@/server/trpc/react'
-import { getEnumValues } from '@/server/utils/server-utils'
-import { EnumReservationStatus } from '@/shared/enums/predefined-enums'
 import TRestaurantGeneralSettingValidator, { restaurantGeneralSettingValidator } from '@/shared/validators/restaurant'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect } from 'react'
 import { useForm } from "react-hook-form"
+
+
 
 type Props = {
     meals: TMeal[]
@@ -23,6 +23,11 @@ type Props = {
 
 export const GeneralSettings = ({ meals, countries, restaurantLanguages, reservationStatues }: Props) => {
 
+    const {
+        data: generalSettings,
+        isLoading,
+        error,
+    } = api.restaurant.getRestaurantGeneralSettingsToUpdate.useQuery()
 
     const updateGeneralSettingMutation = api.restaurant.updateRestaurantGeneralSettings.useMutation()
 
@@ -30,22 +35,25 @@ export const GeneralSettings = ({ meals, countries, restaurantLanguages, reserva
 
 
     const onSubmit = (data: TRestaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema) => {
+        
+
+        const changedFields = getChangedFields(data, generalSettings!)
+
+
         updateGeneralSettingMutation.mutate({
-            meals: data.meals,
+            generalSettingID: generalSettings?.id!,
+            generalSetting: {
+                ...changedFields,
+            }
         })
     }
 
-    const {
-        data: generalSettings,
-        isLoading,
-        error,
-    } = api.restaurant.getRestaurantGeneralSettings.useQuery()
+
 
     const form = useForm<TRestaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema>({
         resolver: zodResolver(restaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema),
         defaultValues: {
             ...generalSettings,
-            meals: generalSettings?.meals.map((meal) => meal.id) ?? [],
         },
     })
 
@@ -56,17 +64,17 @@ export const GeneralSettings = ({ meals, countries, restaurantLanguages, reserva
     console.log(generalSettings, 'generalSettings')
 
     useEffect(() => {
+        console.log(generalSettings, 'generalSettings')
         form.reset({
             ...generalSettings,
-            meals: generalSettings?.meals.map((meal) => meal.id) ?? [],
         })
     }, [generalSettings])
 
 
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Form {...form} >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-[500px]">
                 <FormField
                     control={form.control}
                     name="isAutoCheckOut"
@@ -158,7 +166,9 @@ export const GeneralSettings = ({ meals, countries, restaurantLanguages, reserva
 
                 {/* Add similar FormField components for defaultLanguageId, defaultCountryId, tableView, and meals */}
 
-                <Button type="submit">Save Changes</Button>
+                <Button
+                    loading={updateGeneralSettingMutation.isPending}
+                    type="submit">Save Changes</Button>
             </form>
         </Form>
     )

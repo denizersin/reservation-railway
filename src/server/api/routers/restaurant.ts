@@ -12,17 +12,24 @@ export const restaurantRouter = createTRPCRouter({
     updateRestaurantGeneralSettings: ownerProcedure
         .input(restaurantGeneralSettingValidator.updateRestaurantGeneralSettingSchema)
         .mutation(async ({ input, ctx }) => {
-            const { user: { restaurantId } } = ctx.session
             await restaurantSettingEntities.updateRestaurantGeneralSettings({
-                generalSetting: input,
-                restaurantId: restaurantId!
+                generalSetting: input.generalSetting,
+                generalSettingID: input.generalSettingID,
             })
             return true
         }),
     getRestaurantGeneralSettings: ownerProcedure
         .query(async ({ ctx }) => {
             const { user: { restaurantId } } = ctx.session
-            const generalSettings = await restaurantUseCases.getRestaurantGeneralSettings({ restaurantId: restaurantId! })
+            console.log(restaurantId,'ctx session restaurantId')
+            const generalSettings = await restaurantSettingEntities.getGeneralSettings({ restaurantId: restaurantId! })
+            return generalSettings
+        }),
+        getRestaurantGeneralSettingsToUpdate: ownerProcedure
+        .query(async ({ ctx }) => {
+            const { user: { restaurantId } } = ctx.session
+            console.log(restaurantId,'ctx session restaurantId')
+            const generalSettings = await restaurantSettingEntities.getGeneralSettingsToUpdate({ restaurantId: restaurantId! })
             return generalSettings
         }),
     createTag: ownerProcedure
@@ -30,15 +37,24 @@ export const restaurantRouter = createTRPCRouter({
         .mutation(async ({ input, ctx }) => {
             const { user: { restaurantId } } = ctx.session
             await restaurantTagEntities.createRestaurantTag({
-                restaurantId: restaurantId!,
+                tag: { restaurantId: restaurantId },
                 translations: input.translations
             })
             return true
         }),
-    getAllTags: ownerProcedure
+    updateTag: ownerProcedure
+        .input(restaurantTagValidator.updateRestaurantTagSchema)
+        .mutation(async ({ input }) => {
+            await restaurantTagEntities.updateRestaurantTagTranslations({
+                id: input.id,
+                translations: input.translations
+            })
+            return true
+        }),
+    getAlltags: ownerProcedure
         .input(restaurantTagValidator.getAllRestaurantTagsSchema)
         .query(async ({ input }) => {
-            const tags = await restaurantTagEntities.getAllRestaurantTags(input)
+            const tags = await restaurantTagEntities.getAllRestaurantTags2(input)
             return tags
         }),
     deleteTag: ownerProcedure

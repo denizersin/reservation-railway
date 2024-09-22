@@ -13,7 +13,7 @@ export default async function Layout({
 
     return (
         <RoleRequiredPage
-            roles={[EnumUserRole.owner, EnumUserRole.admin]}
+            roles={[EnumUserRole.owner]}
             redirectPath="/">
             <OwnerLayout>
                 {children}

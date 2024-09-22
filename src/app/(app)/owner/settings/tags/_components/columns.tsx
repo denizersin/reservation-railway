@@ -7,20 +7,30 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TRestaurantTagTranslation } from "@/server/db/schema/restaurant-tags"
+import { TRestaurantTagTranslation, TRestaurantTagWithTranslations } from "@/server/db/schema/restaurant-tags"
 import { IconDotsVertical } from "@tabler/icons-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { useState } from "react"
 import { TagCreateModal } from "./tags-crud-modal"
 
-export const columns: ColumnDef<TRestaurantTagTranslation>[] = [
+export const columns: ColumnDef<TRestaurantTagWithTranslations>[] = [
     {
-        accessorKey: "name",
+        id: "name",
         header: "Name",
+        cell: ({ row }) => {
+            const tagTrns = row.original.translations?.[0]
+            if (!tagTrns) return null
+            return tagTrns.name
+        }
     },
-    {
-        accessorKey: "code",
+    {   
+        id: "code",
         header: "Code",
+        cell: ({ row }) => {
+            const tagTrns = row.original.translations?.[0]
+            if (!tagTrns) return null
+            return tagTrns.code
+        }
     },
     {
         id: "actions",
@@ -43,7 +53,7 @@ export const columns: ColumnDef<TRestaurantTagTranslation>[] = [
                         <DropdownMenuContent>
                             <DropdownMenuItem onClick={() => {
                                 setIsUpdateModalOpen(true)
-                                setEditTagId(tag.tagId)
+                                setEditTagId(tag.id)
                             }}>
                                 Edit
                             </DropdownMenuItem>

@@ -23,18 +23,16 @@ const Page = async (props: Props) => {
     const reservationStatues = await db.query.tblReserVationStatus.findMany()
 
     console.log(
-        reservationStatues,'reservationStatues',
+        reservationStatues, 'reservationStatues',
     )
 
     return (
-        <MaxWidthWrapper>
-            <GeneralSettings
-                meals={meals}
-                countries={countries}
-                restaurantLanguages={restauratnLanguages}
-                reservationStatues={reservationStatues}
-            />
-        </MaxWidthWrapper>
+        <GeneralSettings
+            meals={meals}
+            countries={countries}
+            restaurantLanguages={restauratnLanguages}
+            reservationStatues={reservationStatues}
+        />
 
     )
 }

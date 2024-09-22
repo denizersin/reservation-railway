@@ -1,34 +1,27 @@
 import { db } from "@/server/db"
-import { tblRestaurantTag, tblRestaurantTagTranslation, TRestaurantTagInsert, TRestaurantTagTranslationInsert } from "@/server/db/schema/restaurant-tags"
+import { tblRestaurantTag, tblRestaurantTagTranslation, TRestaurantTagInsert, TRestaurantTagInsretWithTranslationsInsert, TRestaurantTagTranslationInsert, TRestaurantTagWithTranslations, TRestaurantTagWithTranslationsUpdate } from "@/server/db/schema/restaurant-tags"
+import { TPagination } from "@/server/types/types"
 import TRestaurantTagValidator from "@/shared/validators/restaurant-tag"
 import { and, eq, like } from "drizzle-orm"
 
 
 export const createRestaurantTag = async ({
-    translations,
-    restaurantId
-}: {
-    restaurantId: number,
-    translations: TRestaurantTagValidator.createRestaurantFormSchema['translations']
-}) => {
+    tag,
+    translations
+}: TRestaurantTagInsretWithTranslationsInsert) => {
     if (translations.length === 0) return;
-    console.log('cas1')
-
-    const [newTag] = await db.insert(tblRestaurantTag).values({
-        restaurantId,
-
-    }).$returningId()
-    console.log('cas2')
+    const [newTag] = await db.insert(tblRestaurantTag).values(tag).$returningId()
     if (!newTag) {
         throw new Error('Tag not created')
     }
+    if (translations.length === 0) return;
     const [translationId] = await db.insert(tblRestaurantTagTranslation).values(
         translations.map((t) => ({
             ...t,
             tagId: newTag.id
         }))
-
     ).$returningId()
+
 
 }
 
@@ -51,9 +44,45 @@ export const getRestaurantTagTranslationsById = async ({
     return translations
 }
 
-export const getAllRestaurantTags = async ({
+export const getRestaurantTagWithTrnsById = async ({
+    tagId
+}: {
+    tagId: number
+}): Promise<TRestaurantTagWithTranslations> => {
+    const tag = await db.query.tblRestaurantTag.findFirst({
+        where: eq(tblRestaurantTag.id, tagId),
+        with: {
+            translations: true
+        }
+    })
+    return tag!
+}
+
+export const updateRestaurantTagTranslations = async ({
+    id,
+    translations
+}: TRestaurantTagWithTranslationsUpdate) => {
+
+    await db.delete(tblRestaurantTagTranslation).where(eq(tblRestaurantTagTranslation.tagId, id))
+
+    await db.insert(tblRestaurantTagTranslation).values(
+        translations.map((t) => ({
+            ...t,
+            tagId: id
+        }))
+    )
+
+
+}
+
+
+
+
+
+export const getAllRestaurantTags2 = async ({
     limit, page, languageId, name
-}: TRestaurantTagValidator.getAllRestaurantTagsSchema) => {
+}: TRestaurantTagValidator.getAllRestaurantTagsSchema)
+    : Promise<TPagination<TRestaurantTagWithTranslations>> => {
 
     const offset = (page - 1) * limit
 
@@ -65,17 +94,26 @@ export const getAllRestaurantTags = async ({
         whereConditions.push(like(tblRestaurantTagTranslation.name, `%${name}%`))
     }
 
-    let query = db.query.tblRestaurantTagTranslation.findMany({
-        where: and(...whereConditions),
+    let query = db.query.tblRestaurantTag.findMany({
+        with: {
+            translations: {
+                where: and(...whereConditions)
+            }
+        },
         limit,
         offset
     })
-
-    const countQuery = db.query.tblRestaurantTagTranslation.findMany({
-        where: whereConditions.length > 0 ? and(...whereConditions) : undefined
+    const countQuery = db.query.tblRestaurantTag.findMany({
+        with: {
+            translations: {
+                where: and(...whereConditions)
+            }
+        }
     })
+    console.log('1111')
 
     const totalCount = await countQuery.execute().then(res => res.length)
+    console.log('222')
 
     const tags = await query
 
@@ -90,4 +128,3 @@ export const getAllRestaurantTags = async ({
     }
 
 }
-

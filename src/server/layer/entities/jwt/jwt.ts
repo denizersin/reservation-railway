@@ -61,6 +61,7 @@ export const getServerSession = async (): Promise<TSession | null> => {
     const cookieStore = cookies();
     const token = cookieStore.get('token')?.value ?? "";
 
+
     try {
         const { payload } = await jwtVerify(token, secretKey, {
             algorithms: ['HS256'],

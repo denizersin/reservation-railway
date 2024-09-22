@@ -8,6 +8,7 @@ import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { jwtBody } from "../jwt/jwt";
+import { TPagination } from "@/server/types/types";
 
 
 
@@ -86,7 +87,7 @@ export const generateJWTBody = async ({
 
     const user = await getUserById({ userId });
     const restaurant = await getUserRestaurant({ userId });
-    
+
     if (!user) {
         throw new Error('User not found');
     }
@@ -104,7 +105,8 @@ export const generateJWTBody = async ({
 
 export const getAllUsers = async ({
     page, limit, name, email, role
-}: TUserValidator.getAllUsersValidatorSchema) => {
+}: TUserValidator.getAllUsersValidatorSchema):
+    Promise<TPagination<TUser>> => {
 
     const offset = (page - 1) * limit;
 

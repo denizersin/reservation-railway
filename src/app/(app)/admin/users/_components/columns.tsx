@@ -58,10 +58,10 @@ export const columns: ColumnDef<TUser>[] = [
                         setOpen={setIsUpdateModalOpen}
                         user={{
                             id: user.id,
-                            name: user.name!,
+                            name: user.name ,
                             email: user.email,
                             role: user.role,
-                            password:user.password
+                            password: user.password
                         }}
                     />
                 </>

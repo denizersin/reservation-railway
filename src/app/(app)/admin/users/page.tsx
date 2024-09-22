@@ -15,7 +15,7 @@ const Page = (props: Props) => {
 
     const { data } = api.user.getAllUsers.useQuery({
         limit: 10,
-        page: 1
+        page: 1,
     })
 
     const users = data?.data || []

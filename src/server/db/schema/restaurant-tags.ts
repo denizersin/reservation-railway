@@ -23,6 +23,10 @@ export const restaurantTagRelations = relations(tblRestaurantTag, ({ one, many }
     restaurant: one(tblRestaurantTag, { fields: [tblRestaurantTag.restaurantId], references: [tblRestaurantTag.id] }),
 }));
 
+export const restaurantTagTranslationRelations = relations(tblRestaurantTagTranslation, ({ one, many }) => ({
+    tag: one(tblRestaurantTag, { fields: [tblRestaurantTagTranslation.tagId], references: [tblRestaurantTag.id] }),
+}));
+
 
 
 export type TRestaurantTag = typeof tblRestaurantTag.$inferSelect
@@ -31,4 +35,18 @@ export type TRestaurantTagInsert = typeof tblRestaurantTag.$inferInsert
 export type TRestaurantTagTranslation = typeof tblRestaurantTagTranslation.$inferSelect
 export type TRestaurantTagTranslationInsert = typeof tblRestaurantTagTranslation.$inferInsert
 
-export type TRestaurnatTagWithTranslation = TRestaurantTag & TRestaurantTagTranslation
+
+
+export type TRestaurantTagInsretWithTranslationsInsert = {
+    tag: TRestaurantTagInsert
+    translations: Omit<TRestaurantTagTranslationInsert, 'tagId'>[]
+}
+
+export type TRestaurantTagWithTranslations = TRestaurantTag & {
+    translations: TRestaurantTagTranslation[]
+}
+
+export type TRestaurantTagWithTranslationsUpdate = {
+    id: number,
+    translations: TRestaurantTagInsretWithTranslationsInsert['translations']
+}

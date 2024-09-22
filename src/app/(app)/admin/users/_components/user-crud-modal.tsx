@@ -22,6 +22,7 @@ export function UserCurdModal({
     user?: TUserValidator.updateUserByAdminSchema
 }) {
 
+    const { mutate } = api.user.createUser.useMutation()
 
     const isUpdate = !!user
     const queryClient = useQueryClient()
@@ -41,7 +42,6 @@ export function UserCurdModal({
     const updateUserMutation = api.user.updateUser.useMutation({
         onSuccess: onSuccessCrud
     })
-
 
 
     const form = useForm<TUserValidator.registerSchema>({
@@ -92,7 +92,7 @@ export function UserCurdModal({
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input {...field} />
+                                        <Input  {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -118,7 +118,9 @@ export function UserCurdModal({
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input type="password" {...field} />
+                                        <Input type="password" {...field}
+
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

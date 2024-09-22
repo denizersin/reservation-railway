@@ -27,7 +27,6 @@ const Page = ({ }: IPageProps) => {
                 <Button children="qweqwe" />
                 <div className="p-4">
                     <h1 className="text-2xl font-bold mb-4">Welcome to Home</h1>
-                    <p>{session?.user?.email}</p>
                     <p>{isAuthenticated ? 'Authenticated' : 'Not Authenticated'}</p>
                     <Button>
                         Click

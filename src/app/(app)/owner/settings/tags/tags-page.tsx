@@ -24,11 +24,12 @@ export const TagsPage = ({
 
     console.log(restaurantLanguagesData, 'restaurantLanguagesData')
 
+
     const {
         data,
         isLoading,
         error,
-    } = api.restaurant.getAllTags.useQuery({
+    } = api.restaurant.getAlltags.useQuery({
         limit: 10,
         page: 1,
         languageId: languageId
@@ -37,12 +38,12 @@ export const TagsPage = ({
         enabled: Boolean(languageId)
     })
 
+
     useEffect(() => {
         if (!languageId) {
             setLanguageId(restaurantLanguagesData?.[0]?.language.id || 0)
         }
     }, [restaurantLanguagesData])
-
 
 
 

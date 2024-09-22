@@ -16,6 +16,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
+      <head>
+        <meta name="theme-color" content="#fff" />
+
+      </head>
       <body className="min-h-dvh">
         <NextTopLoader
           // color="bla"

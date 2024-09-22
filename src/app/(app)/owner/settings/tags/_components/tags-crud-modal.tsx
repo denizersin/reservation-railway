@@ -1,16 +1,14 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/custom/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/custom/button'
 import { api } from '@/server/trpc/react'
+import TRestaurantTagValidator, { restaurantTagValidator } from '@/shared/validators/restaurant-tag'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
-import TRestaurantTagValidator, { restaurantTagValidator } from '@/shared/validators/restaurant-tag'
-import { TRestaurantLanguages } from "@/server/db/schema/restaurant"
-import { TRestaurantTagTranslation } from '@/server/db/schema/restaurant-tags'
 import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 
 type Props = {
     isOpen: boolean
@@ -21,18 +19,29 @@ type Props = {
 export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
     const queryClient = useQueryClient()
 
+    const onSuccessCrud = () => {
+        queryClient.invalidateQueries({
+            queryKey: getQueryKey(api.restaurant.getAlltags)
+        })
+        setOpen(false)
+    }
+
     const createTagMutation = api.restaurant.createTag.useMutation({
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.restaurant.getAllTags)
-            })
-            setOpen(false)
+            onSuccessCrud()
         }
     })
 
+    const updateTagMutation = api.restaurant.updateTag.useMutation({
+        onSuccess: () => {
+            onSuccessCrud()
+        }
+    })
+
+
     const {
         data: restaurantLanguages
-    }= api.restaurant.getLanguages.useQuery()
+    } = api.restaurant.getLanguages.useQuery()
 
 
     const form = useForm<TRestaurantTagValidator.createRestaurantFormSchema>({
@@ -47,7 +56,11 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
     })
 
     const onSubmit = (data: TRestaurantTagValidator.createRestaurantFormSchema) => {
-        createTagMutation.mutate(data)
+        if (tagId) {
+            updateTagMutation.mutate({ id: tagId, translations: data.translations })
+        } else {
+            createTagMutation.mutate(data)
+        }
     }
 
     console.log(tagId, 'tagId')
@@ -74,8 +87,8 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
                 }
             })
 
-            console.log(newTraanslations, 'newTraanslations')
-        form.reset({translations: newTraanslations})
+        console.log(newTraanslations, 'newTraanslations')
+        form.reset({ translations: newTraanslations })
 
 
     }, [translations])

@@ -34,7 +34,7 @@ const Page = ({ }: IPageProps) => {
     useEffect(() => {
         if (isLoading) return
         if (isAuthenticated) {
-            router.push('/home')
+            router.push('/')
         }
     }, [isAuthenticated]);
 

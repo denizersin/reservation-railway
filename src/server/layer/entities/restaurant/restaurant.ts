@@ -173,26 +173,25 @@ export const getRestaurantLanguages = async ({
 
 
 export const updateRestaurantMeals = async ({
-    restaurantId,
+    generalSettingID,
     meals
 }: {
-    restaurantId: number,
-    meals?: number[]
+    generalSettingID: number,
+    meals: number[]
 }) => {
 
-    console.log(restaurantId, meals, 'restaurantId, meals')
+
 
     //update meals
-    if (meals && meals.length > 0) {
-        await db.delete(tblRestaurantGeneralSettingToMeal)
-            .where(eq(tblRestaurantGeneralSettingToMeal.restaurantSettingId, restaurantId))
+    await db.delete(tblRestaurantGeneralSettingToMeal)
+        .where(eq(tblRestaurantGeneralSettingToMeal.restaurantSettingId, generalSettingID))
+    if (meals.length > 0) {
         await db.insert(tblRestaurantGeneralSettingToMeal)
-            .values(meals.map(mealId => ({ mealId, restaurantSettingId: restaurantId })))
+            .values(meals.map(mealId => ({ mealId, restaurantSettingId: generalSettingID })))
     }
 
+
 }
-
-
 
 
 export const updateRestaurantLanguages = async ({
