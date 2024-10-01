@@ -5,18 +5,16 @@ import { ColumnDef } from "@tanstack/react-table"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
+import { Button } from "@/components/custom/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/custom/button"
-import { IconDotsVertical, IconMenu } from "@tabler/icons-react"
-import { UserCurdModal } from "./user-crud-modal"
+import { IconDotsVertical } from "@tabler/icons-react"
 import { useState } from "react"
+import { UserCurdModal } from "./user-crud-modal"
 
 export const columns: ColumnDef<TUser>[] = [
     {

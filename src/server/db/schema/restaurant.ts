@@ -6,18 +6,24 @@ import { tblRestaurantGeneralSetting } from './restaurant-general-setting';
 import { tblUser } from './user';
 import { tblLanguage, TLanguage } from './predefined';
 import { tblRestaurantTag } from './restaurant-tags';
+import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals } from './restaurant-assets';
 
 export const tblRestaurant = mysqlTable('restaurant', {
     id: int('id').autoincrement().primaryKey(),
     phoneNumber: varchar('phone_number', { length: 20 }).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     name: varchar('name', { length: 255 }).notNull(),
-    ownerId: int('owner_id').notNull()
+    ownerId: int('owner_id').notNull(),
 
 },);
 
 export const restaurantRelations = relations(tblRestaurant, ({ many, one }) => ({
     translations: many(tblRestaurantTranslations),
+    meals: many(tblRestaurantMeals),
+    mealHours: many(tblMealHours),
+    mealDays: many(tblRestaurantMealDays),
+
+
     restaurantGeneralSetting: one(tblRestaurantGeneralSetting),
     owner: one(tblUser, { fields: [tblRestaurant.ownerId], references: [tblUser.id] }),
     languages: many(tblRestaurantLanguage),
@@ -42,15 +48,6 @@ export const tblRestaurantTranslations = mysqlTable('restaurant_translation', {
 }));
 
 
-export const tblReservation = mysqlTable('reservation', {
-    id: int('id').autoincrement().primaryKey(),
-    restaurantId: int('restaurant_id').notNull(),
-    userId: int('user_id').notNull(),
-    reservationDate: datetime('reservation_date').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-}, (t) => ({
-    unq: unique('unique_user_reservation').on(t.userId, t.reservationDate),
-}));
 
 
 export const tblRestaurantLanguage = mysqlTable('restaurant_language', {

@@ -7,6 +7,7 @@ import { restaurantTagEntities } from "@/server/layer/entities/restaurant-tag";
 import { z } from "zod";
 import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
+import { restaurantAssetsValidator } from "@/shared/validators/restaurant/restauran-assets";
 
 export const restaurantRouter = createTRPCRouter({
     updateRestaurantGeneralSettings: ownerProcedure
@@ -21,14 +22,14 @@ export const restaurantRouter = createTRPCRouter({
     getRestaurantGeneralSettings: ownerProcedure
         .query(async ({ ctx }) => {
             const { user: { restaurantId } } = ctx.session
-            console.log(restaurantId,'ctx session restaurantId')
+            console.log(restaurantId, 'ctx session restaurantId')
             const generalSettings = await restaurantSettingEntities.getGeneralSettings({ restaurantId: restaurantId! })
             return generalSettings
         }),
-        getRestaurantGeneralSettingsToUpdate: ownerProcedure
+    getRestaurantGeneralSettingsToUpdate: ownerProcedure
         .query(async ({ ctx }) => {
             const { user: { restaurantId } } = ctx.session
-            console.log(restaurantId,'ctx session restaurantId')
+            console.log(restaurantId, 'ctx session restaurantId')
             const generalSettings = await restaurantSettingEntities.getGeneralSettingsToUpdate({ restaurantId: restaurantId! })
             return generalSettings
         }),
@@ -81,4 +82,56 @@ export const restaurantRouter = createTRPCRouter({
             await restaurantEntities.updateRestaurantLanguages({ restaurantId, languages: input.languages })
             return true
         }),
+    getMealIDs: ownerProcedure.query(async ({ ctx }) => {
+        const { session: { user: { restaurantId } } } = ctx
+        return await restaurantEntities.getRestaurantMealIds({ restaurantId })
+    }),
+    getRestaurantMeals: ownerProcedure.query(async ({ ctx }) => {
+        const { session: { user: { restaurantId } } } = ctx
+        return await restaurantEntities.getRestaurantMeals({ restaurantId })
+    }),
+    updateRestaurantMeals: ownerProcedure
+        .input(restaurantAssetsValidator.restaurantMealsCrudSchema)
+        .mutation(async ({ input, ctx }) => {
+            const { session: { user: { restaurantId } } } = ctx
+            await restaurantUseCases.updateRestaurantMeals({ restaurantId: restaurantId, mealIds: input.mealIds })
+            return true
+        }),
+    getRestaurantMealDays: ownerProcedure.query(async ({ ctx }) => {
+        const { session: { user: { restaurantId } } } = ctx
+        return await restaurantEntities.getRestaurantMealDays({ restaurantId: restaurantId })
+    }),
+    updateRestaurantMealDays: ownerProcedure
+        .input(restaurantAssetsValidator.restaurantMealDaysCrudSchema)
+        .mutation(async ({ input, ctx }) => {
+            const { session: { user: { restaurantId } } } = ctx
+            await restaurantUseCases.updateRestaurantMealDays({ restaurantId: restaurantId, mealDays: input.mealDays })
+            return true
+        }),
+
+    createRestaurantMealHours: ownerProcedure
+        .input(restaurantAssetsValidator.restaurantMealHoursAddSChema)
+        .mutation(async ({ input, ctx }) => {
+            const { session: { user
+                : { restaurantId } } } = ctx
+            await restaurantUseCases.createRestaurantMealHours({ restaurantId: restaurantId, mealHours: input.mealHours })
+            return true
+        }),
+    deleteRestaurantMealHourById: ownerProcedure
+        .input(z.object({ mealHourId: z.number() }))
+        .mutation(async ({ input }) => {
+            await restaurantUseCases.deleteRestaurantMealHour({ mealHourId: input.mealHourId })
+            return true
+        }),
+    getRestaurantMealHours: ownerProcedure.query(async ({ ctx }) => {
+        const { session: { user: { restaurantId } } } = ctx
+        return await restaurantUseCases.getMealHours({ restaurantId })
+    }),
+    updateMealHour: ownerProcedure
+        .input(restaurantAssetsValidator.restaurantMealHoursUpdateSchema)
+        .mutation(async ({ input }) => {
+            await restaurantUseCases.updateMealHour({ data: input })
+            return true
+        })
+
 });

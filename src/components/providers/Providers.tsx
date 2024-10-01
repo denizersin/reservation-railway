@@ -6,6 +6,7 @@ import { AuthProvider } from './AuthProvider';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import LoadingModalWrapper from '../modal/loading';
 import { ThemeProvider } from './theme-provider';
+import { TooltipProvider } from '../ui/tooltip';
 
 
 interface IProvidersProps {
@@ -16,11 +17,13 @@ const Providers = ({ children }: IProvidersProps) => {
     return (
         <TRPCReactProvider>
             <ThemeProvider>
-                <AuthProvider>
-                    {children}
-                    <ReactQueryDevtools initialIsOpen={false} />
-                    <LoadingModalWrapper />
-                </AuthProvider>
+                <TooltipProvider>
+                    <AuthProvider>
+                        {children}
+                        <ReactQueryDevtools initialIsOpen={false} />
+                        <LoadingModalWrapper />
+                    </AuthProvider>
+                </TooltipProvider>
             </ThemeProvider>
 
         </TRPCReactProvider>

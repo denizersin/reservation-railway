@@ -1,5 +1,10 @@
 
+import MaxWidthWrapper from "@/components/layout/max-width-wrapper";
 import Sidebar from "@/components/layout/sidebar";
+import { TopNav } from "@/components/layout/top-nav";
+import { Search } from "@/components/search";
+import ThemeSwitch from "@/components/theme-switch";
+import { UserNav } from "@/components/user-nav";
 import { ownerSidelinks } from "@/data/owner-side-links";
 import { db } from '@/server/db';
 import { tblRestaurant } from '@/server/db/schema/restaurant';
@@ -8,13 +13,6 @@ import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { restaurantEntities } from '@/server/layer/entities/restaurant';
 import { eq } from 'drizzle-orm';
 import { SettingDataProvider } from "./settings/setting-data-provider";
-import MaxWidthWrapper from "@/components/layout/max-width-wrapper";
-import { TopNav } from "@/components/layout/top-nav";
-import { Search } from "@/components/search";
-import ThemeSwitch from "@/components/theme-switch";
-import { UserNav } from "@/components/user-nav";
-import RoleRequiredComponent from "@/components/ProtectedComponents/RoleRequiredComponent";
-import { EnumUserRole } from "@/shared/enums/predefined-enums";
 
 export default async function OwnerLayout({
     children,
@@ -50,8 +48,9 @@ export default async function OwnerLayout({
                     sidelinks={ownerSidelinks}
                 />
                 <MaxWidthWrapper className="max-w-screen-2xl md:px-10 main h-screen overflow-y-scroll flex-1">
-                    <div className="flex py-8">
+                    <div className="flex pt-5 pb-5">
                         <TopNav links={topNav} />
+
                         <div className='ml-auto flex items-center space-x-4'>
                             <Search />
                             <ThemeSwitch />

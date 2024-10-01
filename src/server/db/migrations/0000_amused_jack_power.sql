@@ -1,3 +1,13 @@
+CREATE TABLE `meal_day` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`meal_id` int NOT NULL,
+	`day` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `meal_day_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_meal_day` UNIQUE(`meal_id`,`day`)
+);
+--> statement-breakpoint
 CREATE TABLE `country` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`name` varchar(50) NOT NULL,
@@ -27,6 +37,34 @@ CREATE TABLE `reservation_status` (
 	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `meal_hours` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`meal_id` int NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`hour` time NOT NULL,
+	`is_open` boolean NOT NULL,
+	CONSTRAINT `meal_hours_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_meal_hours` UNIQUE(`meal_id`,`hour`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_meal_days` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`meal_id` int NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`day` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') NOT NULL,
+	`is_open` boolean NOT NULL,
+	CONSTRAINT `restaurant_meal_days_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_meal_day` UNIQUE(`meal_id`,`restaurant_id`,`day`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_meals` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`meal_id` int NOT NULL,
+	`restaurant_id` int NOT NULL,
+	CONSTRAINT `restaurant_meals_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_meal_and_restaurant` UNIQUE(`meal_id`,`restaurant_id`)
+);
+--> statement-breakpoint
 CREATE TABLE `restaurant_general_setting` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
@@ -36,14 +74,6 @@ CREATE TABLE `restaurant_general_setting` (
 	`default_country_id` int NOT NULL,
 	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
 	CONSTRAINT `restaurant_general_setting_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
-CREATE TABLE `restaurant_general_setting_to_meal` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`meal_id` int NOT NULL,
-	`restaurant_general_setting_id` int NOT NULL,
-	CONSTRAINT `restaurant_general_setting_to_meal_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_meal_and_rst_sttng` UNIQUE(`meal_id`,`restaurant_general_setting_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `restaurant_tags` (
@@ -60,16 +90,6 @@ CREATE TABLE `restaurant_tag_translation` (
 	`language_id` int NOT NULL,
 	CONSTRAINT `restaurant_tag_translation_id` PRIMARY KEY(`id`),
 	CONSTRAINT `unique_tag_translation` UNIQUE(`tag_id`,`language_id`)
-);
---> statement-breakpoint
-CREATE TABLE `reservation` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`user_id` int NOT NULL,
-	`reservation_date` datetime NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `reservation_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_user_reservation` UNIQUE(`user_id`,`reservation_date`)
 );
 --> statement-breakpoint
 CREATE TABLE `restaurant` (
@@ -95,6 +115,30 @@ CREATE TABLE `restaurant_translation` (
 	`language_code` enum('en','tr') NOT NULL DEFAULT 'tr',
 	`description` varchar(500) NOT NULL,
 	CONSTRAINT `restaurant_translation_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `room` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`name` varchar(256) NOT NULL,
+	`description` varchar(256) NOT NULL,
+	`is_waiting_room` boolean NOT NULL DEFAULT false,
+	CONSTRAINT `room_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `table` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`room_id` int NOT NULL,
+	`no` varchar(256) NOT NULL,
+	`order` int NOT NULL,
+	`name` varchar(256) NOT NULL,
+	`capacity` int NOT NULL,
+	`min_capacity` int NOT NULL,
+	`max_capacity` int NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`shape` enum('square','rectangle','round') NOT NULL DEFAULT 'rectangle',
+	CONSTRAINT `table_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_room_table` UNIQUE(`room_id`,`name`)
 );
 --> statement-breakpoint
 CREATE TABLE `refresh_token` (

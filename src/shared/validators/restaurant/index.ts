@@ -10,7 +10,6 @@ const generealSettingSchema = z.object({
     defaultLanguageId: z.number().int().positive().optional(),
     defaultCountryId: z.number().int().positive().optional(),
     tableView: z.enum(getEnumValues(EnumTableViewType)).optional(),
-    meals: z.array(z.number().int().positive()).optional()
 })
 
 
@@ -20,6 +19,7 @@ const updateRestaurantGeneralSettingSchema = z.object({
     generalSettingID: z.number().int().positive(),
     generalSetting: generealSettingSchema
 })
+
 
 
 

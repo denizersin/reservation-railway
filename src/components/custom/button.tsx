@@ -37,7 +37,10 @@ const buttonVariants = cva(
 
 interface ButtonPropsBase
     extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> { }
+    VariantProps<typeof buttonVariants> {
+    tooltip?: string
+    tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
+}
 
 type ButtonProps = ButtonPropsBase &
     (
@@ -73,8 +76,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         } = props
 
         return (
+
             <button
-                className={cn(buttonVariants({ variant, size, className }))}
+                className={cn(buttonVariants({ variant, size, className }), 'relative group')}
                 disabled={loading || disabled}
                 ref={ref}
                 {...otherProps}
@@ -89,6 +93,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 {rightSection && loading && (
                     <IconLoader2 className='ml-2 h-4 w-4 animate-spin' />
                 )}
+
+                {props.tooltip &&
+                    !disabled && (
+                        <div className={cn('absolute -top-8 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity',{
+                            'left-0 translate-x-0': props.tooltipPosition === 'right',
+                        })}>
+                            {props.tooltip}
+                        </div>
+                    )
+                }
+
             </button>
         )
     }

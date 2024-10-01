@@ -26,12 +26,6 @@ async function initDb() {
         //     }
         // })
 
-        await restaurantEntities.setDefaultsToRestaurant({
-            restaurantId:1
-        })
-
-        console.log('setting defaults to restaurant')
-
 
 
     }

@@ -112,7 +112,7 @@ export const GeneralSettings = ({ }: Props) => {
                     )}
                 />
 
-                <FormField
+                {/* <FormField
                     control={form.control}
                     name="meals"
                     render={() => (
@@ -155,7 +155,7 @@ export const GeneralSettings = ({ }: Props) => {
                                 />
                             ))}
                         </FormItem>)}
-                />
+                /> */}
 
 
 

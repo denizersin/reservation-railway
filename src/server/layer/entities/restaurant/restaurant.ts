@@ -1,11 +1,14 @@
 import { db } from '@/server/db';
-import { tblRestaurantLanguage, tblRestaurantTranslations, tblRestaurant, TRestaurantInsert, TRestaurantLanguages } from '@/server/db/schema/restaurant';
-import { tblRestaurantGeneralSetting, tblRestaurantGeneralSettingToMeal, TRestaurantGeneralSettingInsert, TUpdateGeneralSetting } from '@/server/db/schema/restaurant-general-setting';
-import { EnumLanguage, EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
-import { and, eq } from 'drizzle-orm';
+import { tblMeal } from '@/server/db/schema/predefined';
+import { tblRestaurant, tblRestaurantLanguage, tblRestaurantTranslations, TRestaurantInsert, TRestaurantLanguages } from '@/server/db/schema/restaurant';
+import { tblRestaurantGeneralSetting } from '@/server/db/schema/restaurant-general-setting';
+import { EnumDays, EnumLanguage, EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
-import { tblMeal, TMeal } from '@/server/db/schema/predefined';
 import { restaurantSettingEntities } from '../restaurant-setting';
+import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals, TMealHoursAdd, TRestaurantMealDaysCrud } from '@/server/db/schema/restaurant-assets';
+import { formatimeWithSeconds, formatTimeWithoutSeconds, getEnumValues } from '@/server/utils/server-utils';
+import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
 
 export const createRestaurant = async ({
     restaurant,
@@ -101,9 +104,9 @@ export const setDefaultsToRestaurant = async ({
         }))!
 
         //add default meal to restaurant
-        await db.insert(tblRestaurantGeneralSettingToMeal).values([{
+        await db.insert(tblRestaurantMeals).values([{
             mealId: dinner.id,
-            restaurantSettingId: generalSetting.id
+            restaurantId: restaurantId
         },])
 
 
@@ -119,6 +122,18 @@ export const setDefaultsToRestaurant = async ({
             }
 
         ])
+
+        //restaurant meal days
+        const days = getEnumValues(EnumDays);
+
+        await db.insert(tblRestaurantMealDays).values(
+            days.map(day => ({
+                mealId: dinner.id,
+                restaurantId: restaurantId,
+                day: day,
+                isOpen: true
+            }))
+        )
 
     }
     catch (e) {
@@ -173,24 +188,40 @@ export const getRestaurantLanguages = async ({
 
 
 export const updateRestaurantMeals = async ({
-    generalSettingID,
-    meals
+    restaurantId,
+    mealIds
 }: {
-    generalSettingID: number,
-    meals: number[]
+    restaurantId: number,
+    mealIds: number[]
 }) => {
+    const restaurantMeals = await getRestaurantMealIds({ restaurantId })
+    const newMeals = mealIds.filter(mealId => !restaurantMeals.includes(mealId))
+    const deletedMeals = restaurantMeals.filter(mealId => !mealIds.includes(mealId))
 
-
-
-    //update meals
-    await db.delete(tblRestaurantGeneralSettingToMeal)
-        .where(eq(tblRestaurantGeneralSettingToMeal.restaurantSettingId, generalSettingID))
-    if (meals.length > 0) {
-        await db.insert(tblRestaurantGeneralSettingToMeal)
-            .values(meals.map(mealId => ({ mealId, restaurantSettingId: generalSettingID })))
+    //delete meals
+    if (deletedMeals.length > 0) {
+        await db.delete(tblRestaurantMeals)
+            .where(and(
+                eq(tblRestaurantMeals.restaurantId, restaurantId),
+                inArray(tblRestaurantMeals.mealId, deletedMeals)
+            ))
     }
 
+    if (newMeals.length > 0) {
+        await db.insert(tblRestaurantMeals)
+            .values(newMeals.map(mealId => ({ mealId, restaurantId: restaurantId })))
+        const days = getEnumValues(EnumDays)
 
+        //add meal days
+        await db.insert(tblRestaurantMealDays)
+            .values(newMeals.flatMap(mealId => days.map(day => ({
+                mealId,
+                restaurantId,
+                day,
+                isOpen: true
+            })))
+            )
+    }
 }
 
 
@@ -209,4 +240,175 @@ export const updateRestaurantLanguages = async ({
         await db.insert(tblRestaurantLanguage)
             .values(languages.map(languageId => ({ languageId, restaurantId })))
     }
+}
+
+
+export const getRestaurantMealIds = async ({
+    restaurantId
+}: { restaurantId: number }) => {
+    const restaurantMeals = await db.query.tblRestaurantMeals.findMany({
+        where: eq(tblRestaurantMeals.restaurantId, restaurantId),
+        with: {
+            meal: true
+        }
+    })
+
+    const mealIds = restaurantMeals.map(({ meal }) => meal.id)
+
+    return mealIds
+}
+export const getRestaurantMeals = async ({
+    restaurantId
+}: { restaurantId: number }) => {
+    const restaurantMeals = await db.query.tblRestaurantMeals.findMany({
+        where: eq(tblRestaurantMeals.restaurantId, restaurantId),
+        with: {
+            meal: true
+        }
+    })
+
+
+
+    return restaurantMeals
+}
+
+
+export const updateRestaurantMealDays = async ({
+    restaurantId,
+    mealDays
+}: {
+    restaurantId: number,
+    mealDays: TRestaurantMealDaysCrud['mealDays']
+}) => {
+
+    //update meal days
+
+    const promises = mealDays.map(async mealDay => {
+        //update without deleting
+        await db.update(tblRestaurantMealDays).set(mealDay)
+            .where(and(
+                eq(tblRestaurantMealDays.mealId, mealDay.mealId),
+                eq(tblRestaurantMealDays.day, mealDay.day))
+            )
+
+    })
+
+    await Promise.all(promises)
+
+}
+
+
+export const getRestaurantMealDays = async ({
+    restaurantId
+}: { restaurantId: number }) => {
+    const restaurantMealDays = await db.query.tblRestaurantMealDays.findMany({
+        where: eq(tblRestaurantMealDays.restaurantId, restaurantId),
+        with: {
+            meal: true
+        }
+    })
+
+    return restaurantMealDays
+}
+
+export const createMealHours = async ({
+    restaurantId,
+    mealHours
+}: {
+    restaurantId: number,
+    mealHours: TMealHoursAdd['mealHours']
+}) => {
+
+    const parsedMealHours = mealHours.map(mealHour => ({
+        ...mealHour,
+        hour: formatimeWithSeconds(mealHour.hour)
+    }))
+
+    if (parsedMealHours.length === 0) return;
+
+    const existingMealHours = await db.query.tblMealHours.findMany({
+        where: and(eq(tblMealHours.restaurantId, restaurantId),
+            eq(tblMealHours.mealId, parsedMealHours[0]!.mealId))
+    })
+
+    const filteredMealHours = parsedMealHours.filter(mealHour => !existingMealHours.some(existingMealHour => (existingMealHour.hour) === mealHour.hour))
+
+    if(filteredMealHours.length === 0) return;
+    
+    await db.insert(tblMealHours).values(
+        filteredMealHours.map(mealHour => ({
+            ...mealHour,
+            restaurantId
+        }))
+    )
+}
+
+export const deleteMealHourById = async ({
+    mealHourId
+}: {
+    mealHourId: number
+}) => {
+    await db.delete(tblMealHours).where(eq(tblMealHours.id, mealHourId))
+}
+
+export const getMealHours = async ({
+    restaurantId
+}: {
+    restaurantId: number
+}) => {
+    const mealHours = await db.query.tblMealHours.findMany({
+        where: eq(tblMealHours.restaurantId, restaurantId),
+        with: {
+            meal: true
+        },
+
+    })
+
+    const formattedMealHours = mealHours.map(mealHour => ({
+        ...mealHour,
+        hour: formatTimeWithoutSeconds(mealHour.hour)
+    }))
+
+    const restaurantMeal = await db.query.tblRestaurantMeals.findMany({
+        where: eq(tblRestaurantMeals.restaurantId, restaurantId),
+        with: {
+            meal: true
+        }
+    })
+
+
+    const groupByMealId = formattedMealHours.reduce((acc, mealHour) => {
+        acc[mealHour.mealId] = acc[mealHour.mealId] || []
+        acc[mealHour.mealId]!.push(mealHour)
+        return acc
+    }, {} as { [key: number]: typeof formattedMealHours })
+
+
+    const Data = restaurantMeal.map((restaurantMeal) => ({
+        meal: restaurantMeal.meal,
+        mealHours: groupByMealId[restaurantMeal.mealId]
+    }))
+
+
+    return Data
+}
+
+export const updateMealHour = async ({
+    data
+}: {
+    data: TRestaurantAssetsValidator.restaurantMealHoursUpdateSchema
+}) => {
+
+    const {
+        mealHourId,
+        data: mealHourData
+    } = data
+    const hour = mealHourData.hour ? formatTimeWithoutSeconds(mealHourData.hour) : undefined
+
+    if (Object.keys(mealHourData).length === 0) return;
+
+    await db.update(tblMealHours).set({
+        ...mealHourData,
+        hour
+    }).where(eq(tblMealHours.id, mealHourId))
 }

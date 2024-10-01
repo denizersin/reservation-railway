@@ -7,6 +7,9 @@ import * as restaurantSettingSchema from "./restaurant-general-setting"
 import * as  predefinedTablesShema from "./predefined"
 
 import * as restaurantTagSchema from "./restaurant-tags"
+import * as restaurantAssetsSchemas from "./restaurant-assets"
+
+
 
 
 export const schema = {
@@ -14,7 +17,8 @@ export const schema = {
     ...restaurantSchema,
     ...restaurantSettingSchema,
     ...predefinedTablesShema,
-    ...restaurantTagSchema
+    ...restaurantTagSchema,
+    ...restaurantAssetsSchemas
 }
 
 

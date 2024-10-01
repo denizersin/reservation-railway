@@ -1,5 +1,5 @@
 import { jwtEntities } from '@/server/layer/entities/jwt';
-import { TEnumUserRole } from '@/shared/enums/predefined-enums';
+import { EnumUserRole, TEnumUserRole } from '@/shared/enums/predefined-enums';
 import { redirect } from 'next/navigation';
 
 export default async function RoleRequiredPage({
@@ -8,7 +8,7 @@ export default async function RoleRequiredPage({
     redirectPath
 }: {
     children: React.ReactElement,
-    roles: TEnumUserRole[],
+    roles: EnumUserRole[],
     redirectPath: string
 }): Promise<React.ReactElement> {
 

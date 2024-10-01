@@ -1,8 +1,6 @@
 import { db } from '@/server/db';
-import { tblRestaurant } from '@/server/db/schema/restaurant';
 import { tblRestaurantGeneralSetting, TUpdateGeneralSetting } from '@/server/db/schema/restaurant-general-setting';
 import { eq } from 'drizzle-orm';
-import { updateRestaurantMeals } from '../restaurant/restaurant';
 
 export const getGeneralSettings = async ({
     restaurantId
@@ -13,7 +11,6 @@ export const getGeneralSettings = async ({
     const restaurantGeneralSetting = await db.query.tblRestaurantGeneralSetting.findFirst({
         where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId),
         with: {
-            meals: { with: { meal: true } },
             defaultCountry: true,
             defaultLanguage: true,
             newReservationState: true,
@@ -26,12 +23,8 @@ export const getGeneralSettings = async ({
         return
     }
 
-    const { meals } = restaurantGeneralSetting
 
-    return {
-        ...restaurantGeneralSetting,
-        meals: meals.map((m) => m.meal)
-    }
+    return restaurantGeneralSetting
 }
 
 
@@ -47,13 +40,10 @@ export const updateRestaurantGeneralSettings = async ({
 
     //seperate many 
     const {
-        meals,
 
         ...fields } = generalSetting
 
 
-    console.log(fields, 'fields')
-    console.log(meals, 'meals')
 
 
     //update general settings
@@ -63,9 +53,6 @@ export const updateRestaurantGeneralSettings = async ({
             .where(eq(tblRestaurantGeneralSetting.id, generalSettingID))
     }
 
-    if (Array.isArray(meals)) {
-        await updateRestaurantMeals({ generalSettingID, meals })
-    }
 
 
 
@@ -87,21 +74,14 @@ export const getGeneralSettingsToUpdate = async ({
 
     const restaurantGeneralSetting = await db.query.tblRestaurantGeneralSetting.findFirst({
         where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId),
-        with: {
-            meals: { with: { meal: true } },
-        }
+
     })
 
-    console.log(restaurantGeneralSetting, '12restaurantGeneralSetting')
 
     if (!restaurantGeneralSetting) {
         return
     }
 
-    const { meals } = restaurantGeneralSetting
 
-    return {
-        ...restaurantGeneralSetting,
-        meals: meals.map((m) => m.meal.id)
-    }
+    return restaurantGeneralSetting
 }

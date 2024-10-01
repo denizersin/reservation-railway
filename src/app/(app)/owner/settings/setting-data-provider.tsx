@@ -36,7 +36,7 @@ export const SettingDataProvider: React.FC<SettingDataProviderProps> = ({ childr
         initialData: reservationStatues
     })
 
-    api.restaurant.getMeals.useQuery(void {}, {
+    api.predefiend.getMeals.useQuery(void {}, {
         initialData: meals
     })
 

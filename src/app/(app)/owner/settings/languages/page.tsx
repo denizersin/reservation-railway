@@ -55,7 +55,7 @@ const Page = (props: Props) => {
                 variant="inverted"
                 defaultValue={selectedLanguages}
                 animation={2}
-                maxCount={3}
+                // maxCount={3}
                 disabled={restauranLanguageMutation.isPending}
             />
 

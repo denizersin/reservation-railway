@@ -31,13 +31,11 @@ export function getChangedFields<T extends ObjectType>(newData: T, originalData:
     const newValue = newData[key];
     const originalValue = originalData[key];
 
-    console.log(newValue, 'new')
-    console.log(originalValue, 'old')
     if (newValue !== undefined && newValue !== null) {
       if (Array.isArray(newValue) && Array.isArray(originalValue)) {
         if (newValue.length !== originalValue.length) {
           (changedFields as any)[key] = newValue;
-          return;
+          return; 
         }
         const changedArrayFields = newValue.filter((item, index) =>
           item !== undefined && item !== null &&

@@ -1,21 +1,45 @@
 import {
+    IconCalendarWeek,
+    IconClock12,
     IconHexagonNumber1,
     IconHexagonNumber2,
     IconHexagonNumber3,
-    IconSettings
+    IconLanguage,
+    IconSettings,
+    IconSquare,
+    IconTags,
+    IconUsers,
+    IconUsersGroup
 } from '@tabler/icons-react'
 import { SideLink } from './types'
 
 
 export const ownerSidelinks: SideLink[] = [
 
-
+    {
+        title: 'Reservations',
+        label: '',
+        href: '/owner/reservations',
+        icon: <IconCalendarWeek size={18} />,
+    },
+    {
+        title: 'Guests',
+        label: '',
+        href: '/owner/guests',
+        icon: <IconUsersGroup size={18} />,
+    },
     {
         title: 'Settings',
         label: '',
-        href: '/resaurant-settings',
+        href: '',
         icon: <IconSettings size={18} />,
         sub: [
+            {
+                title: 'Rooms',
+                label: '',
+                href: '/owner/settings/rooms',
+                icon: <IconSquare size={18} />,
+            },
             {
                 title: 'General',
                 label: '',
@@ -26,13 +50,25 @@ export const ownerSidelinks: SideLink[] = [
                 title: 'Tags',
                 label: '',
                 href: '/owner/settings/tags',
-                icon: <IconHexagonNumber2 size={18} />,
+                icon: <IconTags size={18} />,
+            },
+            {
+                title: 'Hours',
+                label: '',
+                href: '/owner/settings/hours',
+                icon: <IconClock12 size={18} />,
+            },
+            {
+                title: 'Personels',
+                label: '',
+                href: '/owner/settings/personels',
+                icon: <IconUsers size={18} />,
             },
             {
                 title: 'Languages',
                 label: '',
                 href: '/owner/settings/languages',
-                icon: <IconHexagonNumber3 size={18} />,
+                icon: <IconLanguage size={18} />,
             },
         ],
     },

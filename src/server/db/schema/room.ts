@@ -11,7 +11,7 @@ export const tblRoom = mysqlTable('room', {
     name: varchar('name', { length: 256 }).notNull(),
     description: varchar('description', { length: 256 }).notNull(),
     isWaitingRoom: boolean('is_waiting_room').notNull().default(false),
-
+    
 });
 export const roomRelations = relations(tblRoom, ({ one, many }) => ({
     tables: many(tblTable),

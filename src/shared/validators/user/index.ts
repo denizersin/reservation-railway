@@ -34,7 +34,7 @@ export const getAllUsersValidatorSchema = z.object({
     limit: z.number().int().positive(),
     name: z.string().optional().nullable(),
     email: z.string().optional().nullable(),
-    role: z.enum(['user', 'admin']).optional().nullable()
+    role: z.enum(getEnumValues(EnumUserRole)).optional().nullable()
 })
 
 

@@ -1,7 +1,7 @@
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
-import { boolean, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
+import { boolean, int, mysqlEnum, mysqlTable, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 
 
 
@@ -37,7 +37,6 @@ export const tblCountry = mysqlTable('country', {
     code: varchar('code', { length: 10 }).notNull(),
     phoneCode: varchar('phone_code', { length: 10 }).notNull(),
 })
-
 
 
 

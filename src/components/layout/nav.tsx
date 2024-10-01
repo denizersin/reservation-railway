@@ -90,6 +90,8 @@ function NavLink({
   subLink = false,
 }: NavLinkProps) {
   const { checkActiveNav } = useCheckActiveNav()
+
+
   return (
     <Link
       href={href}
@@ -193,7 +195,6 @@ function NavLinkIconDropdown({ title, icon, label, sub }: NavLinkProps) {
   /* Open collapsible by default
    * if one of child element is active */
   const isChildActive = !!sub?.find((s) => checkActiveNav(s.href))
-
   return (
     <DropdownMenu>
       <Tooltip delayDuration={0}>

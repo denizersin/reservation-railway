@@ -9,21 +9,14 @@ const secretKey = new TextEncoder().encode(env.JWT_SECRET)
 
 
 export const getCountries = async () => {
-
     const countries = await db.query.tblCountry.findMany()
-
     //language properties
-
     return countries
-
 }
 
 export const getLanguages = async () => {
-
     const languages = await db.query.tblLanguage.findMany()
-
     //language properties
-
     return languages
 
 }
@@ -52,13 +45,10 @@ export const getLanguageByCode = async ({
 }: {
     languageCode: string
 }) => {
-
     const language = await db.query.tblLanguage.findFirst({
         where: eq(tblLanguage.languageCode, languageCode)
     })
-
     return language
-
 }
 
 
@@ -67,31 +57,22 @@ export const getLanguageByCode = async ({
 export const getReservationStatusByStatus = async ({
     status
 }: {
-    status: keyof typeof EnumReservationStatus
+    status: EnumReservationStatus
 }) => {
-
     const reservationStatus = await db.query.tblReserVationStatus.findFirst({
         where: eq(tblReserVationStatus.status, status)
     })
-
     return reservationStatus
-
 }
 
 export const getMeals = async () => {
-
     const meals = await db.query.tblMeal.findMany()
-
     return meals
-
 }
 
 
 
 export const getReservationSatues = async () => {
-    
-        const reservationStatus = await db.query.tblReserVationStatus.findMany()
-    
-        return reservationStatus
-    
-    }
+    const reservationStatus = await db.query.tblReserVationStatus.findMany()
+    return reservationStatus
+}
