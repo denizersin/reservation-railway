@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "891552a9-eb51-49b6-8a42-d85be1e08ae7",
+  "id": "7a1e9f46-e0b3-45f1-8c70-b0adcdefe08e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "meal_day": {
@@ -221,6 +221,316 @@
         }
       },
       "uniqueConstraints": {}
+    },
+    "prepayment_message": {
+      "name": "prepayment_message",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "prepayment_message": {
+          "name": "prepayment_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prepayment_cancellation_message": {
+          "name": "prepayment_cancellation_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prepayment_reminder_message": {
+          "name": "prepayment_reminder_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prepayment_refund_message": {
+          "name": "prepayment_refund_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prepayment_received_message": {
+          "name": "prepayment_received_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "account_payment_request_message": {
+          "name": "account_payment_request_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "account_payment_success_message": {
+          "name": "account_payment_success_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "prepayment_message_id": {
+          "name": "prepayment_message_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_prepayment_message": {
+          "name": "unique_prepayment_message",
+          "columns": [
+            "restaurant_id",
+            "language_id"
+          ]
+        }
+      }
+    },
+    "provision_message": {
+      "name": "provision_message",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provision_message": {
+          "name": "provision_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provision_reminder_message": {
+          "name": "provision_reminder_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provision_received_message": {
+          "name": "provision_received_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provision_cancellation_message": {
+          "name": "provision_cancellation_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provision_refund_message": {
+          "name": "provision_refund_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provision_charge_message": {
+          "name": "provision_charge_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "charge_refund_message": {
+          "name": "charge_refund_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "provision_message_id": {
+          "name": "provision_message_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_provision_message": {
+          "name": "unique_provision_message",
+          "columns": [
+            "restaurant_id",
+            "language_id"
+          ]
+        }
+      }
+    },
+    "reservation_message": {
+      "name": "reservation_message",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "new_reservation_message": {
+          "name": "new_reservation_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "date_time_change_message": {
+          "name": "date_time_change_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "guest_count_change_message": {
+          "name": "guest_count_change_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reservation_cancellation_message": {
+          "name": "reservation_cancellation_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reservation_cancellation_with_reason_message": {
+          "name": "reservation_cancellation_with_reason_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reservation_confirmation_request_message": {
+          "name": "reservation_confirmation_request_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reservation_confirmed_message": {
+          "name": "reservation_confirmed_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reservation_reminder_message": {
+          "name": "reservation_reminder_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reservation_feedback_request_message": {
+          "name": "reservation_feedback_request_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cake_received_message": {
+          "name": "cake_received_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "flower_received_message": {
+          "name": "flower_received_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "reservation_message_id": {
+          "name": "reservation_message_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_reservation_message": {
+          "name": "unique_reservation_message",
+          "columns": [
+            "restaurant_id",
+            "language_id"
+          ]
+        }
+      }
     },
     "meal_hours": {
       "name": "meal_hours",
@@ -536,6 +846,72 @@
           "name": "unique_tag_translation",
           "columns": [
             "tag_id",
+            "language_id"
+          ]
+        }
+      }
+    },
+    "restaurant_texts": {
+      "name": "restaurant_texts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reservation_requirements": {
+          "name": "reservation_requirements",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dress_code": {
+          "name": "dress_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "agreements": {
+          "name": "agreements",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "restaurant_texts_id": {
+          "name": "restaurant_texts_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_restaurant_texts": {
+          "name": "unique_restaurant_texts",
+          "columns": [
+            "restaurant_id",
             "language_id"
           ]
         }
@@ -1113,6 +1489,72 @@
           "name": "user_personal_settings_user_id_unique",
           "columns": [
             "user_id"
+          ]
+        }
+      }
+    },
+    "waitlist_message": {
+      "name": "waitlist_message",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "added_to_waitlist_message": {
+          "name": "added_to_waitlist_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "added_to_waitlist_walkin_message": {
+          "name": "added_to_waitlist_walkin_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "called_from_waitlist_message": {
+          "name": "called_from_waitlist_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "waitlist_message_id": {
+          "name": "waitlist_message_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_waitlist_message": {
+          "name": "unique_waitlist_message",
+          "columns": [
+            "restaurant_id",
+            "language_id"
           ]
         }
       }

@@ -4,8 +4,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getChangedFields } from '@/lib/utils'
-import { TCountry, TMeal, TReservationStatus } from '@/server/db/schema/predefined'
-import { TRestaurantLanguages } from '@/server/db/schema/restaurant'
 import { api } from '@/server/trpc/react'
 import TRestaurantGeneralSettingValidator, { restaurantGeneralSettingValidator } from '@/shared/validators/restaurant'
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -30,8 +28,6 @@ export const GeneralSettings = ({ }: Props) => {
 
     const updateGeneralSettingMutation = api.restaurant.updateRestaurantGeneralSettings.useMutation()
 
-    console.log(reservationStatues, 'reservationStatues')
-
 
     const onSubmit = (data: TRestaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema) => {
 
@@ -47,8 +43,6 @@ export const GeneralSettings = ({ }: Props) => {
         })
     }
 
-
-
     const form = useForm<TRestaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema>({
         resolver: zodResolver(restaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema),
         defaultValues: {
@@ -56,15 +50,11 @@ export const GeneralSettings = ({ }: Props) => {
         },
     })
 
-
-
     useEffect(() => {
-        console.log(generalSettings, 'generalSettings')
         form.reset({
             ...generalSettings,
         })
     }, [generalSettings])
-
 
 
     return (
@@ -112,54 +102,7 @@ export const GeneralSettings = ({ }: Props) => {
                     )}
                 />
 
-                {/* <FormField
-                    control={form.control}
-                    name="meals"
-                    render={() => (
-                        <FormItem>
-                            <div className="mb-4">
-                                <FormLabel className="text-base">Meals</FormLabel>
-                            </div>
-                            {meals?.map((meal) => (
-                                <FormField
-                                    key={meal.id}
-                                    control={form.control}
-                                    name="meals"
 
-                                    render={({ field }) => {
-                                        return (
-                                            <FormItem
-                                                key={meal.id}
-                                                className="flex flex-row items-start space-x-3 space-y-0"
-                                            >
-                                                <FormControl>
-                                                    <Checkbox
-                                                        checked={field.value?.includes(meal.id)}
-                                                        onCheckedChange={(checked) => {
-                                                            return checked
-                                                                ? field.onChange([...field.value!, meal.id])
-                                                                : field.onChange(
-                                                                    field.value?.filter(
-                                                                        (value) => value !== meal.id
-                                                                    )
-                                                                )
-                                                        }}
-                                                    />
-                                                </FormControl>
-                                                <FormLabel className="font-normal">
-                                                    {meal.name}
-                                                </FormLabel>
-                                            </FormItem>
-                                        )
-                                    }}
-                                />
-                            ))}
-                        </FormItem>)}
-                /> */}
-
-
-
-                {/* Add similar FormField components for defaultLanguageId, defaultCountryId, tableView, and meals */}
 
                 <Button
                     loading={updateGeneralSettingMutation.isPending}

@@ -3,6 +3,7 @@ import { userRouter } from "@/server/api/routers/user";
 import { restaurantRouter } from "./routers/restaurant";
 import { predefinedRouter } from "./routers/predefined";
 import { reservationRouter } from "./routers/reservation";
+import { languageRouter } from "./routers/language";
 
 
 /**
@@ -14,7 +15,8 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   restaurant: restaurantRouter,
   predefiend: predefinedRouter,
-  reservation: reservationRouter
+  reservation: reservationRouter,
+  language: languageRouter
 
 });
 

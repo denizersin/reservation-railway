@@ -9,8 +9,16 @@ import * as  predefinedTablesShema from "./predefined"
 import * as restaurantTagSchema from "./restaurant-tags"
 import * as restaurantAssetsSchemas from "./restaurant-assets"
 
+import * as reservationMessagesSchema from "./reservation-message"
+
+import * as provisionMessagesSchema from "./provision-message"
+
+import * as waitlistMessagesSchema from "./waitlist-message"
+
+import * as restaurantTextsSchema from "./restaurant-texts"
 
 
+import * as prepaymentMessageSchema from './prepayment-message';
 
 export const schema = {
     ...userSchema,
@@ -18,7 +26,12 @@ export const schema = {
     ...restaurantSettingSchema,
     ...predefinedTablesShema,
     ...restaurantTagSchema,
-    ...restaurantAssetsSchemas
+    ...restaurantAssetsSchemas,
+    ...reservationMessagesSchema,
+    ...provisionMessagesSchema,
+    ...waitlistMessagesSchema,
+    ...prepaymentMessageSchema,
+    ...restaurantTextsSchema
 }
 
 

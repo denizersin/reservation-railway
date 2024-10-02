@@ -7,6 +7,11 @@ import { tblUser } from './user';
 import { tblLanguage, TLanguage } from './predefined';
 import { tblRestaurantTag } from './restaurant-tags';
 import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals } from './restaurant-assets';
+import { tblReservationMessage } from './reservation-message';
+import { tblProvisionMessage } from './provision-message';
+import { tblPrepaymentMessage } from './prepayment-message';
+import { tblWaitlistMessage } from './waitlist-message';
+import { tblRestaurantTexts } from './restaurant-texts';
 
 export const tblRestaurant = mysqlTable('restaurant', {
     id: int('id').autoincrement().primaryKey(),
@@ -28,6 +33,11 @@ export const restaurantRelations = relations(tblRestaurant, ({ many, one }) => (
     owner: one(tblUser, { fields: [tblRestaurant.ownerId], references: [tblUser.id] }),
     languages: many(tblRestaurantLanguage),
     tags: many(tblRestaurantTag),
+    reservationMessages: many(tblReservationMessage),
+    provisionMessages: many(tblProvisionMessage),
+    prepaymentMessages: many(tblPrepaymentMessage),
+    waitlistMessages: many(tblWaitlistMessage),
+    restaurantTexts: many(tblRestaurantTexts)
     // defaultCountry: one(tblCountry, { fields: [tblRestaurantGeneralSetting.defaultCountryId], references: [tblCountry.id] }),
     // 
 }));
