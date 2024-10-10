@@ -6,3 +6,7 @@ const HOURS = new Array(24).fill(0).map((_, i) => i)
 //!TODO bunu jsona cevir ve o sekilde kullan
 export const MEAL_HOURS = HOURS.flatMap(h => MINUTES.map(m => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`))
 
+export const HOURS_SELECT = MEAL_HOURS.map(hour => ({
+    label: hour,
+    value: hour
+}))

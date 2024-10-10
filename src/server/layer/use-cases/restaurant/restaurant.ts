@@ -2,6 +2,8 @@ import { TMealHoursAdd, TRestaurantMealDaysCrud } from "@/server/db/schema/resta
 import { restaurantEntities } from "../../entities/restaurant"
 import { restaurantSettingEntities } from "../../entities/restaurant-setting"
 import TRestaurantAssetsValidator from "@/shared/validators/restaurant/restauran-assets"
+import { DEFAULT_UTC_OFFSET } from "@/server/utils/server-constants"
+import { formatimeWithSeconds, localHourToUtcHour } from "@/server/utils/server-utils"
 
 
 
@@ -37,6 +39,13 @@ export const createRestaurantMealHours = async ({
     restaurantId: number,
     mealHours: TMealHoursAdd['mealHours']
 }) => {
+
+    mealHours.forEach(mealHour=>{
+        console.log('qweqwe')
+        mealHour.hour=localHourToUtcHour(mealHour.hour)
+        mealHour.hour=formatimeWithSeconds(mealHour.hour)
+    })
+
     await restaurantEntities.createMealHours({ mealHours: mealHours, restaurantId })
 }
 
@@ -49,18 +58,27 @@ export const deleteRestaurantMealHour = async ({
 }
 
 export const updateMealHour = async ({
-    data
+    data,
+    utcOffset = DEFAULT_UTC_OFFSET
 }: {
     data: TRestaurantAssetsValidator.restaurantMealHoursUpdateSchema
+    utcOffset?: number
 
 }) => {
+    if(data.data.hour){
+        data.data.hour=localHourToUtcHour(data.data.hour,utcOffset)
+        data.data.hour=formatimeWithSeconds(data.data.hour)
+    }
+    if (Object.keys(data.data).length === 0) return;
     await restaurantEntities.updateMealHour({  data })
 }
 
 export const getMealHours = async ({
-    restaurantId
+    restaurantId,
+    mealId
 }: {
-    restaurantId: number
+    restaurantId: number,
+    mealId?: number
 }) => {
-    return await restaurantEntities.getMealHours({ restaurantId })
+    return await restaurantEntities.getMealHours({ restaurantId, mealId })
 }

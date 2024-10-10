@@ -1,6 +1,6 @@
 import { boolean, int, mysqlEnum, mysqlTable, time, unique } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
-import { tblMeal } from './predefined';
+import { tblMeal, TMeal } from './predefined';
 import { tblRestaurant } from './restaurant';
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumDays } from '@/shared/enums/predefined-enums';
@@ -19,11 +19,14 @@ export const tblRestaurantMealsRelations = relations(tblRestaurantMeals, ({ one 
 }));
 
 
-export type TRestaurantMeals = typeof tblRestaurantMeals.$inferSelect
+export type TRestaurantMealsSelect = typeof tblRestaurantMeals.$inferSelect
 export type TRestaurantMealsInsert = typeof tblRestaurantMeals.$inferInsert
 
 export type TRestaurantMealsCrud = {
     meals: number[]
+}
+export type TRestaurantMeal = TRestaurantMealsSelect & {
+    meal: TMeal
 }
 
 

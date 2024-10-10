@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { cn } from '@/lib/utils';
+import { FormControl } from '../ui/form';
 
 export interface SelectOption {
     value: string;
@@ -18,12 +19,13 @@ export interface SelectOption {
 
 
 interface CustomSelectProps {
-    value?: string;
+    value?: string | null;
     onValueChange?: (value: string) => void;
     defaultValue?: string;
     placeholder?: string;
     selectTriggerClass?: string;
     data: SelectOption[];
+    isFormSelect?: boolean
     disabled?: boolean;
     required?: boolean;
 }
@@ -35,20 +37,33 @@ export function CustomSelect({
     placeholder = "Select an option",
     selectTriggerClass,
     data,
+    isFormSelect = true,
     disabled = false,
     required = false,
 }: CustomSelectProps) {
+
     return (
         <Select
-            value={value}
+            value={value ?? undefined}
             onValueChange={onValueChange}
             defaultValue={defaultValue}
             disabled={disabled}
             required={required}
         >
-            <SelectTrigger className={cn('w-full', selectTriggerClass)}>
-                <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
+            {
+                isFormSelect ?
+                    <FormControl>
+                        <SelectTrigger className={cn('w-full', selectTriggerClass)}>
+                            <SelectValue placeholder={placeholder} />
+                        </SelectTrigger>
+                    </FormControl>
+                    :
+                    <SelectTrigger className={cn('w-full', selectTriggerClass)}>
+                        <SelectValue placeholder={placeholder} />
+                    </SelectTrigger>
+
+            }
+
             <SelectContent>
                 {data.map((item, index) => (
                     <SelectItem key={index} value={item.value}>

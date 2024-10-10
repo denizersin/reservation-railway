@@ -123,10 +123,13 @@ export const restaurantRouter = createTRPCRouter({
             await restaurantUseCases.deleteRestaurantMealHour({ mealHourId: input.mealHourId })
             return true
         }),
-    getRestaurantMealHours: ownerProcedure.query(async ({ ctx }) => {
-        const { session: { user: { restaurantId } } } = ctx
-        return await restaurantUseCases.getMealHours({ restaurantId })
-    }),
+    getRestaurantMealHours: ownerProcedure
+        .input(z.object({ mealId: z.number().optional() }))
+        .query(async ({ ctx, input }) => {
+            const { session: { user: { restaurantId } } } = ctx
+            return await restaurantUseCases.getMealHours({ restaurantId, mealId: input.mealId })
+        }),
+
     updateMealHour: ownerProcedure
         .input(restaurantAssetsValidator.restaurantMealHoursUpdateSchema)
         .mutation(async ({ input }) => {

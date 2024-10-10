@@ -67,6 +67,7 @@ export const CreateHourModal: React.FC<Props> = ({ open, setOpen }) => {
                         data={restaurantMealsOptions}
                         onValueChange={(value) => setMealId(value)}
                         placeholder="Select a meal"
+                        isFormSelect={false}
                     />
                     <MultiSelect
                         options={mealHoursToSelect}

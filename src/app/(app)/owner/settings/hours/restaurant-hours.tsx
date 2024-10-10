@@ -39,7 +39,7 @@ export const RestaurantMealHours = (props: Props) => {
 
     const {
         data: restaurantMealHours
-    } = api.restaurant.getRestaurantMealHours.useQuery()
+    } = api.restaurant.getRestaurantMealHours.useQuery({})
 
     const { mutate: deleteMealHourMutation, isPending: deleteMealHourIsPending } = api.restaurant.deleteRestaurantMealHourById.useMutation({
         onSuccess: () => {

@@ -100,8 +100,8 @@ export const getAllRestaurantTags2 = async ({
                 where: and(...whereConditions)
             }
         },
-        limit,
-        offset
+        limit: limit === -1 ? undefined : limit,
+        offset: limit === -1 ? undefined : offset
     })
     const countQuery = db.query.tblRestaurantTag.findMany({
         with: {

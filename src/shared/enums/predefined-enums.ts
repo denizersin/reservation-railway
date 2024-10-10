@@ -1,3 +1,5 @@
+import { getEnumValues } from "@/server/utils/server-utils";
+
 export enum EnumLanguage {
     en = "en",
     tr = "tr",
@@ -39,6 +41,11 @@ export enum EnumDays {
     sunday = 'sunday',
 }
 
+export const DaysToSelect = getEnumValues(EnumDays).map(day => ({
+    label: day as string,
+    value: day as string
+}))
+
 
 
 export enum EnumReservationListingType {
@@ -56,3 +63,30 @@ export enum EnumTableShape {
     rectangle = 'rectangle',
     round = 'round',
 }
+
+export enum EnumVipLevel {
+    bigSpender = 'Big Spender',
+    goodSpender = 'Good Spender',
+    lowSpender = 'Low Spender',
+    regularCustomer = 'Regular Customer',
+    potentialCustomer = 'Potential Customer',
+    blackList = 'Black List',
+    lostCustomer = 'Lost Customer',
+}
+
+export const VipLevelToSelect = getEnumValues(EnumVipLevel).map(level => ({
+    label: level as string,
+    value: level as string
+}))
+
+
+export enum EnumGender {
+    male = 'male',
+    female = 'female',
+    other = 'other',
+}
+
+export const GenderToSelect = getEnumValues(EnumGender).map(gender => ({
+    label: gender as string,
+    value: gender as string
+}))

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useUpdateQueryParams } from "@/hooks/useUpdateQueryParams";
 import { IconAlertTriangle, IconArchive, IconBell, IconCashBanknote, IconClockHour3, IconDownload, IconInfoCircle, IconLayoutGrid, IconList, IconPrinter } from "@tabler/icons-react";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon, SearchIcon, SettingsIcon } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export type TReservationsViewType = 'list' | 'table'
@@ -25,6 +25,8 @@ export function ReservationHeader() {
         updateQueryParam({ view })
     }
 
+    const router = useRouter();
+
     return (
         <div>
             <div className="text-card-foreground text-2xl mb-4 font-normal">
@@ -32,7 +34,11 @@ export function ReservationHeader() {
             </div>
             <div className="flex  gap-x-3 py-2 ">
                 <div className="flex items-center space-x-2">
-                    <Button variant="default" className="h-full">
+                    <Button
+                        onClick={() => {
+                            router.push('/owner/reservation')
+                        }}
+                        variant="default" className="h-full">
                         Yeni Rezervasyon
                     </Button>
                     <div className="flex items-center space-x-1 border bg-background text-black dark:text-white p-1 rounded-md h-full">
@@ -129,13 +135,13 @@ export function ReservationHeader() {
                 <div className="ml-auto flex items-center space-x-1 border bg-background text-black dark:text-white p-1 rounded-md h-full">
 
                     <Button onClick={() => onToggleView('list')}
-                        tooltip="liste gorunumu" 
+                        tooltip="liste gorunumu"
                         variant={view === 'list' ? 'default' : 'ghost'}
                         size="icon" className="">
                         <IconList className="h-4 w-4" />
                     </Button>
                     <Button onClick={() => onToggleView('table')}
-                        tooltip="masa gorunumu" 
+                        tooltip="masa gorunumu"
                         variant={view === 'table' ? 'default' : 'ghost'}
                         size="icon" className="">
                         <IconLayoutGrid className="h-4 w-4" />

@@ -1,11 +1,7 @@
 import { db } from "@/server/db"
-import { tblProvisionMessage, TProvisionMessageInsert } from "@/server/db/schema/provision-message"
-import { tblReservationMessage, TReservationMessageInsert } from "@/server/db/schema/reservation-message"
 import { tblRestaurant } from "@/server/db/schema/restaurant"
 import { and, eq } from "drizzle-orm"
-import { tblWaitlistMessage, TWaitlistMessageInsert } from "@/server/db/schema/waitlist-message"
-import { tblPrepaymentMessage, TPrepaymentMessageInsert } from "@/server/db/schema/prepayment-message"
-import { tblRestaurantTexts, TRestaurantTextsInsert } from "@/server/db/schema/restaurant-texts"
+import { tblPrepaymentMessage, tblProvisionMessage, tblReservationMessage, tblRestaurantTexts, tblWaitlistMessage, TPrepaymentMessageInsert, TProvisionMessageInsert, TReservationMessageInsert, TRestaurantTextsInsert, TWaitlistMessageInsert } from "@/server/db/schema/restaurant-texts"
 
 export const getReservationMessagesByLang = async ({
     restaurantId,

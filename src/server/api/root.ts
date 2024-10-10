@@ -4,6 +4,8 @@ import { restaurantRouter } from "./routers/restaurant";
 import { predefinedRouter } from "./routers/predefined";
 import { reservationRouter } from "./routers/reservation";
 import { languageRouter } from "./routers/language";
+import { roomRouter } from "./routers/room";
+import { guestRouter } from "./routers/guest";
 
 
 /**
@@ -16,7 +18,10 @@ export const appRouter = createTRPCRouter({
   restaurant: restaurantRouter,
   predefiend: predefinedRouter,
   reservation: reservationRouter,
-  language: languageRouter
+  language: languageRouter,
+  room:roomRouter,
+  guest:guestRouter
+
 
 });
 

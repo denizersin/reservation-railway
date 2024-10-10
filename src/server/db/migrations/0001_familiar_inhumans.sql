@@ -1,0 +1,1 @@
+ALTER TABLE `reservation` ADD `restaurant_meal_id` int NOT NULL;

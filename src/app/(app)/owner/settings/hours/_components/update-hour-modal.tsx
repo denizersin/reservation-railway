@@ -65,6 +65,7 @@ export const UpdateHourModal: React.FC<Props> = ({
             data={meelHoursToSelect}
             value={newHour}
             onValueChange={(value) => setNewHour(value)}
+            isFormSelect={false}
           />
         </div>
         <DialogFooter>

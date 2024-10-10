@@ -7,7 +7,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
 import { restaurantSettingEntities } from '../restaurant-setting';
 import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals, TMealHoursAdd, TRestaurantMealDaysCrud } from '@/server/db/schema/restaurant-assets';
-import { formatimeWithSeconds, formatTimeWithoutSeconds, getEnumValues } from '@/server/utils/server-utils';
+import { formatimeWithSeconds, formatTimeWithoutSeconds, getEnumValues, utcHourToLocalHour } from '@/server/utils/server-utils';
 import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
 
 export const createRestaurant = async ({
@@ -321,7 +321,6 @@ export const createMealHours = async ({
 
     const parsedMealHours = mealHours.map(mealHour => ({
         ...mealHour,
-        hour: formatimeWithSeconds(mealHour.hour)
     }))
 
     if (parsedMealHours.length === 0) return;
@@ -352,12 +351,17 @@ export const deleteMealHourById = async ({
 }
 
 export const getMealHours = async ({
-    restaurantId
+    restaurantId,
+    mealId
 }: {
-    restaurantId: number
+    restaurantId: number,
+    mealId?: number
 }) => {
     const mealHours = await db.query.tblMealHours.findMany({
-        where: eq(tblMealHours.restaurantId, restaurantId),
+        where: and(
+            eq(tblMealHours.restaurantId, restaurantId),
+            // mealId ? eq(tblMealHours.mealId, mealId) : undefined
+        ),
         with: {
             meal: true
         },
@@ -366,7 +370,7 @@ export const getMealHours = async ({
 
     const formattedMealHours = mealHours.map(mealHour => ({
         ...mealHour,
-        hour: formatTimeWithoutSeconds(mealHour.hour)
+        hour: utcHourToLocalHour(formatTimeWithoutSeconds(mealHour.hour))
     }))
 
     const restaurantMeal = await db.query.tblRestaurantMeals.findMany({
@@ -403,12 +407,7 @@ export const updateMealHour = async ({
         mealHourId,
         data: mealHourData
     } = data
-    const hour = mealHourData.hour ? formatTimeWithoutSeconds(mealHourData.hour) : undefined
 
-    if (Object.keys(mealHourData).length === 0) return;
 
-    await db.update(tblMealHours).set({
-        ...mealHourData,
-        hour
-    }).where(eq(tblMealHours.id, mealHourId))
+    await db.update(tblMealHours).set(mealHourData).where(eq(tblMealHours.id, mealHourId))
 }

@@ -7,11 +7,9 @@ import { tblUser } from './user';
 import { tblLanguage, TLanguage } from './predefined';
 import { tblRestaurantTag } from './restaurant-tags';
 import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals } from './restaurant-assets';
-import { tblReservationMessage } from './reservation-message';
-import { tblProvisionMessage } from './provision-message';
-import { tblPrepaymentMessage } from './prepayment-message';
-import { tblWaitlistMessage } from './waitlist-message';
-import { tblRestaurantTexts } from './restaurant-texts';
+import { tblPrepaymentMessage, tblProvisionMessage, tblReservationMessage, tblRestaurantTexts, tblWaitlistMessage } from './restaurant-texts';
+import { tblRoom } from './room';
+import { tblGuest } from './guest';
 
 export const tblRestaurant = mysqlTable('restaurant', {
     id: int('id').autoincrement().primaryKey(),
@@ -37,7 +35,9 @@ export const restaurantRelations = relations(tblRestaurant, ({ many, one }) => (
     provisionMessages: many(tblProvisionMessage),
     prepaymentMessages: many(tblPrepaymentMessage),
     waitlistMessages: many(tblWaitlistMessage),
-    restaurantTexts: many(tblRestaurantTexts)
+    restaurantTexts: many(tblRestaurantTexts),
+    rooms:many(tblRoom),
+    guests:many(tblGuest),
     // defaultCountry: one(tblCountry, { fields: [tblRestaurantGeneralSetting.defaultCountryId], references: [tblCountry.id] }),
     // 
 }));
