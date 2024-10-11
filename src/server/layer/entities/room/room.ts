@@ -62,18 +62,21 @@ export const getRoomWithTranslations = async ({
 
 
 export const getRooms = async ({
-    restaurantId
+    restaurantId,
+    languageId
 }: {
     restaurantId: number
+    languageId: number
 }): Promise<TRoomWithTranslations[]> => {
-    //get all rooms
-    const room = await db.query.tblRoom.findMany({
+    return await db.query.tblRoom.findMany({
         where: eq(tblRoom.restaurantId, restaurantId),
         with: {
-            translations: true
+            translations: {
+                where: eq(tblRoomTranslation.languageId, languageId)
+            }
         }
     })
-    return room
+
 }
 
 export const createTables = async ({

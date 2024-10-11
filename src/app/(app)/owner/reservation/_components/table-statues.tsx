@@ -1,13 +1,13 @@
-import { Button } from '@/components/custom/button'
+import { TooltipText } from '@/components/custom/tooltip-text'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { TRestaurantMeal } from '@/server/db/schema/restaurant-assets'
 import { TRoomWithTranslations } from '@/server/db/schema/room'
 import { api, RouterOutputs } from '@/server/trpc/react'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Card, CardContent } from "@/components/ui/card";
 import { CircleCheck, Clock, Users } from 'lucide-react'
-import { TooltipText } from '@/components/custom/tooltip-text'
-import { Input } from '@/components/ui/input'
+import { useEffect, useMemo, useState } from 'react'
 
 type HourTable = RouterOutputs['reservation']['getAllAvailableReservation']['result'][0]['table']
 type AvaliableTableData = RouterOutputs['reservation']['getAllAvailableReservation']['result']
@@ -44,16 +44,11 @@ export const TableStatues = ({
         select: (data) => data.find((d) => d.meal.id === selectedMeal.mealId)?.mealHours
     })
 
-    const {
-        data: avaliableTablesData,
-        isLoading: isAvaliableTablesLoading
-
-    } = api.reservation.getAllAvailableReservation.useQuery({
+    const { data: avaliableTablesData } = api.reservation.getAllAvailableReservation.useQuery({
         date,
-        mealId: selectedMeal.id,
-        roomId: selectedRoom.id
+        mealId: selectedMeal.mealId,
     }, {
-        enabled: [date, selectedMeal, selectedRoom].every(Boolean),
+        enabled: [date, selectedMeal, selectedRoom].every(Boolean)
     })
 
     const [hourState, setHourState] = useState<{
@@ -63,34 +58,39 @@ export const TableStatues = ({
         avaliableDataHour: AvaliableTableData
     }[]>()
 
-
     useEffect(() => {
-        if(isAvaliableTablesLoading) return
-        
-        if (selectedHour && mealHours && avaliableTablesData) {
-            const newHourSatate: typeof hourState = []
-            mealHours.forEach((hour) => {
-                const roomTables = avaliableTablesData.result.filter(d => d.table?.roomId === selectedRoom.id)
-                const hourTables = roomTables.filter(d => d.meal_hours?.hour === hour.hour)
-                const avaliableTables = hourTables.filter(d => (!d.table?.isReachedLimit && !d.table?.isReserved)).map(r => r.table) ?? []
-                const limitData = avaliableTablesData.limitedAvailableHoursInfo.find(d => (d.hour === hour.hour && d.room == selectedRoom.id))
+        if (!(selectedHour && mealHours && avaliableTablesData && selectedRoom)) return
 
-                let avaliableTotalGuest = avaliableTables.reduce((acc, curr) => acc + curr?.avaliableGuestWithLimit!, 0)
-                if (limitData) {
-                    avaliableTotalGuest = avaliableTotalGuest > limitData.avaliableGuest ? limitData.avaliableGuest : avaliableTotalGuest
-                } else {
-                    avaliableTotalGuest = avaliableTablesData.limitations.find(d => (d.hour === hour.hour && d.roomId == selectedRoom.id))?.maxGuestCount || avaliableTotalGuest
-                }
-                newHourSatate.push({
-                    hour: hour.hour,
-                    avaliableTotalGuest,
-                    avaliableTables,
-                    avaliableDataHour: hourTables
-                })
+        const newHourSatate: typeof hourState = []
+
+        const currRoomTables = avaliableTablesData.result.filter(d => d.table?.roomId === selectedRoom.id)
+
+        const currLimitations = avaliableTablesData.limitations.filter(d => d.roomId == selectedRoom.id && d.mealId == selectedMeal.mealId)
+
+        const currAvaliableLimitedHours = avaliableTablesData.limitedAvailableHoursInfo.filter(d => d.room == selectedRoom.id && d.meal == selectedMeal.mealId)
+        mealHours.forEach((hour) => {
+            const hourTables = currRoomTables.filter(d => d.meal_hours?.hour === hour.hour)
+            const avaliableTables = hourTables.filter(d => (!d.table?.isReachedLimit && !d.table?.isReserved)).map(r => r.table) ?? []
+            const limitData = currAvaliableLimitedHours.find(d => (d.hour === hour.hour))
+
+            let avaliableTotalGuest = avaliableTables.reduce((acc, curr) => acc + curr?.avaliableGuestWithLimit!, 0)
+
+            if (limitData) {
+                avaliableTotalGuest = avaliableTotalGuest > limitData.avaliableGuest ? limitData.avaliableGuest : avaliableTotalGuest
+            } else {
+                avaliableTotalGuest = currLimitations.find(d => (d.hour === hour.hour))?.maxGuestCount || avaliableTotalGuest
+            }
+            newHourSatate.push({
+                hour: hour.hour,
+                avaliableTotalGuest,
+                avaliableTables,
+                avaliableDataHour: hourTables
             })
-            setHourState(newHourSatate)
-        }
-    }, [avaliableTablesData, mealHours, selectedHour])
+        })
+        setHourState(newHourSatate)
+
+
+    }, [avaliableTablesData, mealHours, selectedHour, selectedRoom])
 
 
     useEffect(() => {
@@ -100,24 +100,24 @@ export const TableStatues = ({
 
     }, [mealHours])
 
-    console.log(hourState, 'hh')
 
     const currTableData = useMemo(() => hourState?.find(r => r.hour == selectedHour)?.avaliableDataHour || [], [selectedHour, hourState])
-
-    const currentHourSatate = useMemo(() => hourState?.find(r => r.hour == selectedHour), [selectedHour, hourState])
 
 
     const onClcikTable = (tableId: number) => {
         setSelectedTableId(tableId)
     }
 
-    console.log(selectedTableId, 'selectedTableId')
 
     const selectedTable = useMemo(() => currTableData.find(d => d.table?.id === selectedTableId)?.table, [selectedTableId, currTableData])
 
+
+    console.log(avaliableTablesData,'data')
+
+
     return (
         <div>
-            <div className='flex gap-x-2'>
+            <div className='flex gap-x-2 my-2'>
                 {
                     hourState?.map((hour) => (
                         <div
@@ -133,27 +133,6 @@ export const TableStatues = ({
                     ))
                 }
             </div>
-            <div className='flex gap-x-2 my-2'>
-                {currentHourSatate?.avaliableTables?.map((table) => {
-                    if (!table) return null
-                    return (
-                        <div key={table.id} className='flex gap-x-1 items-center border p-1'>
-                            <h1>{table.minCapacity} - {table.avaliableGuestWithLimit}</h1>
-                            {
-                                table.isAppliedLimit &&
-                                <TooltipText
-                                    infoIcon={true}
-                                    infoIconColor='black' tooltip='limit applied'>
-                                    <span className='line-through'>
-                                        {table.maxCapacity}
-                                    </span>
-                                </TooltipText>
-                            }
-                        </div>
-                    )
-                })}
-            </div>
-
             <div className='flex flex-wrap gap-x-2 gap-y-2'>
                 {
                     currTableData.map((data) => {
@@ -164,13 +143,13 @@ export const TableStatues = ({
                         const isSelected = selectedTableId === data.table?.id
 
                         return <Card
-                            onClick={(() => isAvailable && onClcikTable(data.table?.id!))}
+                            onClick={(() => !isReserved && onClcikTable(data.table?.id!))}
                             key={data.table?.id} className={cn(' size-[150px] relative', {
                                 'bg-foreground text-background': isReserved,
                                 'cursor-pointer hover:bg-muted': isAvailable,
-                                'bg-gray-300': (!isAvailable && !isReserved),
+                                'bg-gray-300 cursor-pointer hover:bg-muted': (!isAvailable && !isReserved),
                             })}>
-                            <CardContent className="p-4 ">
+                            <CardContent className="p-4 flex flex-col gap-y-1">
                                 <div className="text-xl font-bold">{data.table?.no}</div>
                                 <div className="text-sm ">{data.table.isReserved ? 'ersin' : '-'}</div>
                                 <div className="flex items-center text-xs mt-2">
@@ -184,12 +163,15 @@ export const TableStatues = ({
                                     </div>}
                                     <div className='flex ml-auto'>
                                         {table.minCapacity} - {table.avaliableGuestWithLimit}
-                                        {isReachedLimit && <TooltipText tooltip='limit reached'>
-                                            <span className='line-through'>{table.maxCapacity}</span>
+                                        {isAppliedLimit && <TooltipText infoIcon  tooltip='limit applied'>
+                                            <span className='line-through ml-1'>{table.maxCapacity}</span>
                                         </TooltipText>}
                                     </div>
 
                                 </div>
+                                {(!isReserved && isReachedLimit) && <div className="flex justify-end">
+                                    <Badge className='text-[9px] p-[.5px] px-1 bg-primary-foreground text-primary'>exceeding limit</Badge>
+                                </div>}
                             </CardContent>
 
                             {
@@ -200,14 +182,25 @@ export const TableStatues = ({
                     })
                 }
             </div>
-            <h1>Guest Count</h1>
-            <div>{selectedTable?.minCapacity}-{selectedTable?.avaliableGuestWithLimit}</div>
-            <Input
-                type='number'
-                className='max-w-[300px]'
-                value={guestCount}
-                onChange={(e) => setGuestCount(Number(e.target.value))}
-            />
+            <div className='my-3'>
+                <h1>Guest Count</h1>
+                <div className='flex gap-x-4 items-center'>
+                    <Input
+                        type='number'
+                        className='max-w-[300px]'
+                        value={guestCount}
+                        onChange={(e) => setGuestCount(Number(e.target.value))}
+                    />
+                    {selectedTable && <div className='flex '>
+                        {selectedTable.minCapacity} - {selectedTable.avaliableGuestWithLimit}
+                        {selectedTable.isAppliedLimit && <TooltipText tooltip='limit reached'>
+                            <span className='line-through'>{selectedTable.maxCapacity}</span>
+                        </TooltipText>}
+                    </div>}
+
+                </div>
+            </div>
+
 
         </div >
     )

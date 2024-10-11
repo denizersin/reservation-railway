@@ -1,10 +1,9 @@
 import { predefinedEntities } from "@/server/layer/entities/predefined";
-import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
-import { limitationValidator } from "@/shared/validators/reservation-limitation/inex";
 import { reservationLimitationEntities } from "@/server/layer/entities/reservation-limitation";
-import { z } from "zod";
 import { reservationLimitationUseCases } from "@/server/layer/use-cases/reservation-limitation.ts";
-import { ReservationEntities } from "@/server/layer/entities/reservation";
+import { limitationValidator } from "@/shared/validators/reservation-limitation/inex";
+import { z } from "zod";
+import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 
 
 
@@ -13,10 +12,9 @@ import { tblReservation } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
 import { tblRoom, tblTable } from "@/server/db/schema/room";
-import { and, between, count, eq, isNotNull, isNull, or, sql, sum } from "drizzle-orm";
 import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
-import { restaurantEntities } from "@/server/layer/entities/restaurant";
 import TReservationValidator, { reservationValidator } from "@/shared/validators/reservation";
+import { and, between, count, eq, isNotNull, sql, sum } from "drizzle-orm";
 
 
 function getAvaliabels({ date, mealId }: TReservationValidator.getTableStatues) {
@@ -30,15 +28,16 @@ function getAvaliabels({ date, mealId }: TReservationValidator.getTableStatues) 
         .select({
             limitationId: tblReservationLimitation.id,
             hour: tblReservationLimitation.hour,
+            meal: tblReservationLimitation.mealId,
             room: tblReservationLimitation.roomId,
             maxTable: tblReservationLimitation.maxTableCount,
             maxGuest: tblReservationLimitation.maxGuestCount,
             // totalTable: count(tblReservation.id).as('totalTable'),
             totalTable: sql`count(${tblReservation.id})`.as('totalTable'),
             // totalGuest: sum(tblReservation.guestCount).as('totalGuest'),
-            totalGuest: sql<number>`cast(${sum(tblReservation.guestCount)} as UNSIGNED)`.as('totalGuest'),
+            totalGuest: sql<number>`cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('totalGuest'),
             // avaliableGuest: sql`${tblReservationLimitation.maxGuestCount} - ${sum(tblReservation.guestCount)}`.as('avaliableGuest'),
-            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - cast(${sum(tblReservation.guestCount)} as UNSIGNED)`.as('availableGuest'),
+            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('availableGuest'),
 
             avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - ${(count(tblReservation.id))}`.as('avaliableTable'),
         })
@@ -184,7 +183,7 @@ export const reservationRouter = createTRPCRouter({
                 .leftJoin(tblReservation,
                     and(
                         //!TODO: remove this
-                        // eq(tblReservation.mealId, input.mealId),
+                        eq(tblReservation.mealId, input.mealId),
                         eq(tblReservation.tableId, tblTable.id),
                         between(tblReservation.reservationDate, start, end)
                     )
@@ -231,7 +230,7 @@ export const reservationRouter = createTRPCRouter({
             TEST.forEach(rr => {
                 if (!rr.table || !rr.meal_hours) return
 
-                const reservation = { ...rr.reservation }
+                const reservation = rr.reservation?{...rr.reservation}:null
                 const meal_hours = { ...rr.meal_hours }
 
                 const table: NewTable = {
@@ -245,8 +244,7 @@ export const reservationRouter = createTRPCRouter({
                 tables.push(table)
 
                 if (
-                    reservation &&
-                    reservation.hour == meal_hours.hour
+                    (reservation)
                 ) {
                     table.isReserved = true
                     return;
@@ -264,7 +262,7 @@ export const reservationRouter = createTRPCRouter({
                     return;
                 }
 
-                if (limited.avaliableGuest <= table.maxCapacity) {
+                if (limited.avaliableGuest < table.maxCapacity) {
                     table.avaliableGuestWithLimit = limited.avaliableGuest
                     table.isAppliedLimit = true
                     console.log(meal_hours.hour, 'meal_hours.hour')
@@ -361,6 +359,16 @@ export const reservationRouter = createTRPCRouter({
                 )
             })
         }),
+
+        deleteReservation: ownerProcedure
+        .input(z.object({
+            reservationId: z.number().int().positive()
+        }))
+        .mutation(async ({ input }) => {
+            await db.delete(tblReservation).where(
+                eq(tblReservation.id, input.reservationId)
+            )
+        })
 
 
 

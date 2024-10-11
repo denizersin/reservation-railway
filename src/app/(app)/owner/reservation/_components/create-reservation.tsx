@@ -1,25 +1,26 @@
 'use client'
 
-import { TRestaurantMeal } from '@/server/db/schema/restaurant-assets'
-import { api } from '@/server/trpc/react'
-import { useMemo, useState } from 'react'
-import { ReservationList2 } from './ReservationList2'
-import { TRoomWithTranslations } from '@/server/db/schema/room'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ReservationDateCalendar } from './reservation-date-calendar'
-import { TableStatues } from './table-statues'
-import { CustomComboSelect } from '@/components/custom/custom-combo-select'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/custom/button'
+import { CustomComboSelect } from '@/components/custom/custom-combo-select'
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TRestaurantMeal } from '@/server/db/schema/restaurant-assets'
+import { TRoomWithTranslations } from '@/server/db/schema/room'
+import { api } from '@/server/trpc/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
-import { localHourToUtcHour } from '@/server/utils/server-utils'
+import { useMemo, useState } from 'react'
+import GuestCrudModal from '../../guests/_components/guest-crud-modal'
+import { ReservationDateCalendar } from './reservation-date-calendar'
+import { ReservationList2 } from './ReservationList2'
+import { TableStatues } from './table-statues'
 
 
 type Props = {}
 
 export const CreateReservation = (props: Props) => {
-    const queryClient=useQueryClient();
+    const queryClient = useQueryClient();
+
+    const [isCreateGuestModalOpen, setIsCreateGuestModalOpen] = useState(false)
 
 
     const { data: meals } = api.restaurant.getRestaurantMeals.useQuery()
@@ -51,13 +52,22 @@ export const CreateReservation = (props: Props) => {
 
     const [selectedHour, setSelectedHour] = useState<string | undefined>(undefined)
 
+
+    const [isOpenConfirmDialog, setIsOpenConfirmDialog] = useState(false)
+
     const {
         mutate: createReservation,
         isPending: createReservationPending,
     } = api.reservation.createMockReservation.useMutation({
-        onSuccess: () => queryClient.invalidateQueries({
-            queryKey:getQueryKey(api.reservation.getReservations)
-        })
+        onSuccess: () =>{
+            queryClient.invalidateQueries({
+                queryKey: getQueryKey(api.reservation.getReservations)
+            })
+            queryClient.invalidateQueries({
+                queryKey: getQueryKey(api.reservation.getAllAvailableReservation)
+            })
+            setSelectedTableId(undefined)
+        }
     })
 
     const handleCreateReservation = () => {
@@ -83,15 +93,18 @@ export const CreateReservation = (props: Props) => {
         )
     }
 
+
+
     return (
         <div>
-            <div>
+            <div className='flex'>
                 <CustomComboSelect
                     isFormSelect={false}
                     data={guestToSelect}
                     value={selectedGuestId?.toString()}
                     onValueChange={(value) => setSelectedGuestId(Number(value))}
                 />
+                <Button variant={'link'} onClick={() => setIsCreateGuestModalOpen(true)}>Create Guest</Button>
             </div>
 
 
@@ -139,6 +152,16 @@ export const CreateReservation = (props: Props) => {
 
 
             <ReservationList2 date={date} />
+
+
+
+            {isCreateGuestModalOpen && <GuestCrudModal
+                open={isCreateGuestModalOpen}
+                setOpen={setIsCreateGuestModalOpen}
+            />}
+
+
+
         </div>
     )
 }

@@ -32,6 +32,16 @@ export const userRouter = createTRPCRouter({
         const session = await jwtEntities.getServerSession()
         return session
     }),
+    updateUserPreferences: protectedProcedure
+        .input(userValidator.updateUserPreferencesSchema)
+        .mutation(async ({ input }) => {
+            const updatedUserPreferences = await userUseCases.updateUserPreferences(input)
+            return updatedUserPreferences
+        }),
+    getUserPreferences: protectedProcedure.query(async ({ ctx }) => {
+        const userPreferences = ctx.userPrefrences
+        return userPreferences
+    }),
     createUser: adminProcedure
         .input(userValidator.registerSchema)
         .mutation(async ({ input }) => {

@@ -40,7 +40,7 @@ export function CustomComboSelect({
   value,
   onValueChange,
   defaultValue,
-  placeholder = "Select a guest",
+  placeholder = "Select an option",
   buttonClass,
   data,
   disabled = false,

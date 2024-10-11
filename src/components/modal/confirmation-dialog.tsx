@@ -14,7 +14,7 @@ import { Button } from '../custom/button'
 interface ConfirmationDialogProps {
     open: boolean
     setOpen: (open: boolean) => void
-    isLoading: boolean
+    isLoading?: boolean
     type: 'confirm' | 'delete' | 'warning'
     onClickActionButton: () => void
     onClickCancelButton?: () => void

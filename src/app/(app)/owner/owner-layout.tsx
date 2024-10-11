@@ -13,6 +13,7 @@ import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { restaurantEntities } from '@/server/layer/entities/restaurant';
 import { eq } from 'drizzle-orm';
 import { SettingDataProvider } from "./settings/setting-data-provider";
+import LanguageDropDown from "@/components/language-drop-down";
 
 export default async function OwnerLayout({
     children,
@@ -54,6 +55,7 @@ export default async function OwnerLayout({
                         <div className='ml-auto flex items-center space-x-4'>
                             <Search />
                             <ThemeSwitch />
+                            <LanguageDropDown/>
                             <UserNav />
                         </div>
                     </div>

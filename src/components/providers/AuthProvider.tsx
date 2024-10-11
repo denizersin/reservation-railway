@@ -20,6 +20,9 @@ export const AuthContext = React.createContext<TAuthContext>({} as TAuthContext)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const queryClient = useQueryClient();
     const { data, isLoading, isError, isSuccess } = api.user.getSession.useQuery()
+
+    console.log(data,'data')
+
     const isAuthenticated = Boolean(data && !isError)
     const session = isAuthenticated ? data as TSession : null
 

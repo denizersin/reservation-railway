@@ -10,9 +10,13 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { db } from "@/server/db";
-import { userUseCases } from "@/server/layer/use-cases/user";
 import { jwtEntities } from "../layer/entities/jwt";
+import { cookies } from "next/headers";
+import { EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
+import { TUserPreferences } from "../layer/use-cases/user/user";
+import { DEFAULT_LANGUAGE, languagesData } from "../data";
+import { db } from "../db";
+import { userUseCases } from "../layer/use-cases/user";
 
 /**
  * 1. CONTEXT
@@ -27,15 +31,35 @@ import { jwtEntities } from "../layer/entities/jwt";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-
   const session = await jwtEntities.getServerSession()
 
+  const language = (cookies().get('language')?.value) as EnumLanguage | undefined
+  const languageData = languagesData.find(l => l.languageCode === language)
+
+  console.log(language, languageData, 'lang')
+
+
+  const userPrefrences: TUserPreferences = {
+    theme: EnumTheme.light,
+    language: DEFAULT_LANGUAGE
+  }
+
+  if (language && languageData) {
+    userPrefrences.language = languageData
+  } else {
+    userUseCases.updateUserPreferences({ language: DEFAULT_LANGUAGE.languageCode })
+  }
+
+
+
   return {
-    db,
     session,
+    userPrefrences,
     ...opts,
   };
 };
+
+export type TCtx = Awaited<ReturnType<typeof createTRPCContext>>;
 
 /**
  * 2. INITIALIZATION

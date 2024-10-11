@@ -1,5 +1,5 @@
 import { getEnumValues } from '@/server/utils/server-utils';
-import { EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { EnumLanguage, EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
 import { boolean, int, mysqlEnum, mysqlTable, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 
@@ -16,7 +16,7 @@ export const tblReserVationStatus = mysqlTable('reservation_status', {
 
 export const tblLanguage = mysqlTable('language', {
     id: int('id').autoincrement().primaryKey(),
-    languageCode: varchar('language_code', { length: 10 }).notNull(),
+    languageCode: mysqlEnum('language_code', getEnumValues(EnumLanguage)).notNull(),
     name: varchar('name', { length: 50 }).notNull(),
     isRtl: boolean('is_rtl').notNull(),
 })

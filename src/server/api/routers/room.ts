@@ -38,9 +38,7 @@ export const roomRouter = createTRPCRouter({
 
     }),
     getRooms: ownerProcedure.query(async ({ ctx }) => {
-        const { session: { user: { restaurantId } } } = ctx
-        const data = await RoomEntities.getRooms({ restaurantId })
-        return data;
+        return await roomUseCases.getRooms({ ctx })
     }),
 
     createTable: ownerProcedure

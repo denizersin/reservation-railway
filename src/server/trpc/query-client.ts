@@ -22,7 +22,11 @@ export const createQueryClient = () =>
         // above 0 to avoid refetching immediately on the client
         staleTime: Infinity,
         retry: false,
+        queryFn: async (p) => {
+
+        }
       },
+
       dehydrate: {
         serializeData: SuperJSON.serialize,
         shouldDehydrateQuery: (query) =>

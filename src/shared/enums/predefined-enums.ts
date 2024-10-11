@@ -3,7 +3,14 @@ import { getEnumValues } from "@/server/utils/server-utils";
 export enum EnumLanguage {
     en = "en",
     tr = "tr",
+    de = "de",
 }
+
+export enum EnumTheme {
+    dark = 'dark',
+    light = 'light',
+}
+
 export enum EnumUserRole {
     admin = "admin",
     owner = "owner",

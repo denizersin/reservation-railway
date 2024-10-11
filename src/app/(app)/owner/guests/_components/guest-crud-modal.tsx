@@ -14,6 +14,8 @@ import { api } from '@/server/trpc/react'
 import { GenderToSelect, VipLevelToSelect } from '@/shared/enums/predefined-enums'
 import TGuestValidator, { guestValidator } from '@/shared/validators/guest'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
+import { getQueryKey } from '@trpc/react-query'
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { useEffect } from 'react'
@@ -31,7 +33,9 @@ const GuestCrudModal = ({
     setOpen,
     guestData
 }: Props) => {
-    const { selectData: restaurantTags, isLoading: isLoadingRestaurantTags  } = useRestaurantTagsSelectData();
+    const queryClient = useQueryClient();
+
+    const { selectData: restaurantTags, isLoading: isLoadingRestaurantTags } = useRestaurantTagsSelectData();
     const { selectData: countries, isLoading: isLoadingCountries } = useCountriesSelectData();
     const { selectData: languages, isLoading: isLoadingLanguages } = useLanguagesSelectData();
     const { selectData: guestCompanies, isLoading: isLoadingGuestCompanies } = useGuestCompanySelectData();
@@ -49,16 +53,29 @@ const GuestCrudModal = ({
         }
     })
 
-    const { mutate: createGuest } = api.guest.createGuest.useMutation()
-    const { mutate: updateGuest } = api.guest.updateGuest.useMutation()
+    const onSuccsessCrud = () => {
+        setOpen(false)
+        queryClient.invalidateQueries({
+            queryKey: getQueryKey(api.guest.getAllGuests)
+        })
+    }
+
+    const { mutate: createGuest } = api.guest.createGuest.useMutation({
+        onSuccess:onSuccsessCrud
+    })
+    const { mutate: updateGuest } = api.guest.updateGuest.useMutation({
+        onSuccess:onSuccsessCrud
+    })
 
 
     const onSubmit = (data: TGuestValidator.CreateGuest) => {
         if (guestData) {
             console.log(data,)
-            updateGuest({ data: {
-                ...data,
-            }, id: guestData.id })
+            updateGuest({
+                data: {
+                    ...data,
+                }, id: guestData.id
+            })
         } else {
             createGuest(data)
         }
@@ -378,7 +395,7 @@ const GuestCrudModal = ({
                         )} />
 
                         <FormControl>
-                            <Button 
+                            <Button
                                 disabled={isDisabled}
                                 type="submit"
                                 loading={isLoading || form.formState.isSubmitting}

@@ -5,6 +5,10 @@ import { jwtEntities } from "../../entities/jwt";
 import { userEntities } from "../../entities/user";
 import { cookies } from "next/headers";
 import { jwtBody } from "../../entities/jwt/jwt";
+import { EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
+import { TLanguage } from "@/server/db/schema/predefined";
+import { DEFAULT_LANGUAGE, languagesData } from "@/server/data";
+import { revalidatePath } from "next/cache";
 
 
 export async function createUser({
@@ -126,6 +130,42 @@ export function getSessionUserData(
 }
 
 
+export const updateUserPreferences = async ({
+    language,
+    theme
+}: TUserValidator.updateUserPreferencesSchema) => {
+    if (language) {
+        const languageData = languagesData.find(l => l.languageCode === language)
+        if (languageData) {
+            cookies().set('language', language)
+        } else {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Invalid language'
+            })
+        }
+    }
+}
+
+
+export const getUserPreferences = () => {
+    const language = (cookies().get('language')?.value) as EnumLanguage | undefined
+    const languageData = languagesData.find(l => l.languageCode === language)
+
+    const userPrefrences: TUserPreferences = {
+        theme: EnumTheme.light,
+        language: DEFAULT_LANGUAGE
+    }
+    if (language && languageData) {
+        userPrefrences.language = languageData
+    } else {
+        cookies().set('language', DEFAULT_LANGUAGE.languageCode)
+        revalidatePath('/')
+    }
+    return userPrefrences
+}
+
+
 export const getAllUsers = userEntities.getAllUsers
 
 
@@ -134,3 +174,7 @@ export type TSession = {
     user: jwtBody
 }
 
+export type TUserPreferences = {
+    theme: EnumTheme,
+    language: TLanguage
+}

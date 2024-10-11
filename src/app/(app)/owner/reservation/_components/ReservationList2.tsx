@@ -12,6 +12,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import { useQueryClient } from '@tanstack/react-query'
+import { getQueryKey } from '@trpc/react-query'
 
 type Props = {
     date: Date
@@ -20,6 +22,18 @@ type Props = {
 export const ReservationList2 = ({ date }: Props) => {
     const { data: reservations } = api.reservation.getReservations.useQuery({
         date: date,
+    })
+
+    const queryClient = useQueryClient();
+    const { mutate: deleteReservation } = api.reservation.deleteReservation.useMutation({
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: getQueryKey(api.reservation.getReservations)
+            })
+            queryClient.invalidateQueries({
+                queryKey: getQueryKey(api.reservation.getAllAvailableReservation)
+            })
+        }
     })
 
     return (
@@ -32,6 +46,7 @@ export const ReservationList2 = ({ date }: Props) => {
                     <TableHead>Reservation Date</TableHead>
                     <TableHead>Room</TableHead>
                     <TableHead>Table</TableHead>
+                    <TableHead>Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -44,6 +59,9 @@ export const ReservationList2 = ({ date }: Props) => {
                         </TableCell>
                         <TableCell>{reservation.roomId}</TableCell>
                         <TableCell>{reservation.tableId}</TableCell>
+                        <TableCell>
+                            <button onClick={() => deleteReservation({ reservationId: reservation.id })}>Delete</button>
+                        </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
