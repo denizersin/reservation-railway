@@ -3,7 +3,7 @@ import { tblTable, TRoomWithTranslations, TTableInsert } from "@/server/db/schem
 import TRoomValidator from "@/shared/validators/room"
 import { TRPCError } from "@trpc/server"
 import { RoomEntities } from "../../entities/room"
-import { TUseCaseLayer } from "@/server/types/types"
+import { TUseCaseOwnerLayer } from "@/server/types/types"
 
 
 
@@ -43,10 +43,10 @@ export const createTables = async ({
 
 
 
-export const getRooms = async ({ ctx }: TUseCaseLayer<undefined>)
+export const getRooms = async ({ ctx }: TUseCaseOwnerLayer<undefined>)
     : Promise<TRoomWithTranslations[]> => {
     return await RoomEntities.getRooms({
-        restaurantId: ctx.session.user.restaurantId!,
+        restaurantId: ctx.session.user.restaurantId,
         languageId: ctx.userPrefrences.language.id
     })
 }

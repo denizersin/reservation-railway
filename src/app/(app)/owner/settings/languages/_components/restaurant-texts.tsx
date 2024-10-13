@@ -7,6 +7,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { restaurantMessagesValidators } from '@/shared/validators/language';
+import RichTextEditor from '@/components/rich-text-editor';
+
 
 type Props = {
     currentLanguageId: number;
@@ -51,6 +53,8 @@ export const RestaurantTexts = ({ currentLanguageId }: Props) => {
         }
     });
 
+
+
     if (isLoading) return <div>Loading...</div>;
 
     return (
@@ -65,7 +69,10 @@ export const RestaurantTexts = ({ currentLanguageId }: Props) => {
                         <FormItem>
                             <FormLabel>Reservation Requirements</FormLabel>
                             <FormControl>
-                                <Textarea {...field} />
+                                <RichTextEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -78,7 +85,10 @@ export const RestaurantTexts = ({ currentLanguageId }: Props) => {
                         <FormItem>
                             <FormLabel>Dress Code</FormLabel>
                             <FormControl>
-                                <Input {...field} />
+                                <RichTextEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -91,7 +101,10 @@ export const RestaurantTexts = ({ currentLanguageId }: Props) => {
                         <FormItem>
                             <FormLabel>Agreements</FormLabel>
                             <FormControl>
-                                <Textarea {...field} />
+                                <RichTextEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

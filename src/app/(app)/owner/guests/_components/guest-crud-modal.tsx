@@ -104,11 +104,11 @@ const GuestCrudModal = ({
                     <DialogTitle>Create Guest</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className=" grid grid-cols-2 gap-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className=" grid grid-cols-2 gap-4 ">
 
                         {/* Personal Information */}
                         <FormField control={form.control} name="name" render={({ field }) => (
-                            <FormItem>
+                            <FormItem >
                                 <FormLabel>Name</FormLabel>
                                 <Input {...field} />
                                 <FormMessage />

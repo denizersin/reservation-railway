@@ -8,6 +8,8 @@ import { z } from "zod";
 import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
 import { restaurantAssetsValidator } from "@/shared/validators/restaurant/restauran-assets";
+import { guestValidator } from "@/shared/validators/guest";
+import { personelValidator } from "@/shared/validators/user/personel";
 
 export const restaurantRouter = createTRPCRouter({
     updateRestaurantGeneralSettings: ownerProcedure
@@ -135,6 +137,28 @@ export const restaurantRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             await restaurantUseCases.updateMealHour({ data: input })
             return true
-        })
+        }),
+    createPersonel: ownerProcedure
+        .input(personelValidator.createPersonelSchema)
+        .mutation(async (opt) => {
+            await restaurantUseCases.createPersonel(opt)
+            return true
+        }),
+    deletePersonel: ownerProcedure
+        .input(personelValidator.deletePersonelSchema)
+        .mutation(async (opt) => {
+            await restaurantUseCases.deletePersonel(opt)
+            return true
+        }),
+    updatePersonel: ownerProcedure
+        .input(personelValidator.updateSchema)
+        .mutation(async (opt) => {
+            await restaurantUseCases.updatePersonel(opt)
+            return true
+        }),
+
+    getPersonels: ownerProcedure.query(async (opt) => {
+        return await restaurantUseCases.getPersonel(opt)
+    }),
 
 });

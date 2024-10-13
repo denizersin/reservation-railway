@@ -54,11 +54,16 @@ export const getAllGuestsValidatorSchema = z.object({
 })
 
 
+
 export const guestValidator = {
     createGuestSchema,
     updateGuestSchema,
     getAllGuestsValidatorSchema
 }
+
+
+
+
 
 namespace TGuestValidator {
     export type CreateGuest = z.infer<typeof createGuestSchema>;

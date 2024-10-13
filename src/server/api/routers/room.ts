@@ -35,12 +35,10 @@ export const roomRouter = createTRPCRouter({
 
         const data = await RoomEntities.getRoomWithTranslations({ roomId: input.roomId })
         return data;
-
     }),
-    getRooms: ownerProcedure.query(async ({ ctx }) => {
-        return await roomUseCases.getRooms({ ctx })
+    getRooms: ownerProcedure.query(async (opts) => {
+        return await roomUseCases.getRooms(opts)
     }),
-
     createTable: ownerProcedure
         .input(roomValidator.createRoomTableSchema)
         .mutation(async ({ input, ctx }) => {
@@ -64,7 +62,7 @@ export const roomRouter = createTRPCRouter({
             })
         }),
 
-        deleteTable: ownerProcedure
+    deleteTable: ownerProcedure
         .input(z.object({
             tableId: z.number().positive()
         }))

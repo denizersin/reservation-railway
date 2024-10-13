@@ -22,7 +22,7 @@ export const RestaurantMessages = (props: Props) => {
     if (isLoading || !currentLanguageId) return <div>Loading...</div>
 
     return (
-        <div className='max-w-2xl'>
+        <div className='max-w-[1000px]'>
             <LanguageTab currentLanguageId={currentLanguageId} setCurrentLanguageId={setcurrentLanguageId} />
             <RestaurantTexts currentLanguageId={currentLanguageId} />
             <LanguageTab currentLanguageId={currentLanguageId} setCurrentLanguageId={setcurrentLanguageId} />

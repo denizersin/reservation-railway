@@ -15,6 +15,13 @@
       "when": 1728465951106,
       "tag": "0001_familiar_inhumans",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1728742693485,
+      "tag": "0002_white_tinkerer",
+      "breakpoints": true
     }
   ]
 }

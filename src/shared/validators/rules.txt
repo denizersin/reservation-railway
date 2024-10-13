@@ -1,0 +1,19 @@
+writing zod validator from drizzle table schema
+we will write create and update schema 
+
+rules: 
+the nullable fields will be .nullable().optional()
+timestamp will be date obeject
+and use zod enums for mysqlEnum. use getEnumValuesFunction!
+for example role:z.enum(getEnumValues(EnumRole))
+
+createSchema rules:
+omit 'id' column
+
+for updating updateSchema should be like this
+
+export const updateSchema = z.object({
+    id: z.number().int().positive(),
+    data: createSchema.partial(),
+})
+

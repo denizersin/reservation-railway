@@ -11,6 +11,7 @@ export type jwtBody = {
     restaurantId?: number;
 }
 
+
 const secretKey = new TextEncoder().encode(env.JWT_SECRET)
 
 export const generateUserToken = async ({
@@ -68,7 +69,7 @@ export const getServerSession = async (): Promise<TSession | null> => {
         })
         console.log(payload, 'payload')
         return {
-            user:payload as jwtBody
+            user: payload as jwtBody
         }
     } catch (err) {
         console.error('JWT verification failed:', err)

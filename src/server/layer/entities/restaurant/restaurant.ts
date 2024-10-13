@@ -9,6 +9,7 @@ import { restaurantSettingEntities } from '../restaurant-setting';
 import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals, TMealHoursAdd, TRestaurantMealDaysCrud } from '@/server/db/schema/restaurant-assets';
 import { formatimeWithSeconds, formatTimeWithoutSeconds, getEnumValues, utcHourToLocalHour } from '@/server/utils/server-utils';
 import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
+import { tblPersonel, TPersonelInsert } from '@/server/db/schema/guest';
 
 export const createRestaurant = async ({
     restaurant,
@@ -30,11 +31,6 @@ export const createRestaurant = async ({
 
     return newRestaurant.id
 }
-
-
-
-
-
 
 export const getRestaurant = async ({
     restaurantId,
@@ -143,11 +139,6 @@ export const setDefaultsToRestaurant = async ({
 
 }
 
-
-
-
-
-
 export const getRestaurantWithSettings = async ({
     restaurantId
 }: {
@@ -182,10 +173,6 @@ export const getRestaurantLanguages = async ({
 
     return restaurantLanguages
 }
-
-
-
-
 
 export const updateRestaurantMeals = async ({
     restaurantId,
@@ -332,8 +319,8 @@ export const createMealHours = async ({
 
     const filteredMealHours = parsedMealHours.filter(mealHour => !existingMealHours.some(existingMealHour => (existingMealHour.hour) === mealHour.hour))
 
-    if(filteredMealHours.length === 0) return;
-    
+    if (filteredMealHours.length === 0) return;
+
     await db.insert(tblMealHours).values(
         filteredMealHours.map(mealHour => ({
             ...mealHour,
@@ -411,3 +398,5 @@ export const updateMealHour = async ({
 
     await db.update(tblMealHours).set(mealHourData).where(eq(tblMealHours.id, mealHourId))
 }
+
+

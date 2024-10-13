@@ -95,8 +95,8 @@ type GuestTag = typeof tblGuestTags.$inferSelect;
 
 
 
-export type TGuestInsert = GuestInsert&{
-    tagIds:number[]
+export type TGuestInsert = GuestInsert & {
+    tagIds: number[]
 };
 
 
@@ -106,3 +106,18 @@ export type TGuest = Guest & {
     language: TLanguage
     company: TGusetCompany | null
 };
+
+
+
+export const tblPersonel = mysqlTable('personel', {
+    id: int('id').autoincrement().primaryKey(),
+    restaurantId: int('restaurant_id').notNull(),
+    fullName: varchar('full_name', { length: 256 }).notNull(),
+    phone: varchar('phone', { length: 256 }),
+    email: varchar('email', { length: 256 }),
+    birthDate: date('birth_date'),
+    specialId: varchar('special_id', { length: 256 }),
+});
+
+export type TPersonelInsert = typeof tblPersonel.$inferInsert;
+export type TPersonel = typeof tblPersonel.$inferSelect;

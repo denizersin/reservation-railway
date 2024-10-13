@@ -1,12 +1,12 @@
 import { TCtx } from "../api/trpc"
-import { TSession } from "../layer/use-cases/user/user"
+import { TSession, TSessionWithRestaurat } from "../layer/use-cases/user/user"
 
 export type TCtxWithUser = TCtx & {
-    session:TSession
+    session:TSessionWithRestaurat
 }
 
-export type TUseCaseLayer<T> = {
-    input?: T
+export type TUseCaseOwnerLayer<T> = {
+    input: T
     ctx: TCtxWithUser
 }
 

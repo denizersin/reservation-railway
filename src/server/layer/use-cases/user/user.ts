@@ -173,6 +173,11 @@ export const getAllUsers = userEntities.getAllUsers
 export type TSession = {
     user: jwtBody
 }
+export type TSessionWithRestaurat = {
+    user: jwtBody & {
+        restaurantId: number
+    }
+}
 
 export type TUserPreferences = {
     theme: EnumTheme,

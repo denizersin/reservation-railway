@@ -1,16 +1,17 @@
 "use client"
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { MultiSelect } from "@/components/custom/multi-select";
 import { api } from '@/server/trpc/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getQueryKey } from '@trpc/react-query';
+import { Button } from '@/components/custom/button';
 type Props = {}
 
 const RestaurantLanguagesMultiSelect = (props: Props) => {
 
     const queryCLient = useQueryClient()
 
-
+    const [isDisabled, setIsDisabled] = useState(true)
 
     const restauranLanguageMutation = api.restaurant.updateRestaurantLanguages.useMutation({
         onSuccess: () => {
@@ -45,16 +46,25 @@ const RestaurantLanguagesMultiSelect = (props: Props) => {
     }
 
     return (
-        <MultiSelect
-            options={languageOptions}
-            onValueChange={onChange}
-            placeholder="Select frameworks"
-            variant="inverted"
-            defaultValue={selectedLanguages}
-            animation={2}
-            // maxCount={3}
-            disabled={restauranLanguageMutation.isPending}
-        />
+        <div>
+            <Button
+                onClick={() => setIsDisabled(!isDisabled)}
+                variant={'link'}
+                children={"Resotran Dil Ayarlarını Düzenle"}
+            />
+            <MultiSelect
+                options={languageOptions}
+                onValueChange={onChange}
+                placeholder="Select frameworks"
+                variant="inverted"
+                defaultValue={selectedLanguages}
+                animation={2}
+                // maxCount={3}
+                disabled={restauranLanguageMutation.isPending || isDisabled}
+            />
+
+        </div>
+
 
     )
 }
