@@ -97,3 +97,15 @@ export const GenderToSelect = getEnumValues(EnumGender).map(gender => ({
     label: gender as string,
     value: gender as string
 }))
+
+export enum EnumReservationPrepaymentStatus {
+    pending = 'pending',
+    success = 'success',
+    failed = 'failed',
+}
+
+export enum EnumReservationPrepaymentType {
+    "prepayment" = 'prepayment',
+    "provision" = 'provision',
+    "none" = 'none',
+}

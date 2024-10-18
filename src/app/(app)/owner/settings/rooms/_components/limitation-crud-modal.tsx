@@ -48,7 +48,7 @@ const LimitationCrudModal = ({
     })
 
     const { data: restaurantMeals } = api.restaurant.getRestaurantMeals.useQuery()
-    const { data: restaurantRooms } = api.room.getRooms.useQuery()
+    const { data: restaurantRooms } = api.room.getRooms.useQuery({})
 
     const restaurantMealsSelect = useMemo(() => restaurantMeals?.map(rsMeal => ({
         label: rsMeal.meal.name,

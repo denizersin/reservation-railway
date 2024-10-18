@@ -1,5 +1,6 @@
 
 import { db } from "@/server/db";
+import { tblGuestRelations, tblReservationTables, TReservationInsert } from "@/server/db/schema";
 import { tblReservation } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
@@ -87,6 +88,7 @@ export const getAllAvailableReservation = async () => {
     const avaliableInfo = await getAvaliabels();
 
 
+
     const TEST = await db
         .select()
         .from(tblRoom)
@@ -120,6 +122,24 @@ export const getAllAvailableReservation = async () => {
             )) {
             r.table.maxCapacity = r.limitedAvailableHours.avaliableGuest
         }
+    })
+
+}
+
+
+export const createReservation = async ({
+    tableIds,
+    ...data
+}: TReservationInsert) => {
+    const newReservation = await db.insert(tblReservation).values(data).$returningId()
+    const reservationId = newReservation[0]?.id!
+    await db.insert(tblReservationTables).values(tableIds.map(tableId => ({
+        mainReservationId: reservationId,
+        reservationId: reservationId,
+        tableId: tableId
+    })))
+    await db.update(tblReservation).set({
+        mainReservationId: reservationId
     })
 
 }

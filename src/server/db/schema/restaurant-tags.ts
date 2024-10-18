@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { int, mysqlTable, unique, varchar } from "drizzle-orm/mysql-core";
+import { tblRestaurant } from "./restaurant";
 
 
 export const tblRestaurantTag = mysqlTable('restaurant_tags', {
@@ -20,7 +21,7 @@ export const tblRestaurantTagTranslation = mysqlTable('restaurant_tag_translatio
 
 export const restaurantTagRelations = relations(tblRestaurantTag, ({ one, many }) => ({
     translations: many(tblRestaurantTagTranslation),
-    restaurant: one(tblRestaurantTag, { fields: [tblRestaurantTag.restaurantId], references: [tblRestaurantTag.id] }),
+    restaurant: one(tblRestaurant, { fields: [tblRestaurantTag.restaurantId], references: [tblRestaurant.id] }),
 }));
 
 export const restaurantTagTranslationRelations = relations(tblRestaurantTagTranslation, ({ one, many }) => ({

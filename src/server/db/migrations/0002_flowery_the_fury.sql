@@ -1,0 +1,1 @@
+ALTER TABLE `room` ADD `is_waiting_room` boolean DEFAULT false;

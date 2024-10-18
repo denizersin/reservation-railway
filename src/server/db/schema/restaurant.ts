@@ -36,8 +36,8 @@ export const restaurantRelations = relations(tblRestaurant, ({ many, one }) => (
     prepaymentMessages: many(tblPrepaymentMessage),
     waitlistMessages: many(tblWaitlistMessage),
     restaurantTexts: many(tblRestaurantTexts),
-    rooms:many(tblRoom),
-    guests:many(tblGuest),
+    rooms: many(tblRoom),
+    guests: many(tblGuest),
     // defaultCountry: one(tblCountry, { fields: [tblRestaurantGeneralSetting.defaultCountryId], references: [tblCountry.id] }),
     // 
 }));
@@ -56,6 +56,11 @@ export const tblRestaurantTranslations = mysqlTable('restaurant_translation', {
 }, (t) => ({
     // pk: primaryKey({ columns: [t.restaurantId, t.languageCode], }),
 }));
+
+export const tblRestaurantTranslationsRelations = relations(tblRestaurantTranslations, ({ one }) => ({
+    restaurant: one(tblRestaurant, { fields: [tblRestaurantTranslations.restaurantId], references: [tblRestaurant.id] }),
+}));
+
 
 
 

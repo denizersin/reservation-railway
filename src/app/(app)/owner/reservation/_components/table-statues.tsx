@@ -9,8 +9,8 @@ import { api, RouterOutputs } from '@/server/trpc/react'
 import { CircleCheck, Clock, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
-type HourTable = RouterOutputs['reservation']['getAllAvailableReservation']['result'][0]['table']
-type AvaliableTableData = RouterOutputs['reservation']['getAllAvailableReservation']['result']
+type HourTable = RouterOutputs['reservation']['getAllAvailableReservation2']['result'][0]['table']
+type AvaliableTableData = RouterOutputs['reservation']['getAllAvailableReservation2']['result']
 
 type Props = {
     selectedTableId: number | undefined
@@ -44,7 +44,7 @@ export const TableStatues = ({
         select: (data) => data.find((d) => d.meal.id === selectedMeal.mealId)?.mealHours
     })
 
-    const { data: avaliableTablesData } = api.reservation.getAllAvailableReservation.useQuery({
+    const { data: avaliableTablesData } = api.reservation.getAllAvailableReservation2.useQuery({
         date,
         mealId: selectedMeal.mealId,
     }, {
@@ -68,6 +68,7 @@ export const TableStatues = ({
         const currLimitations = avaliableTablesData.limitations.filter(d => d.roomId == selectedRoom.id && d.mealId == selectedMeal.mealId)
 
         const currAvaliableLimitedHours = avaliableTablesData.limitedAvailableHoursInfo.filter(d => d.room == selectedRoom.id && d.meal == selectedMeal.mealId)
+        
         mealHours.forEach((hour) => {
             const hourTables = currRoomTables.filter(d => d.meal_hours?.hour === hour.hour)
             const avaliableTables = hourTables.filter(d => (!d.table?.isReachedLimit && !d.table?.isReserved)).map(r => r.table) ?? []
@@ -151,7 +152,7 @@ export const TableStatues = ({
                             })}>
                             <CardContent className="p-4 flex flex-col gap-y-1">
                                 <div className="text-xl font-bold">{data.table?.no}</div>
-                                <div className="text-sm ">{data.table.isReserved ? 'ersin' : '-'}</div>
+                                <div className="text-sm ">{data.table.isReserved ? data.reservation?.guestId : '-'}</div>
                                 <div className="flex items-center text-xs mt-2">
                                     <Clock className="w-3 h-3 mr-1" /> {data.reservation?.hour}
                                 </div>

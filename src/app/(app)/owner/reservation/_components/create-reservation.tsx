@@ -13,11 +13,15 @@ import GuestCrudModal from '../../guests/_components/guest-crud-modal'
 import { ReservationDateCalendar } from './reservation-date-calendar'
 import { ReservationList2 } from './ReservationList2'
 import { TableStatues } from './table-statues'
+import { table } from 'console'
+import { EnumReservationPrepaymentType } from '@/shared/enums/predefined-enums'
 
 
 type Props = {}
 
 export const CreateReservation = (props: Props) => {
+
+
     const queryClient = useQueryClient();
 
     const [isCreateGuestModalOpen, setIsCreateGuestModalOpen] = useState(false)
@@ -25,7 +29,7 @@ export const CreateReservation = (props: Props) => {
 
     const { data: meals } = api.restaurant.getRestaurantMeals.useQuery()
 
-    const { data: roomsData } = api.room.getRooms.useQuery()
+    const { data: roomsData } = api.room.getRooms.useQuery({})
 
     const { data } = api.guest.getAllGuests.useQuery({
         page: 1,
@@ -59,12 +63,12 @@ export const CreateReservation = (props: Props) => {
         mutate: createReservation,
         isPending: createReservationPending,
     } = api.reservation.createMockReservation.useMutation({
-        onSuccess: () =>{
+        onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.reservation.getReservations)
             })
             queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation)
+                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
             })
             setSelectedTableId(undefined)
         }
@@ -84,14 +88,23 @@ export const CreateReservation = (props: Props) => {
         createReservation({
             guestId: selectedGuestId,
             roomId: selectedRoom.id,
-            tableId: selectedTableId,
             guestCount: guestCount,
             reservationDate: date,
-            reservationTime: selectedHour,
-            mealId: selectedMeal.mealId
+            hour: selectedHour,
+            mealId: selectedMeal.mealId,
+            prePaymentType: EnumReservationPrepaymentType.prepayment,
+            tableIds: [selectedTableId],
         }
         )
     }
+
+    const { data: newData } = api.reservation.getAllAvailableReservation2.useQuery({
+        date: date,
+        mealId: selectedMeal?.mealId!
+    })
+
+    console.log(newData, 'newData')
+
 
 
 
@@ -130,18 +143,20 @@ export const CreateReservation = (props: Props) => {
                 </TabsList>
             </Tabs>
 
+            {
 
-            <TableStatues
-                selectedTableId={selectedTableId}
-                setSelectedTableId={setSelectedTableId}
-                date={date}
-                selectedRoom={selectedRoom!}
-                selectedMeal={selectedMeal!}
-                selectedHour={selectedHour}
-                setSelectedHour={setSelectedHour}
-                guestCount={guestCount}
-                setGuestCount={setGuestCount}
-            />
+                <TableStatues
+                    selectedTableId={selectedTableId}
+                    setSelectedTableId={setSelectedTableId}
+                    date={date}
+                    selectedRoom={selectedRoom!}
+                    selectedMeal={selectedMeal!}
+                    selectedHour={selectedHour}
+                    setSelectedHour={setSelectedHour}
+                    guestCount={guestCount}
+                    setGuestCount={setGuestCount}
+                />
+            }
 
             <Button
                 loading={createReservationPending}

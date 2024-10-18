@@ -9,7 +9,6 @@ export const createRoomWithTranslations = async ({
     ...roomFields
 }: TRoomInsertWithTranslations) => {
     //create room with translations
-
     const [result] = await db.insert(tblRoom).values(roomFields).$returningId()
 
     if (!result?.id) {
@@ -20,6 +19,23 @@ export const createRoomWithTranslations = async ({
     await db.insert(tblRoomTranslation).values(translations.map(t => ({ ...t, roomId })))
 
     // Change the return statement to return the created room
+}
+
+export const createWaitingRoom = async ({
+    translations,
+    ...roomFields
+}: TRoomInsertWithTranslations) => {
+    //create room with translations
+
+    // const [result] = await db.insert(tblWaitingRoom).values({
+    //     name: translations[0]?.name!,
+    //     restaurantId: roomFields.restaurantId
+    // }).$returningId()
+
+    // if (!result?.id) {
+    //     throw new TRPCError({ message: 'Room not created', code: 'BAD_REQUEST' })
+    // }
+
 }
 
 export const updateRoomWithTranslations = async ({
@@ -63,13 +79,19 @@ export const getRoomWithTranslations = async ({
 
 export const getRooms = async ({
     restaurantId,
-    languageId
+    languageId,
+    withWaitingRooms
 }: {
     restaurantId: number
     languageId: number
+    withWaitingRooms?: boolean
 }): Promise<TRoomWithTranslations[]> => {
     return await db.query.tblRoom.findMany({
-        where: eq(tblRoom.restaurantId, restaurantId),
+        where: and(
+            eq(tblRoom.restaurantId, restaurantId),
+            withWaitingRooms ? undefined :
+                eq(tblRoom.isWaitingRoom, false)
+        ),
         with: {
             translations: {
                 where: eq(tblRoomTranslation.languageId, languageId)

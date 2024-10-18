@@ -9,8 +9,10 @@ export const roomRouter = createTRPCRouter({
         .input(roomValidator.createRoomSchema)
         .mutation(async ({ input, ctx }) => {
             const { session: { user: { restaurantId } } } = ctx
+
             const createdRoom = await RoomEntities.createRoomWithTranslations({
                 ...input,
+
                 translations: input.translations,
                 restaurantId
             });
@@ -36,8 +38,18 @@ export const roomRouter = createTRPCRouter({
         const data = await RoomEntities.getRoomWithTranslations({ roomId: input.roomId })
         return data;
     }),
-    getRooms: ownerProcedure.query(async (opts) => {
+    getRooms: ownerProcedure
+    .input(z.object({
+        withWaitingRooms: z.boolean().optional()
+    }))
+    .query(async (opts) => {
         return await roomUseCases.getRooms(opts)
+    }),
+    getAllRooms: ownerProcedure.query(async (opts) => {
+        return await roomUseCases.getRooms({
+            ctx: opts.ctx,
+            input: { withWaitingRooms: true }
+        })
     }),
     createTable: ownerProcedure
         .input(roomValidator.createRoomTableSchema)

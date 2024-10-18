@@ -29,7 +29,7 @@ type Props = {
 const CreatePermanentLimitationModal: React.FC<Props> = ({ isOpen, setOpen }) => {
     const queryClient = useQueryClient();
 
-    const { data: rooms } = api.room.getRooms.useQuery();
+    const { data: rooms } = api.room.getRooms.useQuery({});
 
     const { mutate: createPermanentLimitation, isPending } = api.reservation.createPermanentLimitation.useMutation({
         onSuccess: () => {

@@ -31,7 +31,7 @@ export const ReservationList2 = ({ date }: Props) => {
                 queryKey: getQueryKey(api.reservation.getReservations)
             })
             queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation)
+                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
             })
         }
     })
@@ -58,7 +58,9 @@ export const ReservationList2 = ({ date }: Props) => {
                             {((reservation.reservationDate.toString()))}
                         </TableCell>
                         <TableCell>{reservation.roomId}</TableCell>
-                        <TableCell>{reservation.tableId}</TableCell>
+                        <TableCell>{
+                            reservation.tables.map((rsvTable) => rsvTable.table.no).join(', ')
+                        }</TableCell>
                         <TableCell>
                             <button onClick={() => deleteReservation({ reservationId: reservation.id })}>Delete</button>
                         </TableCell>

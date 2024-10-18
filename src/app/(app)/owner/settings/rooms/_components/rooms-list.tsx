@@ -22,7 +22,7 @@ const RoomsList = () => {
     const updateButtonRef = React.useRef<HTMLButtonElement>(null)
 
     const router = useRouter();
-    const { data: restaurantRooms } = api.room.getRooms.useQuery()
+    const { data: restaurantRooms } = api.room.getRooms.useQuery({ withWaitingRooms: true })
 
     const handleAddNewArea = () => {
         setIsRoomModalOpen(true)

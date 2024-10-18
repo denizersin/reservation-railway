@@ -47,14 +47,92 @@ CREATE TABLE `guest_company` (
 	CONSTRAINT `guest_company_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `meal_day` (
+CREATE TABLE `personel` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`meal_id` int NOT NULL,
-	`day` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`full_name` varchar(256) NOT NULL,
+	`phone` varchar(256),
+	`email` varchar(256),
+	`birth_date` date,
+	`special_id` varchar(256),
+	CONSTRAINT `personel_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `refresh_token` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`user_id` int NOT NULL,
+	`token` varchar(255) NOT NULL,
+	`expires_at` timestamp NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT `meal_day_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_meal_day` UNIQUE(`meal_id`,`day`)
+	`revoked_at` timestamp DEFAULT NULL,
+	`ip_address` varchar(45) DEFAULT NULL,
+	`user_agent` varchar(255) DEFAULT NULL,
+	CONSTRAINT `refresh_token_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_refresh_token_and_user_id` UNIQUE(`token`,`user_id`)
+);
+--> statement-breakpoint
+CREATE TABLE `user` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`name` varchar(256),
+	`email` varchar(256) NOT NULL,
+	`password` varchar(256) NOT NULL,
+	`role` enum('admin','owner','user') NOT NULL DEFAULT 'user',
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `user_id` PRIMARY KEY(`id`),
+	CONSTRAINT `user_email_unique` UNIQUE(`email`)
+);
+--> statement-breakpoint
+CREATE TABLE `user_personal_settings` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`user_id` int NOT NULL,
+	`sound_for_notifications` boolean NOT NULL DEFAULT false,
+	`reservation_listing_type` enum('smartList','newestOnTop') NOT NULL DEFAULT 'smartList',
+	`guest_selection_side` enum('left','right') NOT NULL DEFAULT 'left',
+	`corporate_information_selectable` boolean NOT NULL DEFAULT false,
+	`open_reservation_window_on_call` boolean NOT NULL DEFAULT false,
+	`open_reservation_window_full_screen` boolean NOT NULL DEFAULT true,
+	`reservation_screen_follow_main_calendar` boolean NOT NULL DEFAULT true,
+	`hide_daily_summary_section` boolean NOT NULL DEFAULT false,
+	CONSTRAINT `user_personal_settings_id` PRIMARY KEY(`id`),
+	CONSTRAINT `user_personal_settings_user_id_unique` UNIQUE(`user_id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`phone_number` varchar(20) NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`name` varchar(255) NOT NULL,
+	`owner_id` int NOT NULL,
+	CONSTRAINT `restaurant_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_language` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`language_id` int NOT NULL,
+	CONSTRAINT `restaurant_language_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_restaurant_language` UNIQUE(`restaurant_id`,`language_id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_translation` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`language_code` enum('en','tr','de') NOT NULL DEFAULT 'tr',
+	`description` varchar(500) NOT NULL,
+	CONSTRAINT `restaurant_translation_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_general_setting` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`is_auto_check_out` boolean NOT NULL,
+	`new_reservation_state_id` int NOT NULL,
+	`default_language_id` int NOT NULL,
+	`default_country_id` int NOT NULL,
+	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
+	CONSTRAINT `restaurant_general_setting_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `country` (
@@ -67,7 +145,7 @@ CREATE TABLE `country` (
 --> statement-breakpoint
 CREATE TABLE `language` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`language_code` varchar(10) NOT NULL,
+	`language_code` enum('en','tr','de') NOT NULL,
 	`name` varchar(50) NOT NULL,
 	`is_rtl` boolean NOT NULL,
 	CONSTRAINT `language_id` PRIMARY KEY(`id`)
@@ -86,46 +164,20 @@ CREATE TABLE `reservation_status` (
 	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `reservation` (
+CREATE TABLE `restaurant_tags` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
-	`room_id` int NOT NULL,
-	`table_id` int NOT NULL,
-	`reservation_date` timestamp NOT NULL,
-	`reservation_time` time NOT NULL,
-	`guest_count` int NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	`deleted_at` timestamp,
-	`guest_id` int NOT NULL,
-	CONSTRAINT `reservation_id` PRIMARY KEY(`id`)
+	CONSTRAINT `restaurant_tags_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `permanent_limitation` (
+CREATE TABLE `restaurant_tag_translation` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`room_id` int,
-	`start_date` timestamp NOT NULL,
-	`end_date` timestamp NOT NULL,
-	CONSTRAINT `permanent_limitation_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_permanent_limitation` UNIQUE(`restaurant_id`,`room_id`)
-);
---> statement-breakpoint
-CREATE TABLE `reservation_limitation` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`is_active` boolean NOT NULL DEFAULT true,
-	`day` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday'),
-	`meal_id` int NOT NULL,
-	`room_id` int,
-	`hour` time NOT NULL,
-	`min_hour` time NOT NULL,
-	`max_hour` time NOT NULL,
-	`max_table_count` int NOT NULL,
-	`max_guest_count` int NOT NULL,
-	`is_daily` boolean NOT NULL DEFAULT false,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `reservation_limitation_id` PRIMARY KEY(`id`)
+	`tag_id` int NOT NULL,
+	`name` varchar(50) NOT NULL,
+	`code` varchar(10) NOT NULL,
+	`language_id` int NOT NULL,
+	CONSTRAINT `restaurant_tag_translation_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_tag_translation` UNIQUE(`tag_id`,`language_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `meal_hours` (
@@ -154,33 +206,6 @@ CREATE TABLE `restaurant_meals` (
 	`restaurant_id` int NOT NULL,
 	CONSTRAINT `restaurant_meals_id` PRIMARY KEY(`id`),
 	CONSTRAINT `unique_meal_and_restaurant` UNIQUE(`meal_id`,`restaurant_id`)
-);
---> statement-breakpoint
-CREATE TABLE `restaurant_general_setting` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`is_auto_check_out` boolean NOT NULL,
-	`new_reservation_state_id` int NOT NULL,
-	`default_language_id` int NOT NULL,
-	`default_country_id` int NOT NULL,
-	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
-	CONSTRAINT `restaurant_general_setting_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
-CREATE TABLE `restaurant_tags` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	CONSTRAINT `restaurant_tags_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
-CREATE TABLE `restaurant_tag_translation` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`tag_id` int NOT NULL,
-	`name` varchar(50) NOT NULL,
-	`code` varchar(10) NOT NULL,
-	`language_id` int NOT NULL,
-	CONSTRAINT `restaurant_tag_translation_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_tag_translation` UNIQUE(`tag_id`,`language_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `prepayment_message` (
@@ -254,35 +279,9 @@ CREATE TABLE `waitlist_message` (
 	CONSTRAINT `unique_waitlist_message` UNIQUE(`restaurant_id`,`language_id`)
 );
 --> statement-breakpoint
-CREATE TABLE `restaurant` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`phone_number` varchar(20) NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`name` varchar(255) NOT NULL,
-	`owner_id` int NOT NULL,
-	CONSTRAINT `restaurant_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
-CREATE TABLE `restaurant_language` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`language_id` int NOT NULL,
-	CONSTRAINT `restaurant_language_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_restaurant_language` UNIQUE(`restaurant_id`,`language_id`)
-);
---> statement-breakpoint
-CREATE TABLE `restaurant_translation` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`language_code` enum('en','tr') NOT NULL DEFAULT 'tr',
-	`description` varchar(500) NOT NULL,
-	CONSTRAINT `restaurant_translation_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
 CREATE TABLE `room` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
-	`is_waiting_room` boolean NOT NULL DEFAULT false,
 	`order` int NOT NULL,
 	`is_active` boolean NOT NULL DEFAULT true,
 	CONSTRAINT `room_id` PRIMARY KEY(`id`)
@@ -314,45 +313,108 @@ CREATE TABLE `table` (
 	CONSTRAINT `unique_table` UNIQUE(`room_id`,`no`)
 );
 --> statement-breakpoint
-CREATE TABLE `refresh_token` (
+CREATE TABLE `waiting_room` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`user_id` int NOT NULL,
-	`token` varchar(255) NOT NULL,
-	`expires_at` timestamp NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`is_active` boolean NOT NULL DEFAULT true,
+	`name` varchar(256) NOT NULL,
+	CONSTRAINT `waiting_room_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `permanent_limitation` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`room_id` int,
+	`start_date` timestamp NOT NULL,
+	`end_date` timestamp NOT NULL,
+	CONSTRAINT `permanent_limitation_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_permanent_limitation` UNIQUE(`restaurant_id`,`room_id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_limitation` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`is_active` boolean NOT NULL DEFAULT true,
+	`day` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday'),
+	`meal_id` int NOT NULL,
+	`room_id` int,
+	`hour` time NOT NULL,
+	`min_hour` time NOT NULL,
+	`max_hour` time NOT NULL,
+	`max_table_count` int NOT NULL,
+	`max_guest_count` int NOT NULL,
+	`is_daily` boolean NOT NULL DEFAULT false,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `reservation_limitation_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `linked_reservations` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`main_reservation_id` int NOT NULL,
+	`linked_reservation_id` int NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	`revoked_at` timestamp DEFAULT NULL,
-	`ip_address` varchar(45) DEFAULT NULL,
-	`user_agent` varchar(255) DEFAULT NULL,
-	CONSTRAINT `refresh_token_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_refresh_token_and_user_id` UNIQUE(`token`,`user_id`)
+	CONSTRAINT `linked_reservations_id` PRIMARY KEY(`id`),
+	CONSTRAINT `linked-rsv-link` UNIQUE(`main_reservation_id`,`linked_reservation_id`)
 );
 --> statement-breakpoint
-CREATE TABLE `user` (
+CREATE TABLE `reservation` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`name` varchar(256),
-	`email` varchar(256) NOT NULL,
-	`password` varchar(256) NOT NULL,
-	`role` enum('admin','owner','user') NOT NULL DEFAULT 'user',
+	`restaurant_id` int NOT NULL,
+	`room_id` int NOT NULL,
+	`guest_id` int NOT NULL,
+	`restaurant_meal_id` int NOT NULL,
+	`prepayment_id` int,
+	`main_reservation_id` int NOT NULL DEFAULT 0,
+	`reservation_date` timestamp NOT NULL,
+	`reservation_time` time NOT NULL,
+	`guest_count` int NOT NULL,
+	`prepayment_type` enum('prepayment','provision','none') NOT NULL,
+	`is_send_sms` boolean NOT NULL,
+	`is_send_email` boolean NOT NULL,
+	`is_main_reservation` boolean NOT NULL DEFAULT true,
+	`waiting_room_id` int,
+	`is_in_waiting_room` boolean NOT NULL DEFAULT false,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT `user_id` PRIMARY KEY(`id`),
-	CONSTRAINT `user_email_unique` UNIQUE(`email`)
+	`deleted_at` timestamp,
+	CONSTRAINT `reservation_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `user_personal_settings` (
+CREATE TABLE `reservation_tables` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`user_id` int NOT NULL,
-	`sound_for_notifications` boolean NOT NULL DEFAULT false,
-	`reservation_listing_type` enum('smartList','newestOnTop') NOT NULL DEFAULT 'smartList',
-	`guest_selection_side` enum('left','right') NOT NULL DEFAULT 'left',
-	`corporate_information_selectable` boolean NOT NULL DEFAULT false,
-	`open_reservation_window_on_call` boolean NOT NULL DEFAULT false,
-	`open_reservation_window_full_screen` boolean NOT NULL DEFAULT true,
-	`reservation_screen_follow_main_calendar` boolean NOT NULL DEFAULT true,
-	`hide_daily_summary_section` boolean NOT NULL DEFAULT false,
-	CONSTRAINT `user_personal_settings_id` PRIMARY KEY(`id`),
-	CONSTRAINT `user_personal_settings_user_id_unique` UNIQUE(`user_id`)
+	`reservation_id` int NOT NULL,
+	`main_reservation_id` int NOT NULL,
+	`table_id` int NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `reservation_tables_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-ALTER TABLE `refresh_token` ADD CONSTRAINT `refresh_token_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;
+CREATE TABLE `prepayment` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`amount` int NOT NULL,
+	`status` enum('pending','success','failed') NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `prepayment_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_reservation_id` UNIQUE(`reservation_id`)
+);
+--> statement-breakpoint
+CREATE TABLE `meal_day` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`meal_id` int NOT NULL,
+	`day` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `meal_day_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_meal_day` UNIQUE(`meal_id`,`day`)
+);
+--> statement-breakpoint
+ALTER TABLE `refresh_token` ADD CONSTRAINT `refresh_token_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `linked_reservations` ADD CONSTRAINT `linked_reservations_main_reservation_id_reservation_id_fk` FOREIGN KEY (`main_reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `linked_reservations` ADD CONSTRAINT `linked_reservations_linked_reservation_id_reservation_id_fk` FOREIGN KEY (`linked_reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `reservation_tables` ADD CONSTRAINT `reservation_tables_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;

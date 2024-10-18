@@ -2,6 +2,8 @@ import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumTableShape } from '@/shared/enums/predefined-enums';
 import { is, relations } from "drizzle-orm";
 import { boolean, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
+import { restaurant } from '../scripts/seedData';
+import { tblRestaurant } from './restaurant';
 
 
 //room table
@@ -9,13 +11,14 @@ import { boolean, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 
 export const tblRoom = mysqlTable('room', {
     id: int('id').autoincrement().primaryKey(),
     restaurantId: int('restaurant_id').notNull(),
-    isWaitingRoom: boolean('is_waiting_room').notNull().default(false),
     order: int('order').notNull(),
     isActive: boolean('is_active').notNull().default(true),
+    isWaitingRoom: boolean('is_waiting_room').default(false),
 });
 export const roomRelations = relations(tblRoom, ({ one, many }) => ({
     tables: many(tblTable),
-    translations: many(tblRoomTranslation)
+    translations: many(tblRoomTranslation),
+    restaurant: one(tblRestaurant, { fields: [tblRoom.restaurantId], references: [tblRestaurant.id] }),
 }));
 
 export const tblRoomTranslation = mysqlTable('room_translation', {
@@ -72,4 +75,7 @@ export const tableRelations = relations(tblTable, ({ one, many }) => ({
 
 export type TTable = typeof tblTable.$inferSelect
 export type TTableInsert = typeof tblTable.$inferInsert
+
+
+
 

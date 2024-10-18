@@ -38,7 +38,7 @@ export const useRestaurantTagsSelectData = () => {
 }
 
 export const useRoomSelectData = () => {
-    const { data, isLoading } = api.room.getRooms.useQuery()
+    const { data, isLoading } = api.room.getRooms.useQuery({})
     const selectData = useMemo(() => data?.map((room) => ({
         label: room.translations?.[0]?.name || '',
         value: String(room.id)

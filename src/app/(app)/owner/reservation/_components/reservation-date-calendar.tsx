@@ -1,15 +1,12 @@
 
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
 
 import {
     Popover,
@@ -44,9 +41,9 @@ export function ReservationDateCalendar({ date, setDate }: { date: Date, setDate
                     mode="single"
                     selected={date}
                     onSelect={(value) => setDate(value || date)}
-                    disabled={(date) =>
-                        date < new Date() 
-                    }
+                    // disabled={(date) =>
+                    //     date < new Date() 
+                    // }
                     initialFocus
                 />
             </PopoverContent>

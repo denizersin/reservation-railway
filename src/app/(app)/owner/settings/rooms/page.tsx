@@ -26,7 +26,7 @@ const RestaurantAreasTable = () => {
     const updateButtonRef = React.useRef<HTMLButtonElement>(null)
 
     const router = useRouter();
-    const { data: restaurantRooms } = api.room.getRooms.useQuery()
+    const { data: restaurantRooms } = api.room.getRooms.useQuery({})
 
     const handleAddNewArea = () => {
         setIsRoomModalOpen(true)

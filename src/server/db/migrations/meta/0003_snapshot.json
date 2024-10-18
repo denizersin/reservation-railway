@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "e5c37d42-9959-450a-a08c-e534f8072507",
-  "prevId": "4c58c5cb-5ead-4a30-b53e-df0b77cd5c8d",
+  "id": "f465419e-03e6-49c3-aeea-6b42ca553a04",
+  "prevId": "e86e7b57-c97c-49bc-88bc-0b1889f9695a",
   "tables": {
     "guest": {
       "name": "guest",
@@ -1761,6 +1761,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": true
+        },
+        "is_waiting_room": {
+          "name": "is_waiting_room",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
         }
       },
       "indexes": {},
@@ -1939,51 +1947,6 @@
           ]
         }
       }
-    },
-    "waiting_room": {
-      "name": "waiting_room",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "restaurant_id": {
-          "name": "restaurant_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "waiting_room_id": {
-          "name": "waiting_room_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {}
     },
     "permanent_limitation": {
       "name": "permanent_limitation",

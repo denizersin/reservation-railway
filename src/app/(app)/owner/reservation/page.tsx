@@ -6,7 +6,7 @@ import { CreateReservation } from "./_components/create-reservation"
 export default async function Page() {
 
     const reservationMeals = await api.restaurant.getRestaurantMeals()
-    const restaurantRooms = await api.room.getRooms()
+    const restaurantRooms = await api.room.getRooms({})
 
     return (
         <ReservationDataProvider
