@@ -56,7 +56,7 @@ export const createRoomWithTranslations = async ({ ctx, input }: TUseCaseOwnerLa
 
     return await RoomEntities.createRoomWithTranslations({
         restaurantId: ctx.session.user.restaurantId,
-        ...input
+        ...input,
     })
 
 

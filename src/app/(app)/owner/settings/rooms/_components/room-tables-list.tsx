@@ -24,7 +24,7 @@ type Props = {}
 
 export const RoomTablesList = (props: Props) => {
     const queryClinet = useQueryClient()
-    const { roomId } = useContext(RoomDetailContext)
+    const { roomId,roomData } = useContext(RoomDetailContext)
 
     const { data: tables } = api.room.getTables.useQuery({ roomId })
 

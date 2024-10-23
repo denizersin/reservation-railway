@@ -27,7 +27,7 @@ export enum EnumMeals {
 export enum EnumReservationStatus {
     draft = 'draft',
     reservation = 'reservation',
-    provision = 'provision',
+    prepayment = 'prepayment',
     confirmation = 'confirmation',
     cancel = 'cancel',
     waitApprove = 'wait approve',
@@ -108,4 +108,33 @@ export enum EnumReservationPrepaymentType {
     "prepayment" = 'prepayment',
     "provision" = 'provision',
     "none" = 'none',
+}
+
+export enum NotificationType {
+    RESERVATION_CONFIRMATION = 'RESERVATION_CONFIRMATION',
+    RESERVATION_CANCEL = 'RESERVATION_CANCEL',
+
+}
+
+
+export enum EnumNotificationType {
+    SMS = "SMS",
+    EMAIL = "EMAIL",
+}
+
+export enum EnumNotificationStatus {
+    PENDING = "PENDING",
+    SENT = "SENT",
+    FAILED = "FAILED",
+}
+
+export enum EnumNotificationMessageType {
+    NewReservation = "NewReservation",
+    DateTimeChange = "DateTime Change",
+    GuestCountChange = "Guest Count Change",
+    ReservationCancellation = "Reservation Cancellation",
+    ReservationConfirmation = "Reservation Confirmation",
+    ReservationCompleted = "Reservation Completed",
+    ReservationReminder = "Reservation Reminder",
+    ReservationFeedback = "Reservation Feedback"
 }

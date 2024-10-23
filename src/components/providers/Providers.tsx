@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import LoadingModalWrapper from '../modal/loading';
 import { ThemeProvider } from './theme-provider';
 import { TooltipProvider } from '../ui/tooltip';
+import ConfirmModalWrapper from '../modal/confirm-modal';
 
 
 interface IProvidersProps {
@@ -22,6 +23,7 @@ const Providers = ({ children }: IProvidersProps) => {
                         {children}
                         <ReactQueryDevtools initialIsOpen={false} />
                         <LoadingModalWrapper />
+                        <ConfirmModalWrapper/>
                     </AuthProvider>
                 </TooltipProvider>
             </ThemeProvider>

@@ -2,6 +2,7 @@
 import { Button } from '@/components/custom/button'
 import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
+import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getChangedFields } from '@/lib/utils'
 import { api } from '@/server/trpc/react'
@@ -102,6 +103,23 @@ export const GeneralSettings = ({ }: Props) => {
                     )}
                 />
 
+                {/* prepayment_price_per_guest input */}
+                <FormField
+                    control={form.control}
+                    name="prePayemntPricePerGuest"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Prepayment Price Per Guest</FormLabel>
+                            <FormControl>
+                                <Input
+                                    {...field}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    className="w-full"
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
 
 
                 <Button

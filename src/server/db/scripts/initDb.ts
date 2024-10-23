@@ -1,16 +1,15 @@
+import { env } from "@/env";
+import { restaurantEntities } from "@/server/layer/entities/restaurant";
+import { getEnumValues } from "@/server/utils/server-utils";
+import { EnumMeals, EnumReservationStatus, EnumUserRole } from "@/shared/enums/predefined-enums";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
+import { exit } from "process";
 import * as schema from "../schema";
-import { env } from "@/env";
-import { eq } from "drizzle-orm";
-import { EnumDays, EnumMeals, EnumReservationStatus, EnumUserRole } from "@/shared/enums/predefined-enums";
 import { tblCountry, tblLanguage, tblMeal, tblReserVationStatus } from "../schema/predefined";
 import { tblUser } from "../schema/user";
-import { tblRestaurantTranslations, tblRestaurant } from "../schema/restaurant";
 import { seedDatas } from "./seedData";
-import { restaurantEntities } from "@/server/layer/entities/restaurant";
-import { exit } from "process";
-import { getEnumValues } from "@/server/utils/server-utils";
 const connection = await mysql.createConnection({
     uri: env.DATABASE_URL,
 });
@@ -77,7 +76,6 @@ const seedFunctions = [
         await restaurantEntities.createRestaurant({
             restaurant: {
                 ...seedDatas.restaurant[0]!,
-                id:2,
                 ownerId: owner?.id!
             }
         })
@@ -87,13 +85,20 @@ const seedFunctions = [
         await restaurantEntities.createRestaurant({
             restaurant: {
                 ...seedDatas.restaurant[1]!,
-                id:3,
                 ownerId: owner2?.id!
             }
         })
 
         console.log('Restaurants created')
 
+    },
+    async function createGuests(){
+        for(const guest of seedDatas.guests){
+            await db.insert(schema.tblGuest).values(guest)
+        }
+    },
+    async function createRooms(){
+        
     }
 ].filter(Boolean)
 

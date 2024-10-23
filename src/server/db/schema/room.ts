@@ -14,6 +14,8 @@ export const tblRoom = mysqlTable('room', {
     order: int('order').notNull(),
     isActive: boolean('is_active').notNull().default(true),
     isWaitingRoom: boolean('is_waiting_room').default(false),
+    layoutWidth: int('layout_width').notNull().default(1200),
+    layoutRowHeight: int('layout_row_height').notNull().default(60),
 });
 export const roomRelations = relations(tblRoom, ({ one, many }) => ({
     tables: many(tblTable),
@@ -41,7 +43,7 @@ export type TRoomInsert = typeof tblRoom.$inferInsert
 export type TRoomTranslation = typeof tblRoomTranslation.$inferSelect
 export type TRoomTranslationInsert = typeof tblRoomTranslation.$inferInsert
 
-export type TRoomInsertWithTranslations = Omit<TRoom, 'id'|'isActive'> & {
+export type TRoomInsertWithTranslations = Omit<TRoomInsert, 'id'|'isActive'> & {
     translations: Omit<TRoomTranslation, 'roomId' | 'id'>[]
 }
 export type TRoomUpdateWithTranslations = Omit<TRoom, 'id' | 'restaurantId'|'isActive'> & {
@@ -52,6 +54,7 @@ export type TRoomWithTranslations = TRoom & {
     translations: TRoomTranslation[]
 }
 
+// { i: "a", x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 1 },
 
 export const tblTable = mysqlTable('table', {
     id: int('id').autoincrement().primaryKey(),
@@ -65,6 +68,11 @@ export const tblTable = mysqlTable('table', {
     updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
     shape: mysqlEnum('shape', getEnumValues(EnumTableShape)).notNull().default(EnumTableShape.rectangle),
     isActive: boolean('is_active').notNull().default(true),
+
+    x: int('x').default(0),
+    y: int('y').default(0),
+    h: int('h').default(1),
+    w: int('w').default(1),
 }, (t) => ({
     unq: unique('unique_table').on(t.roomId, t.no),
 }));

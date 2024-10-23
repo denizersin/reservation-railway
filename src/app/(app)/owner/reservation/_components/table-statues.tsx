@@ -2,15 +2,15 @@ import { TooltipText } from '@/components/custom/tooltip-text'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from '@/components/ui/input'
+import { groupTableStatues, TStatusTableRow } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
 import { TRestaurantMeal } from '@/server/db/schema/restaurant-assets'
 import { TRoomWithTranslations } from '@/server/db/schema/room'
 import { api, RouterOutputs } from '@/server/trpc/react'
 import { CircleCheck, Clock, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { StatusTableRowCard } from './status-table-row-card'
 
-type HourTable = RouterOutputs['reservation']['getAllAvailableReservation2']['result'][0]['table']
-type AvaliableTableData = RouterOutputs['reservation']['getAllAvailableReservation2']['result']
 
 type Props = {
     selectedTableId: number | undefined
@@ -43,56 +43,24 @@ export const TableStatues = ({
     }, {
         select: (data) => data.find((d) => d.meal.id === selectedMeal.mealId)?.mealHours
     })
-
+    const queryDate = useMemo(() => {
+        const newDate = new Date(date)
+        newDate.setHours(0, 0, 0, 0)
+        return newDate.toISOString()
+    }, [date])
+    
     const { data: avaliableTablesData } = api.reservation.getAllAvailableReservation2.useQuery({
-        date,
+        date: queryDate,
         mealId: selectedMeal.mealId,
     }, {
         enabled: [date, selectedMeal, selectedRoom].every(Boolean)
     })
 
-    const [hourState, setHourState] = useState<{
-        hour: string,
-        avaliableTotalGuest: number,
-        avaliableTables: HourTable[],
-        avaliableDataHour: AvaliableTableData
-    }[]>()
-
-    useEffect(() => {
-        if (!(selectedHour && mealHours && avaliableTablesData && selectedRoom)) return
-
-        const newHourSatate: typeof hourState = []
-
-        const currRoomTables = avaliableTablesData.result.filter(d => d.table?.roomId === selectedRoom.id)
-
-        const currLimitations = avaliableTablesData.limitations.filter(d => d.roomId == selectedRoom.id && d.mealId == selectedMeal.mealId)
-
-        const currAvaliableLimitedHours = avaliableTablesData.limitedAvailableHoursInfo.filter(d => d.room == selectedRoom.id && d.meal == selectedMeal.mealId)
-        
-        mealHours.forEach((hour) => {
-            const hourTables = currRoomTables.filter(d => d.meal_hours?.hour === hour.hour)
-            const avaliableTables = hourTables.filter(d => (!d.table?.isReachedLimit && !d.table?.isReserved)).map(r => r.table) ?? []
-            const limitData = currAvaliableLimitedHours.find(d => (d.hour === hour.hour))
-
-            let avaliableTotalGuest = avaliableTables.reduce((acc, curr) => acc + curr?.avaliableGuestWithLimit!, 0)
-
-            if (limitData) {
-                avaliableTotalGuest = avaliableTotalGuest > limitData.avaliableGuest ? limitData.avaliableGuest : avaliableTotalGuest
-            } else {
-                avaliableTotalGuest = currLimitations.find(d => (d.hour === hour.hour))?.maxGuestCount || avaliableTotalGuest
-            }
-            newHourSatate.push({
-                hour: hour.hour,
-                avaliableTotalGuest,
-                avaliableTables,
-                avaliableDataHour: hourTables
-            })
-        })
-        setHourState(newHourSatate)
 
 
-    }, [avaliableTablesData, mealHours, selectedHour, selectedRoom])
-
+    const tableStatues = avaliableTablesData?.tableStatues
+    const roomTableStatues = tableStatues?.find(r => r.roomId === selectedRoom?.id)
+    const hourTables = roomTableStatues?.statues.find((hour) => hour.hour === selectedHour)?.tables
 
     useEffect(() => {
         if (mealHours) {
@@ -102,33 +70,37 @@ export const TableStatues = ({
     }, [mealHours])
 
 
-    const currTableData = useMemo(() => hourState?.find(r => r.hour == selectedHour)?.avaliableDataHour || [], [selectedHour, hourState])
 
 
-    const onClcikTable = (tableId: number) => {
-        setSelectedTableId(tableId)
+    const onClcikTable = (row: TStatusTableRow) => {
+        setSelectedTableId(row.table?.id)
     }
 
 
-    const selectedTable = useMemo(() => currTableData.find(d => d.table?.id === selectedTableId)?.table, [selectedTableId, currTableData])
+    const selectedTable = useMemo(() => {
+        return hourTables?.find((table) => table.table?.id === selectedTableId)?.table
+    }, [selectedTableId, hourTables])
 
 
-    console.log(avaliableTablesData,'data')
+    useEffect(() => {
+        if (avaliableTablesData?.tableStatues)
+            groupTableStatues(tableStatues?.[0]?.statues[0]?.tables! ?? [])
+    }, [avaliableTablesData?.tableStatues])
 
 
     return (
         <div>
             <div className='flex gap-x-2 my-2'>
                 {
-                    hourState?.map((hour) => (
+                    roomTableStatues?.statues?.map((hourStatus) => (
                         <div
-                            onClick={() => setSelectedHour(hour.hour)}
+                            onClick={() => setSelectedHour(hourStatus.hour)}
 
-                            key={hour.hour} className={cn('flex flex-col shadow-md p-2 rounded-md px-4 bg-secondary hover:bg-secondary/20 cursor-pointer', {
-                                'bg-primary text-primary-foreground hover:bg-primary ': selectedHour === hour.hour
+                            key={hourStatus.hour} className={cn('flex flex-col shadow-md p-2 rounded-md px-4 bg-secondary hover:bg-secondary/20 cursor-pointer', {
+                                'bg-primary text-primary-foreground hover:bg-primary ': selectedHour === hourStatus.hour
                             })}>
-                            <h1>{hour.hour}</h1>
-                            <h2> {hour.avaliableTotalGuest}</h2>
+                            <h1>{hourStatus.hour}</h1>
+                            <h2> {hourStatus.limitationStatus?.avaliableGuest}</h2>
 
                         </div>
                     ))
@@ -136,51 +108,14 @@ export const TableStatues = ({
             </div>
             <div className='flex flex-wrap gap-x-2 gap-y-2'>
                 {
-                    currTableData.map((data) => {
-                        if (!data.table) return;
-                        const table = data.table
-                        const { isReserved, isReachedLimit, isAppliedLimit } = table
-                        const isAvailable = !isReserved && !isReachedLimit
-                        const isSelected = selectedTableId === data.table?.id
-
-                        return <Card
-                            onClick={(() => !isReserved && onClcikTable(data.table?.id!))}
-                            key={data.table?.id} className={cn(' size-[150px] relative', {
-                                'bg-foreground text-background': isReserved,
-                                'cursor-pointer hover:bg-muted': isAvailable,
-                                'bg-gray-300 cursor-pointer hover:bg-muted': (!isAvailable && !isReserved),
-                            })}>
-                            <CardContent className="p-4 flex flex-col gap-y-1">
-                                <div className="text-xl font-bold">{data.table?.no}</div>
-                                <div className="text-sm ">{data.table.isReserved ? data.reservation?.guestId : '-'}</div>
-                                <div className="flex items-center text-xs mt-2">
-                                    <Clock className="w-3 h-3 mr-1" /> {data.reservation?.hour}
-                                </div>
-                                <div className="flex items-center text-xs ">
-                                    {isReserved && <div className='flex'>
-                                        <Users className="w-3 h-3 mr-1" />
-                                        {data.reservation?.guestCount}/{data.table?.avaliableGuestWithLimit}
-
-                                    </div>}
-                                    <div className='flex ml-auto'>
-                                        {table.minCapacity} - {table.avaliableGuestWithLimit}
-                                        {isAppliedLimit && <TooltipText infoIcon  tooltip='limit applied'>
-                                            <span className='line-through ml-1'>{table.maxCapacity}</span>
-                                        </TooltipText>}
-                                    </div>
-
-                                </div>
-                                {(!isReserved && isReachedLimit) && <div className="flex justify-end">
-                                    <Badge className='text-[9px] p-[.5px] px-1 bg-primary-foreground text-primary'>exceeding limit</Badge>
-                                </div>}
-                            </CardContent>
-
-                            {
-                                isSelected && <CircleCheck className='absolute top-0 right-0 h-6 w-6 text-background fill-foreground' />
-                            }
-
-                        </Card>
-                    })
+                    hourTables?.map((data) =>
+                        <StatusTableRowCard
+                            statusTableRow={data}
+                            isSelected={selectedTableId === data.table?.id}
+                            onClcikTable={onClcikTable}
+                            disabled={Boolean(data?.reservation)}
+                        />
+                    )
                 }
             </div>
             <div className='my-3'>

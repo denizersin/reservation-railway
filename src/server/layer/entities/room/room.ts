@@ -1,5 +1,5 @@
 import { db } from "@/server/db";
-import { tblRoom, tblRoomTranslation, tblTable, TRoomInsertWithTranslations, TRoomUpdateWithTranslations, TRoomWithTranslations, TTableInsert } from "@/server/db/schema/room";
+import { tblRoom, tblRoomTranslation, tblTable, TRoomInsertWithTranslations, TRoomUpdateWithTranslations, TRoomWithTranslations, TTable, TTableInsert } from "@/server/db/schema/room";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 
@@ -42,17 +42,20 @@ export const updateRoomWithTranslations = async ({
     data,
     roomId
 }: {
-    data: TRoomUpdateWithTranslations,
+    data: Partial<TRoomUpdateWithTranslations>,
     roomId: number
 }) => {
     //update room with translations
     await db.update(tblRoom).set(data).where(
         eq(tblRoom.id, roomId)
     )
-    await db.delete(tblRoomTranslation).where(
-        eq(tblRoomTranslation.roomId, roomId)
-    )
-    await db.insert(tblRoomTranslation).values(data.translations.map(t => ({ ...t, roomId })))
+    if (data?.translations) {
+        await db.delete(tblRoomTranslation).where(
+            eq(tblRoomTranslation.roomId, roomId)
+        )
+        await db.insert(tblRoomTranslation).values(data.translations.map(t => ({ ...t, roomId })))
+    };
+
 
 }
 
@@ -125,10 +128,19 @@ export const deleteTableById = async ({
     )
 }
 
-export const updateTable = async (data: Partial<TTableInsert> & { id: number }) => {
+export const updateTable = async (data: Partial<TTable> & { id: number }) => {
     //update table
     await db.update(tblTable).set(data).where(
         eq(tblTable.id, data.id)
+    )
+}
+
+export const updateMultipleTables = async (data: (Partial<TTable> & { id: number }[])) => {
+    //update multiple tables
+    await Promise.all(
+        data.map(async (d) =>
+            await updateTable(d)
+        )
     )
 }
 

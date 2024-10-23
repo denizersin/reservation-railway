@@ -1,3 +1,5 @@
+import { EnumGender, EnumVipLevel } from "@/shared/enums/predefined-enums"
+import { TGuestInsert } from "../schema"
 import { TCountryInsert, TLanguageInsert } from "../schema/predefined"
 import { TRestaurantInsert } from "../schema/restaurant"
 
@@ -40,12 +42,45 @@ export const restaurant = [
     {
         name: 'burger-king',
         phoneNumber: '+905555555555',
+        id:1
     }, {
         name: 'kfc',
         phoneNumber: '+905555555555',
+        id:2
     }
 
 ] as TRestaurantInsert[]
+
+export const guests =
+    new Array(5).fill(0).map((_, index) => ({
+        name: `guest${index}`,
+        surname: `guest${index}`,
+        countryId: 1,
+        birthDate: new Date(),
+        email: `guest${index}@gmail.comz`,
+        languageId: 1,
+        phone: '123',
+        gender: EnumGender.male,
+        restaurantId: 2,
+        tagIds: [],
+        vipLevel: EnumVipLevel.goodSpender
+
+    }) as TGuestInsert)
+
+// [{
+//     name: 'guest1',
+//     countryId: 1,
+//     gender: EnumGender.male,
+//     languageId: 1,
+//     phone: '123',
+//     restaurantId: 2,
+//     surname: 'guest1',
+//     tagIds: [],
+//     vipLevel: EnumVipLevel.goodSpender,
+//     birthDate: new Date(),
+//     email: 'guest1@gmail.com',
+
+// }] as unknown as TGuestInsert[]
 
 
 
@@ -53,5 +88,6 @@ export const restaurant = [
 export const seedDatas = {
     countries,
     languages,
-    restaurant
+    restaurant,
+    guests
 }

@@ -8,13 +8,14 @@ import { TRoomWithTranslations } from '@/server/db/schema/room'
 import { api } from '@/server/trpc/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import GuestCrudModal from '../../guests/_components/guest-crud-modal'
 import { ReservationDateCalendar } from './reservation-date-calendar'
 import { ReservationList2 } from './ReservationList2'
 import { TableStatues } from './table-statues'
 import { table } from 'console'
 import { EnumReservationPrepaymentType } from '@/shared/enums/predefined-enums'
+import { ReservationTableUpdateModal } from './reservation-table-update-modal'
 
 
 type Props = {}
@@ -78,7 +79,8 @@ export const CreateReservation = (props: Props) => {
         if (!selectedGuestId || !selectedRoom || !selectedMeal || !selectedTableId || !selectedHour || !guestCount) {
             return
         }
-        date.setHours(
+        const newDate = new Date(date)
+        newDate.setHours(
             Number(selectedHour.split(':')[0]),
             Number(selectedHour.split(':')[1]),
             0,
@@ -89,7 +91,7 @@ export const CreateReservation = (props: Props) => {
             guestId: selectedGuestId,
             roomId: selectedRoom.id,
             guestCount: guestCount,
-            reservationDate: date,
+            reservationDate: newDate,
             hour: selectedHour,
             mealId: selectedMeal.mealId,
             prePaymentType: EnumReservationPrepaymentType.prepayment,
@@ -98,13 +100,24 @@ export const CreateReservation = (props: Props) => {
         )
     }
 
+
+    const queryDate = useMemo(() => {
+        const newDate = new Date(date)
+        newDate.setHours(0, 0, 0, 0)
+        return newDate.toISOString()
+    }, [date])
+
     const { data: newData } = api.reservation.getAllAvailableReservation2.useQuery({
-        date: date,
+        date: queryDate,
         mealId: selectedMeal?.mealId!
     })
 
-    console.log(newData, 'newData')
+    console.log(queryDate, 'queryDate')
 
+    useEffect(() => {
+        
+    }, [])
+    
 
 
 
@@ -175,6 +188,8 @@ export const CreateReservation = (props: Props) => {
                 setOpen={setIsCreateGuestModalOpen}
             />}
 
+
+  
 
 
         </div>

@@ -1,15 +1,14 @@
 import { db } from '@/server/db';
 import { tblMeal } from '@/server/db/schema/predefined';
 import { tblRestaurant, tblRestaurantLanguage, tblRestaurantTranslations, TRestaurantInsert, TRestaurantLanguages } from '@/server/db/schema/restaurant';
+import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals, TMealHoursAdd, TRestaurantMealDaysCrud } from '@/server/db/schema/restaurant-assets';
 import { tblRestaurantGeneralSetting } from '@/server/db/schema/restaurant-general-setting';
+import { formatTimeWithoutSeconds, getEnumValues, utcHourToLocalHour } from '@/server/utils/server-utils';
 import { EnumDays, EnumLanguage, EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
 import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
 import { restaurantSettingEntities } from '../restaurant-setting';
-import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals, TMealHoursAdd, TRestaurantMealDaysCrud } from '@/server/db/schema/restaurant-assets';
-import { formatimeWithSeconds, formatTimeWithoutSeconds, getEnumValues, utcHourToLocalHour } from '@/server/utils/server-utils';
-import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
-import { tblPersonel, TPersonelInsert } from '@/server/db/schema/guest';
 
 export const createRestaurant = async ({
     restaurant,
@@ -86,7 +85,7 @@ export const setDefaultsToRestaurant = async ({
 
         const [generalSetting] = await db.insert(tblRestaurantGeneralSetting).values({
             defaultCountryId: (await predefinedEntities.getCountryByName({ countryName: 'turkey' }))?.id!,
-            newReservationStatusId: (await predefinedEntities.getReservationStatusByStatus({ status: EnumReservationStatus.confirmation }))?.id!,
+            newReservationStatusId: (await predefinedEntities.getReservationStatusByStatus({ status: EnumReservationStatus.reservation }))?.id!,
             defaultLanguageId: trLanguage?.id!,
             restaurantId: restaurantId
         }).$returningId()

@@ -14,12 +14,14 @@ export const createRoomSchema = z.object({
     isWaitingRoom: z.boolean().default(false),
     order: z.number().int().positive(),
     translations: z.array(roomTranslationSchema).min(1),
+    layoutWidth: z.number().int().positive(),
+    layoutRowHeight: z.number().int().positive(),
 });
 
 // Schema for updating a room
 export const updateRoomSchema = z.object({
     roomId: z.number().int().positive(),
-    data: createRoomSchema
+    data: createRoomSchema.partial()
 });
 
 
@@ -34,10 +36,12 @@ export const createRoomTableFormSchema = z.object({
     capacity: z.number().int().positive(),
     minCapacity: z.number().int().positive(),
     maxCapacity: z.number().int().positive(),
-    shape:z.enum(getEnumValues(EnumTableShape)).default(EnumTableShape.square),
+    shape: z.enum(getEnumValues(EnumTableShape)).default(EnumTableShape.square),
+
+
 })
 
-export const createRoomTableSchema= z.object({
+export const createRoomTableSchema = z.object({
     roomId: z.number().int().positive(),
     data: createRoomTableFormSchema,
 })
@@ -49,15 +53,23 @@ export const updateRoomTableFormSchema = z.object({
     capacity: z.number().int().positive().optional(),
     minCapacity: z.number().int().positive().optional(),
     maxCapacity: z.number().int().positive().optional(),
-    shape:z.enum(getEnumValues(EnumTableShape)).default(EnumTableShape.square).optional(),
+    shape: z.enum(getEnumValues(EnumTableShape)).default(EnumTableShape.square).optional(),
     isActive: z.boolean().optional(),
+
+    x: z.number().int().min(0).optional(),
+    y: z.number().int().min(0).optional(),
+    h: z.number().int().min(0).optional(),
+    w: z.number().int().min(0).optional(),
 })
 
-export const updateRoomTableSchema= z.object({
+export const updateRoomTableSchema = z.object({
     tableId: z.number().int().positive(),
     data: updateRoomTableFormSchema,
 })
 
+export const updateMultipleTablesSchema = z.object({
+    data: z.array(updateRoomTableSchema)
+})
 
 export const roomValidator = {
     createRoomSchema,
@@ -68,6 +80,7 @@ export const roomValidator = {
     createRoomTableFormSchema,
     createRoomTableSchema,
     updateRoomTableSchema,
+    updateMultipleTablesSchema
 }
 
 namespace TRoomValidator {
@@ -77,6 +90,7 @@ namespace TRoomValidator {
     export type createRoomTableFormSchema = z.infer<typeof createRoomTableFormSchema>
     export type createRoomTableSchema = z.infer<typeof createRoomTableSchema>
     export type updateRoomTableSchema = z.infer<typeof updateRoomTableSchema>
+    export type updateMultipleTablesSchema = z.infer<typeof updateMultipleTablesSchema>
 }
 
 export default TRoomValidator

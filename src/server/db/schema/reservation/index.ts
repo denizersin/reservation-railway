@@ -7,6 +7,9 @@ import { tblMeal } from '../predefined';
 import { tblPrepayment } from './prepayment';
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumReservationPrepaymentType } from '@/shared/enums/predefined-enums';
+import { tblReservationNotification } from './notification';
+import { tblReservationLog } from './reservation-log';
+import { tblReservationNote } from './reservation-note';
 
 
 export const tblReservation = mysqlTable('reservation', {
@@ -18,7 +21,7 @@ export const tblReservation = mysqlTable('reservation', {
 
     prepaymentId: int('prepayment_id'),
 
-    mainReservationId: int('main_reservation_id').notNull().default(0),
+    linkedReservationId: int('linked_reservation_id'),
 
     reservationDate: timestamp('reservation_date').notNull(),
     hour: time('reservation_time').notNull(),
@@ -27,7 +30,6 @@ export const tblReservation = mysqlTable('reservation', {
     isSendSms: boolean('is_send_sms').notNull(),
     isSendEmail: boolean('is_send_email').notNull(),
 
-    isMainReservation: boolean('is_main_reservation').default(true).notNull(),
 
     waitingSessionId: int('waiting_session_id'),
 
@@ -41,7 +43,6 @@ export const tblReservation = mysqlTable('reservation', {
 export const tblReservationTables = mysqlTable('reservation_tables', {
     id: int('id').autoincrement().primaryKey(),
     reservationId: int('reservation_id').notNull().references(() => tblReservation.id, { onDelete: 'cascade' }),
-    mainReservationId: int('main_reservation_id').notNull(),
     tableId: int('table_id').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
@@ -54,9 +55,9 @@ export const tblReservationTableRelations = relations(tblReservationTables, ({ o
 
 export const tblReservationRelations = relations(tblReservation, ({ one, many }) => ({
     tables: many(tblReservationTables),
-    linkedReservations: many(tblLinkedReservations, { relationName: 'mainReservation' }),
-
-    mainReservation: one(tblLinkedReservations, { fields: [tblReservation.id], references: [tblLinkedReservations.linkedReservationId], relationName: 'linkedReservation' }),
+    notifications: many(tblReservationNotification),
+    logs: many(tblReservationLog),
+    notes: many(tblReservationNote),
 
     waitingSession: one(waitingTableSession, { fields: [tblReservation.waitingSessionId], references: [waitingTableSession.id] }),
 
@@ -71,19 +72,7 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
 }));
 
 
-export const tblLinkedReservations = mysqlTable('linked_reservations', {
-    id: int('id').autoincrement().primaryKey(),
-    mainReservationId: int('main_reservation_id').notNull().references(() => tblReservation.id, { onDelete: 'cascade' }),
-    linkedReservationId: int('linked_reservation_id').notNull().references(() => tblReservation.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
-}, (t) => ({
-    uniqLinkedReservation: unique('linked-rsv-link').on(t.mainReservationId, t.linkedReservationId),
-}));
-export const tblLinkedReservationsRelations = relations(tblLinkedReservations, ({ one }) => ({
-    mainReservation: one(tblReservation, { fields: [tblLinkedReservations.mainReservationId], references: [tblReservation.id], relationName: 'mainReservation' }),
-    linkedReservation: one(tblReservation, { fields: [tblLinkedReservations.linkedReservationId], references: [tblReservation.id], relationName: 'linkedReservation' }),
-}));
+
 
 
 export const waitingTableSession = mysqlTable('waiting_table_session', {
@@ -101,12 +90,12 @@ export const waitingTableSessionRelations = relations(waitingTableSession, ({ on
 
 
 
-type ReservationSelect = typeof tblReservation.$inferSelect;
+export type TReservationSelect = typeof tblReservation.$inferSelect;
 type ReservationInsert = typeof tblReservation.$inferInsert;
 
 
 
-export type TReservation = ReservationSelect & {
+export type TReservation = TReservationSelect & {
     tables: typeof tblReservationTables.$inferSelect[]
     restaurant: typeof tblRestaurant.$inferSelect
     room: typeof tblRoom.$inferSelect
@@ -118,3 +107,8 @@ export type TReservationInsert = ReservationInsert & {
     tableIds: number[]
 }
 
+type ReservationUpdate = TReservationSelect & {
+    tableIds: number[]
+}
+
+export type TUpdateReservation = Partial<ReservationUpdate> 

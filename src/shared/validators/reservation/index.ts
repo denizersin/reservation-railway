@@ -4,12 +4,13 @@ import { z } from "zod";
 
 
 const getTableStatues = z.object({
-    date: z.date(),
+    date: z.string(),
     mealId: z.number().int().positive(),
 })
 
+const tableIds = z.array(z.number().int().positive()).min(1)
 
-const createReservation= z.object({
+const createReservationBase = z.object({
     roomId: z.number().int().positive(),
     guestId: z.number().int().positive(),
     mealId: z.number().int().positive(),
@@ -20,18 +21,29 @@ const createReservation= z.object({
     prePaymentType: z.enum(getEnumValues(EnumReservationPrepaymentType)),
     isSendSms: z.boolean().default(true),
     isSendEmail: z.boolean().default(true),
-    tableIds: z.array(z.number().int().positive()).min(1),
 })
 
+const createReservation = createReservationBase.merge(
+    z.object({
+        tableIds
+    })
+)
+
+const updateReservation = z.object({
+    data: createReservationBase.partial(),
+    reservationId: z.number().int().positive()
+})
 
 export const reservationValidator = {
     getTableStatues,
     createReservation,
+    updateReservation
 }
 
 namespace TReservationValidator {
     export type getTableStatues = z.infer<typeof getTableStatues>
     export type createReservation = z.infer<typeof createReservation>
+    export type updateReservation = z.infer<typeof updateReservation>
 }
 
 export default TReservationValidator

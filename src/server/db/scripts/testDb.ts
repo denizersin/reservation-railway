@@ -27,6 +27,11 @@ async function deleteAllReservations() {
 async function initDb() {
     try {
 
+        // await db.update(schema.tblReservation).set({
+        //     linkedReservationId: null
+        // }).where(
+        //     isNotNull(schema.tblReservation.id)
+        // )
 
         // await db.insert(schema.tblLinkedReservations).values({
         //     mainReservationId: 2,
@@ -39,12 +44,12 @@ async function initDb() {
         //     eq(schema.tblReservation.id, 3)
         // )
 
+        await deleteAllReservations()
         
 
         // await db.insert(schema.tblReservationTables).values({
-        //     mainReservationId:2,
         //     reservationId:2,
-        //     tableId:6,
+        //     tableId:5,
 
         // })
 

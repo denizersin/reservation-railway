@@ -5,11 +5,13 @@ import { z } from 'zod';
 
 
 const generealSettingSchema = z.object({
-    isAutoCheckOut: z.boolean().optional(),
-    newReservationStatusId: z.number().int().positive().optional(),
-    defaultLanguageId: z.number().int().positive().optional(),
-    defaultCountryId: z.number().int().positive().optional(),
-    tableView: z.enum(getEnumValues(EnumTableViewType)).optional(),
+    isAutoCheckOut: z.boolean(),
+    newReservationStatusId: z.number().int().positive(),
+    defaultLanguageId: z.number().int().positive(),
+    defaultCountryId: z.number().int().positive(),
+    tableView: z.enum(getEnumValues(EnumTableViewType)),
+    prePayemntPricePerGuest: z.number().int().positive(),
+
 })
 
 
@@ -17,7 +19,7 @@ const updateRestaurantGeneralSettingFormSchema = generealSettingSchema
 
 const updateRestaurantGeneralSettingSchema = z.object({
     generalSettingID: z.number().int().positive(),
-    generalSetting: generealSettingSchema
+    generalSetting: generealSettingSchema.partial()
 })
 
 

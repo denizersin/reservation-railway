@@ -26,7 +26,10 @@ export const roomRouter = createTRPCRouter({
             const { session: { user: { restaurantId } } } = ctx
             await RoomEntities.updateRoomWithTranslations({
                 roomId: roomId,
-                data
+                data: {
+                    ...data,
+
+                }
             })
             return { success: true };
         }),
@@ -39,12 +42,12 @@ export const roomRouter = createTRPCRouter({
         return data;
     }),
     getRooms: ownerProcedure
-    .input(z.object({
-        withWaitingRooms: z.boolean().optional()
-    }))
-    .query(async (opts) => {
-        return await roomUseCases.getRooms(opts)
-    }),
+        .input(z.object({
+            withWaitingRooms: z.boolean().optional()
+        }))
+        .query(async (opts) => {
+            return await roomUseCases.getRooms(opts)
+        }),
     getAllRooms: ownerProcedure.query(async (opts) => {
         return await roomUseCases.getRooms({
             ctx: opts.ctx,
@@ -73,7 +76,14 @@ export const roomRouter = createTRPCRouter({
                 ...data,
             })
         }),
-
+    updateMultipleTables: ownerProcedure
+        .input(roomValidator.updateMultipleTablesSchema)
+        .mutation(async ({ input }) => {
+            await RoomEntities.updateMultipleTables(input.data.map(({ data, tableId }) => ({
+                id: tableId,
+                ...data
+            })))
+        }),
     deleteTable: ownerProcedure
         .input(z.object({
             tableId: z.number().positive()

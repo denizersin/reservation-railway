@@ -132,6 +132,7 @@ CREATE TABLE `restaurant_general_setting` (
 	`default_language_id` int NOT NULL,
 	`default_country_id` int NOT NULL,
 	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
+	`prepayment_price_per_guest` int NOT NULL,
 	CONSTRAINT `restaurant_general_setting_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -159,7 +160,7 @@ CREATE TABLE `meal` (
 --> statement-breakpoint
 CREATE TABLE `reservation_status` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`status` enum('draft','reservation','provision','confirmation','cancel','wait approve') NOT NULL,
+	`status` enum('draft','reservation','prepayment','confirmation','cancel','wait approve') NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
 );
@@ -284,6 +285,7 @@ CREATE TABLE `room` (
 	`restaurant_id` int NOT NULL,
 	`order` int NOT NULL,
 	`is_active` boolean NOT NULL DEFAULT true,
+	`is_waiting_room` boolean DEFAULT false,
 	CONSTRAINT `room_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -313,14 +315,6 @@ CREATE TABLE `table` (
 	CONSTRAINT `unique_table` UNIQUE(`room_id`,`no`)
 );
 --> statement-breakpoint
-CREATE TABLE `waiting_room` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`is_active` boolean NOT NULL DEFAULT true,
-	`name` varchar(256) NOT NULL,
-	CONSTRAINT `waiting_room_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
 CREATE TABLE `permanent_limitation` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
@@ -348,16 +342,6 @@ CREATE TABLE `reservation_limitation` (
 	CONSTRAINT `reservation_limitation_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `linked_reservations` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`main_reservation_id` int NOT NULL,
-	`linked_reservation_id` int NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT `linked_reservations_id` PRIMARY KEY(`id`),
-	CONSTRAINT `linked-rsv-link` UNIQUE(`main_reservation_id`,`linked_reservation_id`)
-);
---> statement-breakpoint
 CREATE TABLE `reservation` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
@@ -365,16 +349,14 @@ CREATE TABLE `reservation` (
 	`guest_id` int NOT NULL,
 	`restaurant_meal_id` int NOT NULL,
 	`prepayment_id` int,
-	`main_reservation_id` int NOT NULL DEFAULT 0,
+	`linked_reservation_id` int,
 	`reservation_date` timestamp NOT NULL,
 	`reservation_time` time NOT NULL,
 	`guest_count` int NOT NULL,
 	`prepayment_type` enum('prepayment','provision','none') NOT NULL,
 	`is_send_sms` boolean NOT NULL,
 	`is_send_email` boolean NOT NULL,
-	`is_main_reservation` boolean NOT NULL DEFAULT true,
-	`waiting_room_id` int,
-	`is_in_waiting_room` boolean NOT NULL DEFAULT false,
+	`waiting_session_id` int,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
@@ -384,12 +366,21 @@ CREATE TABLE `reservation` (
 CREATE TABLE `reservation_tables` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`reservation_id` int NOT NULL,
-	`main_reservation_id` int NOT NULL,
 	`table_id` int NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
 	CONSTRAINT `reservation_tables_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `waiting_table_session` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`table_id` int NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `waiting_table_session_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `prepayment` (
@@ -404,6 +395,40 @@ CREATE TABLE `prepayment` (
 	CONSTRAINT `unique_reservation_id` UNIQUE(`reservation_id`)
 );
 --> statement-breakpoint
+CREATE TABLE `reservation_notification` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int,
+	`type` enum('SMS','EMAIL') NOT NULL,
+	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation','Reservation Completed','Reservation Reminder','Reservation Feedback') NOT NULL,
+	`message` text NOT NULL,
+	`sent_at` timestamp,
+	`status` enum('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `reservation_notification_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_log` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`message` text NOT NULL,
+	`process_owner` varchar(50) NOT NULL,
+	`log_time` timestamp NOT NULL DEFAULT (now()),
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `reservation_log_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_note` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`note` text NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `reservation_note_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `meal_day` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`meal_id` int NOT NULL,
@@ -415,6 +440,6 @@ CREATE TABLE `meal_day` (
 );
 --> statement-breakpoint
 ALTER TABLE `refresh_token` ADD CONSTRAINT `refresh_token_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `linked_reservations` ADD CONSTRAINT `linked_reservations_main_reservation_id_reservation_id_fk` FOREIGN KEY (`main_reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `linked_reservations` ADD CONSTRAINT `linked_reservations_linked_reservation_id_reservation_id_fk` FOREIGN KEY (`linked_reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `reservation_tables` ADD CONSTRAINT `reservation_tables_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `reservation_tables` ADD CONSTRAINT `reservation_tables_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_table_id_table_id_fk` FOREIGN KEY (`table_id`) REFERENCES `table`(`id`) ON DELETE cascade ON UPDATE no action;

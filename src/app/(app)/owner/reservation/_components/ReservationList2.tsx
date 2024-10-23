@@ -1,7 +1,7 @@
 'use client'
 
 import { api } from '@/server/trpc/react'
-import React from 'react'
+import React, { useState } from 'react'
 import { format } from 'date-fns'
 import {
     Table,
@@ -14,12 +14,24 @@ import {
 } from '@/components/ui/table'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
+import { TReservation } from '@/server/db/schema'
+import { ReservationTableUpdateModal } from './reservation-table-update-modal'
+import { ConfirmModalGlobal } from '@/components/modal/confirm-modal'
+import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { UpdateReservationTmeModal } from './update-reservation-time-modal'
+import { Button } from '@/components/ui/button'
 
 type Props = {
     date: Date
 }
 
 export const ReservationList2 = ({ date }: Props) => {
+
+    const [isOpen, setIsOpen] = useState(false)
+
+    const [reservation, setReservation] = useState<TReservation>()
+    const [hourUpdateReservation, setHourUpdateReservation] = useState<TReservation>()
+
     const { data: reservations } = api.reservation.getReservations.useQuery({
         date: date,
     })
@@ -35,6 +47,13 @@ export const ReservationList2 = ({ date }: Props) => {
             })
         }
     })
+
+
+
+    useShowLoadingModal([])
+
+    console.log(reservation, 'reservation')
+    console.log(isOpen, 'isOpen')
 
     return (
         <Table>
@@ -62,11 +81,57 @@ export const ReservationList2 = ({ date }: Props) => {
                             reservation.tables.map((rsvTable) => rsvTable.table.no).join(', ')
                         }</TableCell>
                         <TableCell>
-                            <button onClick={() => deleteReservation({ reservationId: reservation.id })}>Delete</button>
+                            <div className='flex flex-col gap-y-4'>
+
+                                <button onClick={() => deleteReservation({ reservationId: reservation.id })}>Delete</button>
+                                <Button className='w-max'
+                                    onClick={() => {
+                                        setReservation(reservation as unknown as TReservation)
+                                        setIsOpen(true)
+
+                                    }}
+                                >Update Room-Table </Button>
+
+                                <Button className='w-max'
+                                    onClick={() => {
+                                        setHourUpdateReservation(reservation as unknown as TReservation)
+                                        setIsOpen(true)
+
+                                    }}
+                                >Update Date-Time </Button>
+                            </div>
+
                         </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
+
+            {reservation && <ReservationTableUpdateModal
+                isOpen={isOpen}
+                setOpen={(open)=>{
+                    if(!open){
+                        setReservation(undefined)
+                    }
+                    setIsOpen(open)
+                }}
+                reservation={reservation!}
+                key={reservation?.id}
+
+            />}
+
+            {
+                hourUpdateReservation && <UpdateReservationTmeModal
+                    isOpen={isOpen}
+                    setOpen={(open)=>{
+                        if(!open){
+                            setHourUpdateReservation(undefined)
+                        }
+                        setIsOpen(open)
+                    }}
+                    reservation={hourUpdateReservation}
+                    key={hourUpdateReservation.id}
+                />
+            }
         </Table>
     )
 }
