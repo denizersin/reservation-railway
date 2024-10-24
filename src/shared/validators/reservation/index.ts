@@ -34,16 +34,24 @@ const updateReservation = z.object({
     reservationId: z.number().int().positive()
 })
 
+const updateReservationTable = z.object({
+    id: z.number().int().positive(),
+}).merge(z.object({
+    tableId: z.number().int().positive(),
+}).partial())
+
 export const reservationValidator = {
     getTableStatues,
     createReservation,
-    updateReservation
+    updateReservation,
+    updateReservationTable
 }
 
 namespace TReservationValidator {
     export type getTableStatues = z.infer<typeof getTableStatues>
     export type createReservation = z.infer<typeof createReservation>
     export type updateReservation = z.infer<typeof updateReservation>
+    export type updateReservationTable = z.infer<typeof updateReservationTable>
 }
 
 export default TReservationValidator

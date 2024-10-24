@@ -20,6 +20,8 @@ import { ConfirmModalGlobal } from '@/components/modal/confirm-modal'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { UpdateReservationTmeModal } from './update-reservation-time-modal'
 import { Button } from '@/components/ui/button'
+import { ReservationGridStatus } from './grid-table/reservation-grid-status'
+import { ReservationGridStatusModal } from './grid-table/reservation-grid-status-modal'
 
 type Props = {
     date: Date
@@ -106,7 +108,7 @@ export const ReservationList2 = ({ date }: Props) => {
                 ))}
             </TableBody>
 
-            {reservation && <ReservationTableUpdateModal
+            {/* {reservation && <ReservationTableUpdateModal
                 isOpen={isOpen}
                 setOpen={(open)=>{
                     if(!open){
@@ -117,13 +119,29 @@ export const ReservationList2 = ({ date }: Props) => {
                 reservation={reservation!}
                 key={reservation?.id}
 
-            />}
+            />} */}
+            <div className='w-full border  my-8'>
+
+                {
+                    reservation && <ReservationGridStatusModal
+                        reservation={reservation}
+                        isOpen={isOpen}
+                        setOpen={(open) => {
+                            if (!open) {
+                                setReservation(undefined)
+                            }
+                            setIsOpen(open)
+                        }}
+                    />
+                }
+            </div>
+
 
             {
                 hourUpdateReservation && <UpdateReservationTmeModal
                     isOpen={isOpen}
-                    setOpen={(open)=>{
-                        if(!open){
+                    setOpen={(open) => {
+                        if (!open) {
                             setHourUpdateReservation(undefined)
                         }
                         setIsOpen(open)

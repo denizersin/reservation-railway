@@ -112,3 +112,5 @@ type ReservationUpdate = TReservationSelect & {
 }
 
 export type TUpdateReservation = Partial<ReservationUpdate> 
+
+export type TReservatioTable = typeof tblReservationTables.$inferSelect

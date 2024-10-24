@@ -199,4 +199,12 @@ export const reservationRouter = createTRPCRouter({
         .mutation(async (opts) => {
             await reservationUseCases.updateReservation(opts)
         }),
+
+        updateReservationTable: ownerProcedure
+        .input(reservationValidator.updateReservationTable)
+        .mutation(async (opts) => {
+            await ReservationEntities.updateReservationTable({
+                data:opts.input
+            })
+        }),
 });

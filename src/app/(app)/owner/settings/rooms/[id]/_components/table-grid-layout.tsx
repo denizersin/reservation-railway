@@ -116,6 +116,7 @@ export const TableGridLayout = (props: Props) => {
                 }
             })
         })
+        updateRoomWidthAndRowH()
     }
 
     function updateRoomWidthAndRowH() {
@@ -190,7 +191,7 @@ export const TableGridLayout = (props: Props) => {
                     width={width}
                     style={{
                         width: width,
-                        minHeight: 500
+                        minHeight: 1200
                     }}
                     onLayoutChange={onLayoutChange}
                     verticalCompact={false}

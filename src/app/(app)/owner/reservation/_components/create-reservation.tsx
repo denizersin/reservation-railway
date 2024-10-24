@@ -115,8 +115,8 @@ export const CreateReservation = (props: Props) => {
     console.log(queryDate, 'queryDate')
 
     useEffect(() => {
-        
-    }, [])
+        setSelectedRoom(roomsData?.[0]);
+    }, [roomsData])
     
 
 
@@ -148,7 +148,9 @@ export const CreateReservation = (props: Props) => {
 
             <Tabs
                 onValueChange={(value) => setSelectedRoom(roomsData?.find((room) => room.id.toString() === value))}
-                defaultValue={selectedRoom?.id.toString()} className="mt-5">
+                defaultValue={selectedRoom?.id.toString()}
+                value={selectedRoom?.id.toString()}
+                className="mt-5">
                 <TabsList>
                     {roomsData?.map((room) => (
                         <TabsTrigger key={room.id} value={room.id.toString()}>{room.translations[0]?.name}</TabsTrigger>

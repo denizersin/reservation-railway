@@ -1,4 +1,5 @@
 import { db } from "@/server/db";
+import { tblReservationTables, TReservatioTable } from "@/server/db/schema";
 import { tblRoom, tblRoomTranslation, tblTable, TRoomInsertWithTranslations, TRoomUpdateWithTranslations, TRoomWithTranslations, TTable, TTableInsert } from "@/server/db/schema/room";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
@@ -155,4 +156,6 @@ export const getTablesByRoomId = async ({
     })
     return tables
 }
+
+
 

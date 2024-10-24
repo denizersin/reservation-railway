@@ -167,7 +167,7 @@ export const ReservationTableUpdateModal = ({
 
     useShowLoadingModal([isPending, isPendingAddNewTables, isPendingLinkReservation, isPendingUnlinkReservation])
 
-
+    console.log(groupedTables, 'groupedTables')
 
     if (!statusTableRow) return null;
 

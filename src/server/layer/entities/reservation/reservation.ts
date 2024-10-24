@@ -1,7 +1,7 @@
 
 import { db } from "@/server/db";
 import { tblReservationTables, TReservationInsert } from "@/server/db/schema";
-import { tblReservation, TReservationSelect, TUpdateReservation } from "@/server/db/schema/reservation";
+import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation } from "@/server/db/schema/reservation";
 import { and, eq } from "drizzle-orm";
 
 
@@ -88,6 +88,19 @@ export const unlinkReservation = async ({
         linkedReservationId: null
     }).where(
         eq(tblReservation.id, reservationId)
+    )
+}
+
+export const updateReservationTable = async ({
+    data
+}: {
+    data: Partial<TReservatioTable> & {
+        id: number
+    }
+}) => {
+    //update reservation table
+    await db.update(tblReservationTables).set(data).where(
+        eq(tblReservationTables.id, data.id)
     )
 }
 

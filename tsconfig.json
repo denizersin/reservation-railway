@@ -37,7 +37,7 @@
     "**/*.cjs",
     "**/*.js",
     ".next/types/**/*.ts"
-  ],
+, "src/app/(app)/owner/reservation/_components/grid-status-table-row-cardtsx"  ],
   "exclude": [
     "node_modules",
     // "./src/app/**/*",

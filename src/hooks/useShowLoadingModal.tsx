@@ -21,6 +21,6 @@ export function useShowLoadingModal(loading: boolean[]) {
 
     }, [wilShow])
 
-
+    return LoadingModal.isOpen
 
 }

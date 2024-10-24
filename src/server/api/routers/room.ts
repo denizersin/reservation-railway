@@ -91,6 +91,8 @@ export const roomRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             await RoomEntities.deleteTableById({ tableId: input.tableId })
         }),
+        // updateReservationTable: ownerProcedure
+
 });
 
 
