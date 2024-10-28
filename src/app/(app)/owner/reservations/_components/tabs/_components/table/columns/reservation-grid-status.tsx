@@ -1,4 +1,4 @@
-import { groupTableStatues, TStatusTableRow } from '@/lib/reservation'
+import { groupTableStatues, TReservationRow, TStatusTableRow } from '@/lib/reservation'
 import { TReservation, TRoomWithTranslations, TTable } from '@/server/db/schema'
 import { api } from '@/server/trpc/react'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -9,11 +9,12 @@ import "/node_modules/react-resizable/css/styles.css"
 import { ArcherContainer, ArcherElement, } from 'react-archer';
 import { cn } from '@/lib/utils';
 import { EnumTableShape } from '@/shared/enums/predefined-enums';
-import { GridStatusTableRowCard } from '../grid-status-table-row-card';
+import { GridStatusTableRowCard } from './grid-status-table-row-card';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TSelectionRowState } from './reservation-grid-status-modal';
+import { Button } from '@/components/ui/button';
 
-const colors=['blue','red','green','yellow','purple','pink','orange','gray','indigo','teal','cyan','lime','amber','brown','lightBlue','lightGreen','deepOrange','deepPurple','blueGray']
+const colors = ['blue', 'red', 'green', 'purple', 'pink', 'orange', 'gray', 'indigo', 'teal', 'cyan', 'lime', 'amber', 'brown', 'lightBlue', 'lightGreen', 'deepOrange', 'deepPurple', 'blueGray']
 
 type Props = {}
 
@@ -26,18 +27,21 @@ export type StatusTableRowWithRelation = TStatusTableRow & {
 
 export const ReservationGridStatus = ({
     reservation,
+    selectedRoom,
+    setSelectedRoom,
     setSelectionRowState,
     onSucessCrudTable,
     selectionRowState
 }: {
-    reservation: TReservation,
+    reservation: TReservationRow,
+    selectedRoom: TRoomWithTranslations|undefined,
+    setSelectedRoom: (room: TRoomWithTranslations|undefined) => void,
     selectionRowState: TSelectionRowState,
     setSelectionRowState: (state: TSelectionRowState) => void,
     onSucessCrudTable: () => void
 }) => {
 
     const { data: roomsData } = api.room.getRooms.useQuery({})
-    const [selectedRoom, setSelectedRoom] = useState<TRoomWithTranslations | undefined>()
     const [statusTableRow, setStatusTableRow] = useState<TStatusTableRow | undefined>(undefined)
     const [count, setCount] = useState(0)
 
@@ -62,7 +66,7 @@ export const ReservationGridStatus = ({
         const tableStatues = availableTableData?.tableStatues.find(r => r.roomId === selectedRoom?.id)
             ?.statues.find((hour) => hour.hour === statusTableRow?.reservation?.hour)?.tables
         const groups = groupTableStatues(tableStatues ?? [])
-
+        console.log(tableStatues, 'tableStatues')
         const tablesWithRelationMap: Record<number, StatusTableRowWithRelation> = {}
 
         groups.forEach((group) => {
@@ -92,6 +96,8 @@ export const ReservationGridStatus = ({
 
             //two or more tables 
             // [t,t,linked] ,[t,t,t] ,[t,linked,linked]
+
+
             //reservation tables
             const unlinkedTables = group.filter(t => !(t?.reservation?.linkedReservationId))
 
@@ -156,34 +162,35 @@ export const ReservationGridStatus = ({
                 }
             })
 
-            unLinkedTables.forEach((table) => {
-                if(tablesWithRelationMap[table?.table?.id!]) return;
-                tablesWithRelationMap[table?.table?.id!] = {
-                    ...table,
-                    layout: getLayoutOfTable(table.table!),
-                    relations: [],
-                    group,
-                    isCurrentReservation: table.reservation?.id === reservation.id
-                }
-            })
+            // unLinkedTables.forEach((table) => {
+            //     if(tablesWithRelationMap[table?.table?.id!]) return;
+            //     tablesWithRelationMap[table?.table?.id!] = {
+            //         ...table,
+            //         layout: getLayoutOfTable(table.table!),
+            //         relations: [],
+            //         group,
+            //         isCurrentReservation: table.reservation?.id === reservation.id
+            //     }
+            // })
 
 
 
         })
+
 
         const gridData = Object.values(tablesWithRelationMap)
 
-        let lastColorIndex=0
-        gridData.forEach((r,index)=>{
-            if(r.relations?.length){
-                r.relations?.forEach(r=>{
-                    r.style={
-                        strokeColor:colors[lastColorIndex]
-                    }
-                })
-            }
-            lastColorIndex++
-        })
+        // let lastColorIndex = 0
+        // gridData.forEach((r, index) => {
+        //     if (r.relations?.length) {
+        //         r.relations?.forEach(r => {
+        //             r.style = {
+        //                 strokeColor: colors[lastColorIndex]
+        //             }
+        //         })
+        //     }
+        //     lastColorIndex++
+        // })
 
         return [groups, gridData]
     }, [availableTableData, selectedRoom])
@@ -283,23 +290,18 @@ export const ReservationGridStatus = ({
 
     }, [selectedRows, deSelectedRows])
 
-
+    const [latoutKey, setLatoutKey] = useState(0)
     if (!selectedRoom) return null
     const { layoutRowHeight, layoutWidth } = selectedRoom!
     const cols = Math.round(layoutWidth / (layoutRowHeight + (layoutRowHeight * .2)));
 
+
     return (
         <div>
-            <div>
-                <Tabs
-                    onValueChange={(value) => setSelectedRoom(roomsData?.find((room) => room.id.toString() === value))}
-                    defaultValue={selectedRoom?.id.toString()} className="mt-5">
-                    <TabsList>
-                        {roomsData?.map((room) => (
-                            <TabsTrigger key={room.id} value={room.id.toString()}>{room.translations[0]?.name}</TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
+            <div className='flex items-center justify-between'>
+                <Button
+                    onClick={() => { setLatoutKey(latoutKey + 1) }}
+                >Rest layout</Button>
             </div>
             <ArcherContainer
                 className='w-max h-max'
@@ -307,6 +309,7 @@ export const ReservationGridStatus = ({
                 endShape={{ arrow: { arrowLength: 1, } }}
                 strokeColor="red">
                 <ReactGridLayout
+                    key={latoutKey}
                     className="layout  border-black border-4"
                     layout={layout}
                     cols={cols}
@@ -315,6 +318,7 @@ export const ReservationGridStatus = ({
                         width: layoutWidth,
                         minHeight: 600
                     }}
+
                     onLayoutChange={() => {
                         setTimeout(() => {
                             setCount(count + 1)
@@ -337,6 +341,10 @@ export const ReservationGridStatus = ({
                             <div
                                 key={layout.i}
                                 id={layout.i}
+                                className={cn('border   flex items-center justify-center', {
+                                    'rounded-full': table?.shape === EnumTableShape.round,
+
+                                })}
                             >
 
                                 <ArcherElement
@@ -344,7 +352,7 @@ export const ReservationGridStatus = ({
                                     id={layout.i}
                                     relations={relations}
                                 >
-                                    <div key={table?.id} className={cn('border w-full h-full border-red-400 flex ', {
+                                    <div key={table?.id} className={cn(' max-w-full w-[130px] min-h-[120px] max-h-full flex ', {
                                         'rounded-full': table?.shape === EnumTableShape.round,
 
                                     })}>

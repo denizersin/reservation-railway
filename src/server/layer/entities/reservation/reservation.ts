@@ -1,9 +1,9 @@
 
 import { db } from "@/server/db";
 import { tblReservationTables, TReservationInsert } from "@/server/db/schema";
-import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation } from "@/server/db/schema/reservation";
+import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
+import { TTransaction } from "@/server/utils/db-utils";
 import { and, eq } from "drizzle-orm";
-
 
 
 
@@ -14,17 +14,22 @@ export const createReservation = async ({
     tableIds,
     ...data
 }: TReservationInsert) => {
-    const newReservation = await db.insert(tblReservation).values(data).$returningId()
+
+    const newReservation = await db.insert(tblReservation).values({
+        ...data,
+    }).$returningId()
+
     const reservationId = newReservation[0]?.id!
     await db.insert(tblReservationTables).values(tableIds.map(tableId => ({
         reservationId: reservationId,
         tableId: tableId,
+
     })))
 
     const reservation = await db.query.tblReservation.findFirst({
         where: eq(tblReservation.id, reservationId),
     })
-    return reservation
+    return reservation!
 }
 
 export const updateReservation = async ({
@@ -35,6 +40,21 @@ export const updateReservation = async ({
     reservationId: number
 }) => {
     await db.update(tblReservation).set(data).where(
+        eq(tblReservation.id, reservationId)
+    )
+}
+
+
+export const updateReservationStatus = async ({
+    reservationId,
+    reservationStatusId
+}: {
+    reservationId: number,
+    reservationStatusId: number
+}) => {
+    await db.update(tblReservation).set({
+        reservationStatusId: reservationStatusId
+    }).where(
         eq(tblReservation.id, reservationId)
     )
 }
@@ -105,6 +125,7 @@ export const updateReservationTable = async ({
 }
 
 
-// export const updateReservattion=
 
-// export const 
+
+
+

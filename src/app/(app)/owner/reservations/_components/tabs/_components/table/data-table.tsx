@@ -25,16 +25,20 @@ import {
 
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
+import { api } from '@/server/trpc/react'
+import { reservationColumns } from './columns/columns'
+import { TReservationRow } from '@/lib/reservation'
+import { useReservationsContext } from '../../../../page'
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-}
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+
+export function ReservationDataTable({
+}: {
+
+  }) {
+
+
+
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -43,9 +47,21 @@ export function DataTable<TData, TValue>({
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
 
-  const table = useReactTable({
-    data,
-    columns,
+
+
+  const { queryDate } = useReservationsContext()
+
+
+  const { data } = api.reservation.getReservations.useQuery({
+    date: queryDate
+  })
+
+
+
+
+  const table = useReactTable<TReservationRow>({
+    data: data || [],
+    columns: reservationColumns,
     state: {
       sorting,
       columnVisibility,
@@ -53,10 +69,13 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
     enableRowSelection: true,
+
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+
+
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -65,7 +84,7 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  console.log(data,'asd')
+  // console.log(data, 'asd')
 
   return (
     <div className='space-y-4 mt-4'>
@@ -81,9 +100,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   )
                 })}
@@ -110,7 +129,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={reservationColumns.length}
                   className='h-24 text-center'
                 >
                   No results.
@@ -120,7 +139,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      {/* <DataTablePagination table={table} /> */}
     </div>
   )
 }

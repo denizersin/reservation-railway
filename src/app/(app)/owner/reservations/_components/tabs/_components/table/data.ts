@@ -38,11 +38,7 @@ export const statuses = [
         label: 'Reservation',
         icon: CircleIcon,
     },
-    {
-        value: EnumReservationStatus.provision,
-        label: 'Provision',
-        icon: StopwatchIcon,
-    },
+
     {
         value: EnumReservationStatus.confirmation,
         label: 'Confirmation',

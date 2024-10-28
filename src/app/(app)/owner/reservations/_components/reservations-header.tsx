@@ -8,11 +8,15 @@ import { IconAlertTriangle, IconArchive, IconBell, IconCashBanknote, IconClockHo
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useReservationsContext } from "../page";
 
 export type TReservationsViewType = 'list' | 'table'
 
 export function ReservationHeader() {
-    const [date, setDate] = useState<Date>()
+
+    const { date, setDate } = useReservationsContext()
+
+    console.log(date, 'date')
 
     const updateQueryParam = useUpdateQueryParams()
 
@@ -30,7 +34,7 @@ export function ReservationHeader() {
     return (
         <div>
             <div className="text-card-foreground text-2xl mb-4 font-normal">
-                TURK FATIH TUTAK | 26 Eylül Perşembe
+                TURK FATIH TUTAK | {date.toDateString() }
             </div>
             <div className="flex  gap-x-3 py-2 ">
                 <div className="flex items-center space-x-2">
@@ -61,7 +65,11 @@ export function ReservationHeader() {
                                 <Calendar
                                     mode="single"
                                     selected={date}
-                                    onSelect={setDate}
+                                    onSelect={(date) => {
+                                        setDate(date || new Date())
+                                        console.log('updated22')
+
+                                    }}
                                     initialFocus
                                 />
                             </PopoverContent>

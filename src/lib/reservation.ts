@@ -3,6 +3,7 @@ import { RouterOutputs } from "@/server/trpc/react"
 export type TStatusTableRows = RouterOutputs['reservation']['getAllAvailableReservation2']['tableStatues'][0]['statues'][0]['tables']
 export type TStatusTableRow = TStatusTableRows[0]
 
+export type TReservationRow = RouterOutputs['reservation']['getReservations'][0]
 
 export type GroupedTables = TStatusTableRows[]
 
@@ -38,3 +39,8 @@ function groupBy<T, K extends keyof any>(arr: T[], getKey: (item: T) => K): Reco
         return acc;
     }, {} as Record<K, T[]>);
 }
+
+
+// export type TStatusTableRows = RouterOutputs['reservation']['getAllAvailableReservation2']['tableStatues'][0]['statues'][0]['tables']
+
+export type TReservationWaitingTableRow = RouterOutputs['reservation']['getReservationWaitingTables'][0]

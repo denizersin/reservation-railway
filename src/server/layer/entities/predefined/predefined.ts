@@ -1,7 +1,7 @@
 import { env } from "@/env"
 import { db } from "@/server/db"
 import { tblCountry, tblLanguage, tblReserVationStatus } from "@/server/db/schema/predefined"
-import { EnumReservationStatus } from "@/shared/enums/predefined-enums"
+import { EnumLanguage, EnumReservationStatus } from "@/shared/enums/predefined-enums"
 import { eq } from "drizzle-orm"
 
 
@@ -43,7 +43,7 @@ export const getCountryByName = async ({
 export const getLanguageByCode = async ({
     languageCode
 }: {
-    languageCode: string
+    languageCode: EnumLanguage
 }) => {
     const language = await db.query.tblLanguage.findFirst({
         where: eq(tblLanguage.languageCode, languageCode)

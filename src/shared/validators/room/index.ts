@@ -14,8 +14,8 @@ export const createRoomSchema = z.object({
     isWaitingRoom: z.boolean().default(false),
     order: z.number().int().positive(),
     translations: z.array(roomTranslationSchema).min(1),
-    layoutWidth: z.number().int().positive(),
-    layoutRowHeight: z.number().int().positive(),
+    layoutWidth: z.number().int().positive().optional(),
+    layoutRowHeight: z.number().int().positive().optional(),
 });
 
 // Schema for updating a room

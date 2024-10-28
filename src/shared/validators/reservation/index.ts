@@ -1,5 +1,6 @@
 import { getEnumValues } from "@/server/utils/server-utils";
-import { EnumReservationPrepaymentType } from "@/shared/enums/predefined-enums";
+import { EnumReservationExistanceStatus, EnumReservationPrepaymentType, EnumReservationStatus } from "@/shared/enums/predefined-enums";
+import { date } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 
@@ -40,11 +41,30 @@ const updateReservationTable = z.object({
     tableId: z.number().int().positive(),
 }).partial())
 
+
+export const getReservations = z.object({
+    date: z.string(),
+    status: z.enum(getEnumValues(EnumReservationStatus)).optional(),
+    existenceStatus: z.enum(getEnumValues(EnumReservationExistanceStatus)).optional(),
+    search: z.string().optional(),
+})
+
+export const baseUpdateReservation = z.object({
+    reservationId: z.number().int().positive()
+})
+
+export const checkInReservation = baseUpdateReservation
+
+export const takeReservationIn = baseUpdateReservation
+
 export const reservationValidator = {
     getTableStatues,
     createReservation,
     updateReservation,
-    updateReservationTable
+    updateReservationTable,
+    getReservations,
+    checkInReservation,
+    takeReservationIn
 }
 
 namespace TReservationValidator {
@@ -52,6 +72,9 @@ namespace TReservationValidator {
     export type createReservation = z.infer<typeof createReservation>
     export type updateReservation = z.infer<typeof updateReservation>
     export type updateReservationTable = z.infer<typeof updateReservationTable>
+    export type getReservations = z.infer<typeof getReservations>
+    export type checkInReservation = z.infer<typeof checkInReservation>
+    export type takeReservationIn = z.infer<typeof takeReservationIn>
 }
 
 export default TReservationValidator

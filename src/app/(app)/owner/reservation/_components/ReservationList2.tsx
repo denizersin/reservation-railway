@@ -1,8 +1,6 @@
 'use client'
 
-import { api } from '@/server/trpc/react'
-import React, { useState } from 'react'
-import { format } from 'date-fns'
+import { Button } from '@/components/ui/button'
 import {
     Table,
     TableBody,
@@ -12,16 +10,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { TReservation } from '@/server/db/schema'
+import { api } from '@/server/trpc/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
-import { TReservation } from '@/server/db/schema'
-import { ReservationTableUpdateModal } from './reservation-table-update-modal'
-import { ConfirmModalGlobal } from '@/components/modal/confirm-modal'
-import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
-import { UpdateReservationTmeModal } from './update-reservation-time-modal'
-import { Button } from '@/components/ui/button'
-import { ReservationGridStatus } from './grid-table/reservation-grid-status'
-import { ReservationGridStatusModal } from './grid-table/reservation-grid-status-modal'
+import { format } from 'date-fns'
+import { useState } from 'react'
 
 type Props = {
     date: Date
@@ -122,7 +117,7 @@ export const ReservationList2 = ({ date }: Props) => {
             />} */}
             <div className='w-full border  my-8'>
 
-                {
+                {/* {
                     reservation && <ReservationGridStatusModal
                         reservation={reservation}
                         isOpen={isOpen}
@@ -133,11 +128,11 @@ export const ReservationList2 = ({ date }: Props) => {
                             setIsOpen(open)
                         }}
                     />
-                }
+                } */}
             </div>
 
 
-            {
+            {/* {
                 hourUpdateReservation && <UpdateReservationTmeModal
                     isOpen={isOpen}
                     setOpen={(open) => {
@@ -149,7 +144,7 @@ export const ReservationList2 = ({ date }: Props) => {
                     reservation={hourUpdateReservation}
                     key={hourUpdateReservation.id}
                 />
-            }
+            } */}
         </Table>
     )
 }

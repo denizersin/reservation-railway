@@ -13,11 +13,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from '@/components/ui/button'
-import { StatusTableRowWithRelation } from './grid-table/reservation-grid-status'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
 import { api } from '@/server/trpc/react'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { StatusTableRowWithRelation } from './reservation-grid-status'
 
 type Props = {
     statusTableRow: StatusTableRowWithRelation,
@@ -128,15 +128,15 @@ export const GridStatusTableRowCard = ({
                 // 'cursor-pointer hover:bg-muted': isAvailable,
                 // 'bg-gray-300 cursor-pointer hover:bg-muted': (!isAvailable && !isReserved),
             }, className)}>
-            <CardContent className="p-4 flex flex-col gap-y-1">
+            <CardContent className="p-4 flex flex-col gap-y-1 text-xs">
                 <div className="r r1 flex justify-between">
-                    <div className="text-xl font-bold">{statusTableRow.table?.no}</div>
+                    <div className="text-sm font-bold flex-1 text-center">{statusTableRow.table?.no}</div>
                     {optionDropdown}
                 </div>
-                <div className="text-sm flex">
+                <div className=" flex">
                     <div>{isReserved ? statusTableRow.guest?.name : '-'}</div>
                 </div>
-                <div className="flex items-center text-xs mt-2">
+                <div className="flex items-center text-xs mt-1">
                     <Clock className="w-3 h-3 mr-1" /> {statusTableRow.reservation?.hour}
                 </div>
                 <div className="flex items-center text-xs ">

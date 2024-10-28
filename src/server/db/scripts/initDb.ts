@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
-import { getEnumValues } from "@/server/utils/server-utils";
-import { EnumMeals, EnumReservationStatus, EnumUserRole } from "@/shared/enums/predefined-enums";
+import { getEnumValues, localHourToUtcHour } from "@/server/utils/server-utils";
+import { EnumLanguage, EnumMeals, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationStatus, EnumReservationStatusNumeric, EnumUserRole } from "@/shared/enums/predefined-enums";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
@@ -10,6 +10,9 @@ import * as schema from "../schema";
 import { tblCountry, tblLanguage, tblMeal, tblReserVationStatus } from "../schema/predefined";
 import { tblUser } from "../schema/user";
 import { seedDatas } from "./seedData";
+import { RoomEntities } from "@/server/layer/entities/room";
+import { languagesData } from "@/server/data";
+import { predefinedEntities } from "@/server/layer/entities/predefined";
 const connection = await mysql.createConnection({
     uri: env.DATABASE_URL,
 });
@@ -32,8 +35,18 @@ const seedFunctions = [
         getEnumValues(EnumReservationStatus).forEach(async (status) => {
             await db.insert(tblReserVationStatus).values({
                 status: status,
+                id: EnumReservationStatusNumeric[status]
             })
         })
+
+        getEnumValues(EnumReservationExistanceStatus).forEach(async (status) => {
+            await db.insert(schema.tblReservationExistanceStatus).values({
+                status: status,
+                id: EnumReservationExistanceStatusNumeric[status]
+            })
+
+        })
+
 
 
 
@@ -89,16 +102,86 @@ const seedFunctions = [
             }
         })
 
+
+        await RoomEntities.createRoomWithTranslations({
+            order: 1,
+            restaurantId: 1,
+            translations: [
+                {
+                    languageId: languagesData.find(l => l.languageCode === EnumLanguage.tr)?.id!,
+                    name: "Ana alan",
+                    description: 'Ana alan description'
+                },
+                {
+                    languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
+                    name: "Main area",
+                    description: 'Main area description'
+                },
+            ]
+        })
+
+        await RoomEntities.createRoomWithTranslations({
+            order: 2,
+            restaurantId: 1,
+            translations: [
+                {
+                    languageId: languagesData.find(l => l.languageCode === EnumLanguage.tr)?.id!,
+                    name: "Sef",
+                    description: 'Sef description'
+                },
+                {
+                    languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
+                    name: "Sef",
+                    description: 'Sef description'
+                },
+            ]
+        })
+
+        await RoomEntities.createRoomWithTranslations({
+            order: 3,
+            restaurantId: 1,
+            isWaitingRoom: true,
+            translations: [
+                {
+                    languageId: languagesData.find(l => l.languageCode === EnumLanguage.tr)?.id!,
+                    name: "waiting room",
+                    description: 'waiting room description'
+                },
+                {
+                    languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
+                    name: "waiting room",
+                    description: 'waiting room description'
+                },
+            ]
+        })
+
+        seedDatas.hours.map(async (h) => {
+            let hour=localHourToUtcHour(h)
+            await restaurantEntities.createMealHours({
+                restaurantId: 1,
+                mealHours: [
+                    {
+                        hour,
+                        mealId: 3,
+                        isOpen: true
+                    }
+                ]
+            })
+
+        })
+
+
+
         console.log('Restaurants created')
 
     },
-    async function createGuests(){
-        for(const guest of seedDatas.guests){
+    async function createGuests() {
+        for (const guest of seedDatas.guests) {
             await db.insert(schema.tblGuest).values(guest)
         }
     },
-    async function createRooms(){
-        
+    async function createRooms() {
+
     }
 ].filter(Boolean)
 

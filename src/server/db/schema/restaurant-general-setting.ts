@@ -2,7 +2,7 @@ import { relations } from 'drizzle-orm';
 import { boolean, int, mysqlEnum, mysqlTable, unique } from 'drizzle-orm/mysql-core';
 import { tblCountry, tblLanguage, tblMeal, tblReserVationStatus, TMeal } from './predefined';
 import { tblRestaurantLanguage, tblRestaurant } from './restaurant';
-import { EnumDays, EnumTableViewType } from '@/shared/enums/predefined-enums';
+import { EnumDays, EnumReservationExistanceStatusNumeric, EnumReservationStatusNumeric, EnumTableViewType } from '@/shared/enums/predefined-enums';
 import { getEnumValues } from '@/server/utils/server-utils';
 
 
@@ -13,7 +13,7 @@ export const tblRestaurantGeneralSetting = mysqlTable('restaurant_general_settin
 
     //general settings
     isAutoCheckOut: boolean('is_auto_check_out').$default(() => false).notNull(),
-    newReservationStatusId: int('new_reservation_state_id').notNull(),
+    newReservationStatusId: int('new_reservation_state_id').notNull().default(EnumReservationStatusNumeric.reservation),
     defaultLanguageId: int('default_language_id').notNull(),
     defaultCountryId: int('default_country_id').notNull(),
     tableView: mysqlEnum('table_view', getEnumValues(EnumTableViewType)).default(EnumTableViewType.standartTable).notNull(),

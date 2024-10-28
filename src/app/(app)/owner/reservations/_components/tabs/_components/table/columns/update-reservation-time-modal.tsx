@@ -1,9 +1,10 @@
 'use client'
+import { ReservationDateCalendar } from '@/app/(app)/owner/reservation/_components/reservation-date-calendar';
 import { Button } from '@/components/custom/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal';
-import { TStatusTableRow } from '@/lib/reservation';
+import { TReservationRow, TStatusTableRow } from '@/lib/reservation';
 import { cn } from '@/lib/utils';
 import { TReservation } from '@/server/db/schema';
 import { api } from '@/server/trpc/react';
@@ -11,13 +12,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getQueryKey } from '@trpc/react-query';
 import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
-import { ReservationDateCalendar } from './reservation-date-calendar';
 
 
 type Props = {
     isOpen: boolean
     setOpen: (open: boolean) => void
-    reservation: TReservation
+    reservation: TReservationRow
 }
 
 export const UpdateReservationTmeModal = ({
@@ -50,6 +50,7 @@ export const UpdateReservationTmeModal = ({
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
             })
+            
         }
     })
 

@@ -11,6 +11,7 @@ import { limitationValidator } from "@/shared/validators/reservation-limitation/
 import { and, between, eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
+import { tblRoom, tblTable } from "@/server/db/schema";
 
 
 
@@ -85,52 +86,9 @@ export const reservationRouter = createTRPCRouter({
             console.log(input.reservationDate, 'input.reservationDate')
             const hour = localHourToUtcHour(input.hour)
             input.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
-            await ReservationEntities.createReservation({
-                ...input,
-                restaurantId,
-                hour,
-
-
-            })
+            await reservationUseCases.createReservation({ ctx, input })
         }),
 
-
-    getReservations: ownerProcedure
-        .input(z.object({
-            date: z.date()
-        }))
-        .query(async ({ input, ctx }) => {
-            const { session: { user: { restaurantId } } } = ctx
-            const { start, end } = getStartAndEndOfDay({
-                date:
-                    getLocalTime(input.date)
-            })
-
-
-            const reservations = await db.query.tblReservation.findMany({
-                with: {
-                    tables: {
-                        with: {
-                            table: true,
-
-
-
-                        }
-                    },
-                    guest: true,
-                },
-                where: and(
-                    eq(tblReservation.restaurantId, restaurantId),
-                    between(tblReservation.reservationDate, start, end)
-                )
-            })
-            reservations.forEach(r => {
-                // r.reservationDate = getLocalTime(r.reservationDate)
-                r.hour = utcHourToLocalHour(r.hour)
-            })
-
-            return reservations
-        }),
 
     deleteReservation: ownerProcedure
         .input(z.object({
@@ -200,11 +158,91 @@ export const reservationRouter = createTRPCRouter({
             await reservationUseCases.updateReservation(opts)
         }),
 
-        updateReservationTable: ownerProcedure
+    updateReservationTable: ownerProcedure
         .input(reservationValidator.updateReservationTable)
         .mutation(async (opts) => {
             await ReservationEntities.updateReservationTable({
-                data:opts.input
+                data: opts.input
             })
         }),
+
+    getWaitingTables: ownerProcedure
+        .query(async (opts) => {
+            const waitingRoom = await db.query.tblRoom.findFirst({
+                where: eq(tblRoom.isWaitingRoom, true)
+            })
+            const tables = await db.query.tblTable.findMany({
+                where: eq(tblTable.roomId, waitingRoom?.id!)
+            })
+            return tables
+        }),
+    getReservationWaitingTables: ownerProcedure
+        .input(z.object({
+            date: z.string()
+        }))
+        .query(async ({ input, ctx }) => {
+            const result = await reservationUseCases.getWaitingStatus({
+                date: new Date(input.date)
+            })
+            return result
+        }),
+
+    createReservationWaitingSession: ownerProcedure
+        .input(z.object({
+            reservationId: z.number().int().positive(),
+            tableIds: z.array(z.number().int().positive())
+        }))
+        .mutation(async ({ input }) => {
+            await ReservationEntities.createReservationWaitingSession({
+                reservationId: input.reservationId,
+                tableIds: input.tableIds
+            })
+        }),
+
+    updateReservationWaitingSession: ownerProcedure
+        .input(z.object({
+            reservationId: z.number().int().positive(),
+            tableIds: z.array(z.number().int().positive())
+        }))
+        .mutation(async ({ input }) => {
+            await ReservationEntities.updateReservationWaitingSessionWithTables({
+                reservationId: input.reservationId,
+                tableIds: input.tableIds
+            })
+        }),
+
+    getReservations: ownerProcedure
+        .input(
+            reservationValidator.getReservations
+        )
+        .query(async (opts) => {
+            const r = await reservationUseCases.getReservations(opts)
+            return r;
+        }),
+
+    updateReservationStatus: ownerProcedure
+        .input(z.object({
+            reservationId: z.number().int().positive(),
+            reservationStatusId: z.number().int().positive()
+        }))
+        .mutation(async ({ input }) => {
+            await db.update(tblReservation).set({
+                reservationStatusId: input.reservationStatusId
+            }).where(
+                eq(tblReservation.id, input.reservationId)
+            )
+        }),
+
+    checkInReservation: ownerProcedure
+        .input(reservationValidator.checkInReservation)
+        .mutation(async (opts) => {
+            await reservationUseCases.checkInReservation(opts)
+        }),
+    
+    takeReservationIn: ownerProcedure
+        .input(reservationValidator.takeReservationIn)
+        .mutation(async (opts) => {
+            await reservationUseCases.takeReservationIn(opts)
+        }),
+
 });

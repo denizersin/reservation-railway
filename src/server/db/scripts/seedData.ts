@@ -1,5 +1,5 @@
 import { EnumGender, EnumVipLevel } from "@/shared/enums/predefined-enums"
-import { TGuestInsert } from "../schema"
+import { TGuestInsert, TRoomInsert } from "../schema"
 import { TCountryInsert, TLanguageInsert } from "../schema/predefined"
 import { TRestaurantInsert } from "../schema/restaurant"
 
@@ -82,6 +82,13 @@ export const guests =
 
 // }] as unknown as TGuestInsert[]
 
+const hours=[
+    "18:00",
+    "18:30",
+    "18:45",
+    "19:00",
+]
+
 
 
 
@@ -89,5 +96,6 @@ export const seedDatas = {
     countries,
     languages,
     restaurant,
-    guests
+    guests,
+    hours
 }

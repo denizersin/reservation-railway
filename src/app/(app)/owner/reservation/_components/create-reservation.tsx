@@ -37,6 +37,7 @@ export const CreateReservation = (props: Props) => {
         limit: 100,
     })
 
+
     const guestToSelect = useMemo(() => {
         return data?.data.map((guest) => ({
             value: String(guest.id),
@@ -112,12 +113,20 @@ export const CreateReservation = (props: Props) => {
         mealId: selectedMeal?.mealId!
     })
 
+    const { data: reservations } = api.reservation.getReservations.useQuery({
+        date: queryDate,
+        search: 'g'
+    })
+
+    console.log(reservations, 'reservations')
+
+
     console.log(queryDate, 'queryDate')
 
     useEffect(() => {
         setSelectedRoom(roomsData?.[0]);
     }, [roomsData])
-    
+
 
 
 
@@ -191,7 +200,7 @@ export const CreateReservation = (props: Props) => {
             />}
 
 
-  
+
 
 
         </div>

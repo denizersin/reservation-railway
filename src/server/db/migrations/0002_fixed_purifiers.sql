@@ -1,1 +1,0 @@
-ALTER TABLE `table` ADD `h` int DEFAULT 1;

@@ -5,6 +5,7 @@ import { int, mysqlEnum, mysqlTable, uniqueIndex, varchar, serial, timestamp, un
 import { tblRestaurantTag } from './restaurant-tags';
 import { tblRestaurant } from './restaurant';
 import { tblCountry, tblLanguage, TCountry, TLanguage } from './predefined';
+import { tblReservation } from './reservation';
 
 
 
@@ -55,7 +56,7 @@ export const tblGuestRelations = relations(tblGuest, ({ one, many }) => ({
     restaurant: one(tblRestaurant, { fields: [tblGuest.restaurantId], references: [tblRestaurant.id] }),
     language: one(tblLanguage, { fields: [tblGuest.languageId], references: [tblLanguage.id] }),
     country: one(tblCountry, { fields: [tblGuest.countryId], references: [tblCountry.id] }),
-
+    reservation:one(tblReservation, { fields: [tblGuest.id], references: [tblReservation.guestId] }),
     tags: many(tblGuestTags),
 }));
 

@@ -44,7 +44,15 @@ async function initDb() {
         //     eq(schema.tblReservation.id, 3)
         // )
 
-        await deleteAllReservations()
+        // await deleteAllReservations()
+
+        // await db.delete(schema.tblWaitingSessionTables).where(
+        //     isNotNull(schema.tblWaitingSessionTables.id)
+        // )
+
+        // await db.delete(schema.tblWaitingTableSession).where(
+        //     isNotNull(schema.tblWaitingTableSession.id)
+        // )
         
 
         // await db.insert(schema.tblReservationTables).values({

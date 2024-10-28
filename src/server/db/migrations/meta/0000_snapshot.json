@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "34ad88ac-cf46-4871-9167-dc6e454f1cc8",
+  "id": "5c9d9077-2934-4777-b8e4-f10b4c6b38e8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -842,7 +842,8 @@
           "type": "int",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 2
         },
         "default_language_id": {
           "name": "default_language_id",
@@ -1035,6 +1036,44 @@
       "compositePrimaryKeys": {
         "reservation_status_id": {
           "name": "reservation_status_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "reservation_existance_status": {
+      "name": "reservation_existance_status",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('not exist','waiting table','in restaurant','checked out')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "reservation_existance_status_id": {
+          "name": "reservation_existance_status_id",
           "columns": [
             "id"
           ]
@@ -1776,6 +1815,22 @@
           "notNull": false,
           "autoincrement": false,
           "default": false
+        },
+        "layout_width": {
+          "name": "layout_width",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1200
+        },
+        "layout_row_height": {
+          "name": "layout_row_height",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 60
         }
       },
       "indexes": {},
@@ -1933,6 +1988,38 @@
           "notNull": true,
           "autoincrement": false,
           "default": true
+        },
+        "x": {
+          "name": "x",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "y": {
+          "name": "y",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "h": {
+          "name": "h",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
+        },
+        "w": {
+          "name": "w",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
         }
       },
       "indexes": {},
@@ -2162,8 +2249,37 @@
           "notNull": true,
           "autoincrement": false
         },
+        "reservation_status_id": {
+          "name": "reservation_status_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reservation_existence_status_id": {
+          "name": "reservation_existence_status_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "personal_id": {
+          "name": "personal_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "prepayment_id": {
           "name": "prepayment_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "bill_payment_id": {
+          "name": "bill_payment_id",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
@@ -2176,11 +2292,40 @@
           "notNull": false,
           "autoincrement": false
         },
+        "waiting_session_id": {
+          "name": "waiting_session_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_checked_in": {
+          "name": "is_checked_in",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "prepayment_type": {
+          "name": "prepayment_type",
+          "type": "enum('prepayment','provision','none')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "reservation_date": {
           "name": "reservation_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "guest_note": {
+          "name": "guest_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "reservation_time": {
@@ -2197,13 +2342,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "prepayment_type": {
-          "name": "prepayment_type",
-          "type": "enum('prepayment','provision','none')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "is_send_sms": {
           "name": "is_send_sms",
           "type": "boolean",
@@ -2216,13 +2354,6 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "waiting_session_id": {
-          "name": "waiting_session_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -2337,6 +2468,81 @@
       },
       "uniqueConstraints": {}
     },
+    "waiting_session_tables": {
+      "name": "waiting_session_tables",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "waiting_session_id": {
+          "name": "waiting_session_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "table_id": {
+          "name": "table_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "waiting_session_tables_table_id_table_id_fk": {
+          "name": "waiting_session_tables_table_id_table_id_fk",
+          "tableFrom": "waiting_session_tables",
+          "tableTo": "table",
+          "columnsFrom": [
+            "table_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "waiting_session_tables_id": {
+          "name": "waiting_session_tables_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "waiting_table_session": {
       "name": "waiting_table_session",
       "columns": {
@@ -2351,14 +2557,29 @@
           "name": "reservation_id",
           "type": "int",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "table_id": {
-          "name": "table_id",
-          "type": "int",
+        "is_in_waiting": {
+          "name": "is_in_waiting",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "entered_at": {
+          "name": "entered_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "exited_at": {
+          "name": "exited_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -2400,19 +2621,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "waiting_table_session_table_id_table_id_fk": {
-          "name": "waiting_table_session_table_id_table_id_fk",
-          "tableFrom": "waiting_table_session",
-          "tableTo": "table",
-          "columnsFrom": [
-            "table_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -2424,6 +2632,81 @@
         }
       },
       "uniqueConstraints": {}
+    },
+    "reservation_bill_payment": {
+      "name": "reservation_bill_payment",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "reservation_id": {
+          "name": "reservation_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('pending','success','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "reservation_bill_payment_id": {
+          "name": "reservation_bill_payment_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_reservation_id": {
+          "name": "unique_reservation_id",
+          "columns": [
+            "reservation_id"
+          ]
+        }
+      }
     },
     "prepayment": {
       "name": "prepayment",
@@ -2710,6 +2993,74 @@
         }
       },
       "uniqueConstraints": {}
+    },
+    "reservation_tags": {
+      "name": "reservation_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "reservation_tags_id": {
+          "name": "reservation_tags_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_name": {
+          "name": "unique_name",
+          "columns": [
+            "name"
+          ]
+        }
+      }
     },
     "meal_day": {
       "name": "meal_day",

@@ -55,6 +55,7 @@ export function RoomCrudModal({
     })
 
     function onSubmit(data: FormValues) {
+        console.log(form.formState.errors,'errors')
         if (isUpdate && room) {
             updateRoomMutation.mutate({
                 roomId: room.id,

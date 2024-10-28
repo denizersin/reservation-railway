@@ -128,7 +128,7 @@ CREATE TABLE `restaurant_general_setting` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
 	`is_auto_check_out` boolean NOT NULL,
-	`new_reservation_state_id` int NOT NULL,
+	`new_reservation_state_id` int NOT NULL DEFAULT 2,
 	`default_language_id` int NOT NULL,
 	`default_country_id` int NOT NULL,
 	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
@@ -163,6 +163,13 @@ CREATE TABLE `reservation_status` (
 	`status` enum('draft','reservation','prepayment','confirmation','cancel','wait approve') NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_existance_status` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`status` enum('not exist','waiting table','in restaurant','checked out') NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `reservation_existance_status_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `restaurant_tags` (
@@ -286,6 +293,8 @@ CREATE TABLE `room` (
 	`order` int NOT NULL,
 	`is_active` boolean NOT NULL DEFAULT true,
 	`is_waiting_room` boolean DEFAULT false,
+	`layout_width` int NOT NULL DEFAULT 1200,
+	`layout_row_height` int NOT NULL DEFAULT 60,
 	CONSTRAINT `room_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -311,6 +320,10 @@ CREATE TABLE `table` (
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`shape` enum('square','rectangle','round') NOT NULL DEFAULT 'rectangle',
 	`is_active` boolean NOT NULL DEFAULT true,
+	`x` int DEFAULT 0,
+	`y` int DEFAULT 0,
+	`h` int DEFAULT 1,
+	`w` int DEFAULT 1,
 	CONSTRAINT `table_id` PRIMARY KEY(`id`),
 	CONSTRAINT `unique_table` UNIQUE(`room_id`,`no`)
 );
@@ -348,15 +361,21 @@ CREATE TABLE `reservation` (
 	`room_id` int NOT NULL,
 	`guest_id` int NOT NULL,
 	`restaurant_meal_id` int NOT NULL,
+	`reservation_status_id` int NOT NULL,
+	`reservation_existence_status_id` int NOT NULL DEFAULT 1,
+	`personal_id` int,
 	`prepayment_id` int,
+	`bill_payment_id` int,
 	`linked_reservation_id` int,
+	`waiting_session_id` int NOT NULL,
+	`is_checked_in` boolean NOT NULL DEFAULT false,
+	`prepayment_type` enum('prepayment','provision','none') NOT NULL,
 	`reservation_date` timestamp NOT NULL,
+	`guest_note` text,
 	`reservation_time` time NOT NULL,
 	`guest_count` int NOT NULL,
-	`prepayment_type` enum('prepayment','provision','none') NOT NULL,
 	`is_send_sms` boolean NOT NULL,
 	`is_send_email` boolean NOT NULL,
-	`waiting_session_id` int,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
@@ -373,14 +392,38 @@ CREATE TABLE `reservation_tables` (
 	CONSTRAINT `reservation_tables_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `waiting_table_session` (
+CREATE TABLE `waiting_session_tables` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`reservation_id` int NOT NULL,
+	`waiting_session_id` int NOT NULL,
 	`table_id` int NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
+	CONSTRAINT `waiting_session_tables_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `waiting_table_session` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int,
+	`is_in_waiting` boolean NOT NULL DEFAULT false,
+	`entered_at` timestamp,
+	`exited_at` timestamp,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
 	CONSTRAINT `waiting_table_session_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_bill_payment` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`amount` int NOT NULL,
+	`status` enum('pending','success','failed') NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `reservation_bill_payment_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_reservation_id` UNIQUE(`reservation_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `prepayment` (
@@ -429,6 +472,17 @@ CREATE TABLE `reservation_note` (
 	CONSTRAINT `reservation_note_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `reservation_tags` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`name` varchar(256) NOT NULL,
+	`color` text NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `reservation_tags_id` PRIMARY KEY(`id`),
+	CONSTRAINT `unique_name` UNIQUE(`name`)
+);
+--> statement-breakpoint
 CREATE TABLE `meal_day` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`meal_id` int NOT NULL,
@@ -441,5 +495,5 @@ CREATE TABLE `meal_day` (
 --> statement-breakpoint
 ALTER TABLE `refresh_token` ADD CONSTRAINT `refresh_token_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `reservation_tables` ADD CONSTRAINT `reservation_tables_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_table_id_table_id_fk` FOREIGN KEY (`table_id`) REFERENCES `table`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `waiting_session_tables` ADD CONSTRAINT `waiting_session_tables_table_id_table_id_fk` FOREIGN KEY (`table_id`) REFERENCES `table`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;

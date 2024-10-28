@@ -33,6 +33,38 @@ export enum EnumReservationStatus {
     waitApprove = 'wait approve',
 }
 
+export const EnumReservationStatusNumeric: Record<EnumReservationStatus, number> = {
+    [EnumReservationStatus.draft]: 1,
+    [EnumReservationStatus.reservation]: 2,
+    [EnumReservationStatus.prepayment]: 3,
+    [EnumReservationStatus.confirmation]: 4,
+    [EnumReservationStatus.cancel]: 5,
+    [EnumReservationStatus.waitApprove]: 6,
+}
+
+
+
+
+
+
+//presentence
+export enum EnumReservationExistanceStatus {
+    notExist = 'not exist',
+    waitingTable = 'waiting table',
+    inRestaurant = 'in restaurant',
+    checkedOut = 'checked out',
+}
+
+
+
+export const EnumReservationExistanceStatusNumeric: Record<EnumReservationExistanceStatus, number> = {
+    [EnumReservationExistanceStatus.notExist]: 1,
+    [EnumReservationExistanceStatus.waitingTable]: 3,
+    [EnumReservationExistanceStatus.inRestaurant]: 4,
+    [EnumReservationExistanceStatus.checkedOut]: 5,
+}
+
+
 export enum EnumTableViewType {
     standartTable = 'standartTable',
     floorPlan = 'floorPlan',
@@ -138,3 +170,4 @@ export enum EnumNotificationMessageType {
     ReservationReminder = "Reservation Reminder",
     ReservationFeedback = "Reservation Feedback"
 }
+
