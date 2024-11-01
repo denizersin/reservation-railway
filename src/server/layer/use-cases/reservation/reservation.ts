@@ -1,17 +1,19 @@
 import { db } from "@/server/db";
-import { tblGuest, tblGusetCompany, tblReserVationStatus, tblRestaurantGeneralSetting, tblRoomTranslation } from "@/server/db/schema";
+import { tblGuest, tblRestaurantGeneralSetting, tblRoomTranslation, TReservationNotificationInsert } from "@/server/db/schema";
 import { tblReservation, tblReservationTables, tblWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
 import { tblRoom, tblTable } from "@/server/db/schema/room";
 import { TUseCaseOwnerLayer } from "@/server/types/types";
-import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
-import TReservationValidator from "@/shared/validators/reservation";
-import { and, between, count, eq, isNotNull, like, ne, or, sql, sum } from "drizzle-orm";
-import { ReservationEntities } from "../../entities/reservation";
 import { createTransaction } from "@/server/utils/db-utils";
-import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
-import { languagesData } from "@/server/data";
+import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
+import { EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
+import TReservationValidator from "@/shared/validators/reservation";
+import { and, between, count, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
+import { ReservationEntities } from "../../entities/reservation";
+import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
+import { NotificationEntities } from "../../entities/notification/reservation-notification";
+import { notificationUseCases } from "./notification";
 
 
 function getAvaliabels({ date, mealId, restaurantId }: { date: Date, mealId: number, restaurantId: number }) {
@@ -268,33 +270,115 @@ export const createReservation = async ({
 }: TUseCaseOwnerLayer<TReservationValidator.createReservation>) => {
 
     const { session: { user: { restaurantId } } } = ctx
+    const { reservationData, data } = input
 
-    const hour = localHourToUtcHour(input.hour)
-    input.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
+    const hour = localHourToUtcHour(reservationData.hour)
+    reservationData.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
+
     const restaurantSettings = await db.query.tblRestaurantGeneralSetting.findFirst({
         where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId)
     })
     if (!restaurantSettings) throw new Error('Restaurant settings not found')
 
+    const hasPrepayment = reservationData.prepaymentId === EnumReservationPrepaymentNumeric.prepayment
+
     const reservation = await createTransaction(async (trx) => {
+
         const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
-        const reservation = await ReservationEntities.createReservation({
-            ...input,
+
+        const newReservation = await ReservationEntities.createReservation({
+            ...reservationData,
             hour,
             restaurantId,
             waitingSessionId: newUnclaimedWaitingSessionId,
             reservationStatusId: restaurantSettings.newReservationStatusId,
+            prePaymentTypeId: reservationData.prepaymentId ?? EnumReservationPrepaymentNumeric.none,
+            tableIds: data.tableIds,
 
+            //!TODO: split this to two different functions
+            createdOwnerId: ctx.session.user.userId,
         })
+
         await ReservationEntities.updateUnClaimedReservationWaitingSession({
-            trx,
             data: {
-                reservationId: reservation.id,
+                reservationId: newReservation.id,
             },
-            waitingSessionId: newUnclaimedWaitingSessionId
+            waitingSessionId: newUnclaimedWaitingSessionId,
+            trx,
         })
-        return reservation
+
+        //tblReservation has'nt got reservationNote column.  reservation_note doesnt throw error while insert 
+        if (data.reservationNote) {
+            await ReservationEntities.createReservationNote({
+                reservationId: newReservation.id,
+                note: data.reservationNote,
+                trx
+            })
+        }
+
+        if (data.reservationTagIds.length > 0) {
+            await ReservationEntities.createReservationTags({
+                reservationId: newReservation.id,
+                reservationTagIds: data.reservationTagIds,
+                trx
+            })
+        }
+
+
+        if (reservationData.prepaymentId === EnumReservationPrepaymentNumeric.prepayment) {
+            const amount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest
+            const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
+                data: {
+                    reservationId: newReservation.id,
+                    amount,
+                    isDefaultAmount: data.customPrepaymentAmount ? false : true,
+                },
+                trx
+            })
+            await ReservationEntities.updateReservation({
+                data: {
+                    prepaymentId: newPrepaymentId,
+                    reservationStatusId: EnumReservationStatusNumeric.prepayment,
+                },
+                reservationId: newReservation.id,
+                trx
+            })
+        }
+
+
+
+
+
+
+        return newReservation
     })
+
+    await ReservationLogEntities.createLog({
+        message: `Reservation created`,
+        reservationId: reservation.id,
+        owner: ctx.session.user.userId.toString()
+    })
+
+    //notifications
+
+
+
+
+
+
+    if (hasPrepayment) {
+        console.log('hasPrepayment')
+        await notificationUseCases.sendPrePaymentNotification({ reservation })
+
+        await ReservationLogEntities.createLog({
+            message: `Asked for prepayment`,
+            reservationId: reservation.id,
+            owner: ctx.session.user.userId.toString()
+        })
+    }
+
+    
+
 
 
 
@@ -304,11 +388,6 @@ export const updateReservation = async ({
     input,
     ctx
 }: TUseCaseOwnerLayer<TReservationValidator.updateReservation>) => {
-    if (input.data.hour) {
-        input.data.hour = localHourToUtcHour(input.data.hour)
-        //log the change of hour
-    }
-
     await ReservationEntities.updateReservation({
         data: input.data,
         reservationId: input.reservationId
@@ -431,7 +510,7 @@ export const getReservations = async ({
             reservationStatus: true,
 
             reservationExistenceStatus: true,
-            notes: true,
+            reservationNotes: true,
         },
         where: and(
             eq(tblReservation.restaurantId, restaurantId),
@@ -457,7 +536,7 @@ export const checkInReservation = async ({
     input: { reservationId }
 }: TUseCaseOwnerLayer<TReservationValidator.checkInReservation>) => {
     // const reservationId = ctx.session.user.restaurantId
-    
+
     const {
         updateReservation,
         updateReservationWaitingSession,
@@ -484,6 +563,12 @@ export const checkInReservation = async ({
             waitingSessionId: reservation.waitingSessionId
         })
 
+    })
+
+    await ReservationLogEntities.createLog({
+        message: `Reservation checked in`,
+        reservationId,
+        owner: ctx.session.user.userId.toString()
     })
 
 }
@@ -523,3 +608,5 @@ export const takeReservationIn = async ({
 
     })
 }
+
+

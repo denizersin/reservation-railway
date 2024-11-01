@@ -84,14 +84,13 @@ export const getAllRestaurantTags2 = async ({
 }: TRestaurantTagValidator.getAllRestaurantTagsSchema)
     : Promise<TPagination<TRestaurantTagWithTranslations>> => {
 
-    const offset = (page - 1) * limit
+    const offset = (page - 1) * limit;
 
     const whereConditions = [];
-
-    whereConditions.push(eq(tblRestaurantTagTranslation.languageId, languageId))
+    whereConditions.push(eq(tblRestaurantTagTranslation.languageId, languageId));
 
     if (name) {
-        whereConditions.push(like(tblRestaurantTagTranslation.name, `%${name}%`))
+        whereConditions.push(like(tblRestaurantTagTranslation.name, `%${name}%`));
     }
 
     let query = db.query.tblRestaurantTag.findMany({
@@ -100,22 +99,21 @@ export const getAllRestaurantTags2 = async ({
                 where: and(...whereConditions)
             }
         },
-        limit: limit === -1 ? undefined : limit,
-        offset: limit === -1 ? undefined : offset
-    })
+        limit: page === -1 ? undefined : limit,
+        offset: page === -1 ? undefined : offset
+    });
+
     const countQuery = db.query.tblRestaurantTag.findMany({
         with: {
             translations: {
                 where: and(...whereConditions)
             }
         }
-    })
-    console.log('1111')
+    });
 
-    const totalCount = await countQuery.execute().then(res => res.length)
-    console.log('222')
+    const totalCount = await countQuery.execute().then(res => res.length);
 
-    const tags = await query
+    const tags = await query;
 
     return {
         data: tags,
@@ -123,8 +121,7 @@ export const getAllRestaurantTags2 = async ({
             page,
             limit,
             total: totalCount,
-            totalPages: Math.ceil(totalCount / limit)
+            totalPages: page === -1 ? 1 : Math.ceil(totalCount / limit)
         }
-    }
-
+    };
 }

@@ -18,4 +18,4 @@ export const tblReservationNoteRelations = relations(tblReservationNote, ({ one 
 }));
 
 export type TReservationNote = typeof tblReservationNote.$inferSelect
-export type TReservationNoteInsert = typeof tblReservation
+export type TReservationNoteInsert = typeof tblReservationNote.$inferInsert

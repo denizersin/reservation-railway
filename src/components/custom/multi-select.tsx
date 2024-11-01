@@ -28,6 +28,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
+import useFirstRender from "@/hooks/useFirstRender";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -58,7 +59,7 @@ const multiSelectVariants = cva(
  */
 interface MultiSelectProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof multiSelectVariants> {
+  VariantProps<typeof multiSelectVariants> {
   /**
    * An array of option objects to be displayed in the multi-select component.
    * Each option object has a label, value, and an optional icon.
@@ -71,6 +72,8 @@ interface MultiSelectProps
     /** Optional icon component to display alongside the option. */
     icon?: React.ComponentType<{ className?: string }>;
   }[];
+
+  value?: string[];
 
   /**
    * Callback function triggered when the selected values change.
@@ -143,6 +146,12 @@ export const MultiSelect = React.forwardRef<
       React.useState<string[]>(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
+
+    const isFirstRender = useFirstRender()
+    React.useEffect(() => {
+      const value = props.value || (isFirstRender ? defaultValue : [])
+      setSelectedValues(value)
+    }, [props.value])
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>
@@ -217,7 +226,7 @@ export const MultiSelect = React.forwardRef<
                         key={value}
                         className={cn(
                           isAnimating ? "animate-bounce" : "",
-                          multiSelectVariants({ variant }),'font-normal p-2 px-4'
+                          multiSelectVariants({ variant }), 'font-normal p-2 px-4'
                         )}
                         style={{ animationDuration: `${animation}s` }}
                       >

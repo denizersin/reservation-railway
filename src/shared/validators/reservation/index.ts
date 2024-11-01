@@ -10,6 +10,7 @@ const getTableStatues = z.object({
 })
 
 const tableIds = z.array(z.number().int().positive()).min(1)
+const reservationTagIds = z.array(z.number().int().positive())
 
 const createReservationBase = z.object({
     roomId: z.number().int().positive(),
@@ -19,19 +20,26 @@ const createReservationBase = z.object({
     reservationDate: z.date(),
     hour: z.string(),
     guestCount: z.number().int().positive(),
-    prePaymentType: z.enum(getEnumValues(EnumReservationPrepaymentType)),
+    // prePaymentType: z.enum(getEnumValues(EnumReservationPrepaymentType)),
     isSendSms: z.boolean().default(true),
     isSendEmail: z.boolean().default(true),
+    guestNote: z.string().optional(),
 })
 
-const createReservation = createReservationBase.merge(
-    z.object({
-        tableIds
+const createReservation = z.object({
+    reservationData: createReservationBase,
+    data: z.object({
+        tableIds,
+        reservationTagIds,
+        reservationNote: z.string().optional(),
+        customPrepaymentAmount: z.number().int().positive().optional(),
     })
-)
+})
 
 const updateReservation = z.object({
-    data: createReservationBase.partial(),
+    data: createReservationBase.merge(z.object({
+        reservationStatusId: z.number().int().positive().optional()
+    })).partial(),
     reservationId: z.number().int().positive()
 })
 

@@ -1,5 +1,7 @@
-import { EnumGender, EnumVipLevel } from "@/shared/enums/predefined-enums"
-import { TGuestInsert, TRoomInsert } from "../schema"
+import { languagesData } from "@/server/data"
+import { EnumGender, EnumLanguage, EnumVipLevel } from "@/shared/enums/predefined-enums"
+import TRestaurantTagValidator from "@/shared/validators/restaurant-tag"
+import { TGuestInsert } from "../schema"
 import { TCountryInsert, TLanguageInsert } from "../schema/predefined"
 import { TRestaurantInsert } from "../schema/restaurant"
 
@@ -42,11 +44,11 @@ export const restaurant = [
     {
         name: 'burger-king',
         phoneNumber: '+905555555555',
-        id:1
+        id: 1
     }, {
         name: 'kfc',
         phoneNumber: '+905555555555',
-        id:2
+        id: 2
     }
 
 ] as TRestaurantInsert[]
@@ -67,6 +69,39 @@ export const guests =
 
     }) as TGuestInsert)
 
+export const reservationTags = [
+    {
+        translations: [
+            {
+                name: 'Dogum gunu',
+                code: 'dgm',
+                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.tr)!.id
+            },
+            {
+                name: 'Birthday',
+                code: 'bday',
+                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.en)!.id
+            }
+
+        ]
+    },
+    {
+        translations: [
+            {
+                name: 'Anniversary',
+                code: 'anv',
+                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.en)!.id
+            },
+            {
+                name: 'Yildonumu',
+                code: 'yld',
+                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.tr)!.id
+            }
+        ]
+    },
+] as TRestaurantTagValidator.createRestaurantTagFormSchema[]
+
+
 // [{
 //     name: 'guest1',
 //     countryId: 1,
@@ -82,7 +117,7 @@ export const guests =
 
 // }] as unknown as TGuestInsert[]
 
-const hours=[
+const hours = [
     "18:00",
     "18:30",
     "18:45",
@@ -97,5 +132,6 @@ export const seedDatas = {
     languages,
     restaurant,
     guests,
-    hours
+    hours,
+    reservationTags
 }

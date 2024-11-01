@@ -138,14 +138,20 @@ export enum EnumReservationPrepaymentStatus {
 
 export enum EnumReservationPrepaymentType {
     "prepayment" = 'prepayment',
-    "provision" = 'provision',
+    // "provision" = 'provision',
     "none" = 'none',
 }
+
+export enum EnumReservationPrepaymentNumeric{
+    "prepayment" = 1,
+    // "provision" = 2,
+    "none" = 3,
+}
+
 
 export enum NotificationType {
     RESERVATION_CONFIRMATION = 'RESERVATION_CONFIRMATION',
     RESERVATION_CANCEL = 'RESERVATION_CANCEL',
-
 }
 
 
@@ -168,6 +174,34 @@ export enum EnumNotificationMessageType {
     ReservationConfirmation = "Reservation Confirmation",
     ReservationCompleted = "Reservation Completed",
     ReservationReminder = "Reservation Reminder",
-    ReservationFeedback = "Reservation Feedback"
+    ReservationFeedback = "Reservation Feedback",
+    NotifiedForPrepayment = "Notified For Prepayment",
+    AskedForPrepayment = "Asked For Prepayment",
+    ReservationCreated = "Reservation Created",
 }
+
+export enum EnumPrepaymentStatus {
+    pending = 'pending',
+    success = 'success',
+    cancelled = 'cancelled',
+    failed = 'failed',
+}
+
+export enum EnumBillPaymentStatus {
+    pending = 'pending',
+    success = 'success',
+    failed = 'failed',
+}
+
+export enum EnumHistoryActionType{
+    RESERVATION_CREATED = "Reservation Created",
+    RESERVATION_CONFIRMED = "Reservation Confirmed",
+    RESERVATION_CANCELLED = "Reservation Cancelled",
+    ASKED_FOR_PREPAYMENT = "Asked For Prepayment",
+    NOTIFIED_FOR_PREPAYMENT = "Notified For Prepayment",
+    RESERVATION_COMPLETED = "Reservation Completed",
+    PREPAYMENT_SUCCESS = "Prepayment Success",
+}
+
+
 

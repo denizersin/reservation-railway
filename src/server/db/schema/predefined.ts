@@ -1,21 +1,21 @@
 import { getEnumValues } from '@/server/utils/server-utils';
-import { EnumLanguage, EnumMeals, EnumReservationExistanceStatus, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { EnumLanguage, EnumMeals, EnumReservationExistanceStatus, EnumReservationPrepaymentType, EnumReservationStatus } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
 import { boolean, int, mysqlEnum, mysqlTable, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 
-
-
-export const tblReserVationStatus = mysqlTable('reservation_status', {
-    id: int('id').autoincrement().primaryKey(),
-    status: mysqlEnum('status', getEnumValues(EnumReservationStatus)).notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-}, (t) => ({}));
 
 
 
 export const tblReservationExistanceStatus = mysqlTable('reservation_existance_status', {
     id: int('id').autoincrement().primaryKey(),
     status: mysqlEnum('status', getEnumValues(EnumReservationExistanceStatus)).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => ({}));
+
+
+export const tblReservationPrepaymentType = mysqlTable('reservation_prepayment_type', {
+    id: int('id').autoincrement().primaryKey(),
+    type: mysqlEnum('type', getEnumValues(EnumReservationPrepaymentType)).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (t) => ({}));
 
@@ -57,8 +57,7 @@ export type TCountry = typeof tblCountry.$inferSelect
 export type TCountryInsert = typeof tblCountry.$inferInsert
 
 
-export type TReservationStatus = typeof tblReserVationStatus.$inferSelect
-export type TReservationStatusInsert = typeof tblReserVationStatus.$inferInsert
+
 
 
 

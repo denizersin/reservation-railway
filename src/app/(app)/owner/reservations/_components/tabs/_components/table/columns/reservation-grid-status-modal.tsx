@@ -47,7 +47,6 @@ export const ReservationGridStatusModal = ({
         selectedTables: []
     })
 
-    console.log(setselectionWaitingState, 'setselectionWaitingState')
 
     const [selectedTables, setSelectedTables] = useState<TTable[]>([])
 
@@ -146,7 +145,6 @@ export const ReservationGridStatusModal = ({
 
 
     function onUpdate() {
-        console.log('s23')
         if (isUpdateReservationTable) {
             updateReservationTable({
                 id: deSelectedRows[0]?.reservation_tables?.id!,

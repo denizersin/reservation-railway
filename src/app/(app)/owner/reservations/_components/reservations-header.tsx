@@ -16,7 +16,6 @@ export function ReservationHeader() {
 
     const { date, setDate } = useReservationsContext()
 
-    console.log(date, 'date')
 
     const updateQueryParam = useUpdateQueryParams()
 

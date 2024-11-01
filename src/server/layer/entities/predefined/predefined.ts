@@ -1,6 +1,7 @@
 import { env } from "@/env"
 import { db } from "@/server/db"
-import { tblCountry, tblLanguage, tblReserVationStatus } from "@/server/db/schema/predefined"
+import { tblReserVationStatus } from "@/server/db/schema"
+import { tblCountry, tblLanguage } from "@/server/db/schema/predefined"
 import { EnumLanguage, EnumReservationStatus } from "@/shared/enums/predefined-enums"
 import { eq } from "drizzle-orm"
 

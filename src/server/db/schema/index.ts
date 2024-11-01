@@ -16,6 +16,7 @@ export * from './reservation/notification';
 export *  from './reservation/reservation-log';
 export *  from './reservation/reservation-note';
 export *  from './reservation/tag';
+export *  from './reservation/reservation-status';
 
 export *  from './guest';
 

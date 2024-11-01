@@ -1,12 +1,15 @@
 import { relations } from 'drizzle-orm';
 import { boolean, int, mysqlEnum, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 import { tblReservation } from './';
+import { getEnumValues } from '@/server/utils/server-utils';
+import { EnumBillPaymentStatus, EnumPrepaymentStatus } from '@/shared/enums/predefined-enums';
 
 export const tblPrepayment = mysqlTable('prepayment', {
     id: int('id').autoincrement().primaryKey(),
     reservationId: int('reservation_id').notNull(),
     amount: int('amount').notNull(),
-    status: mysqlEnum('status', ['pending', 'success', 'failed']).notNull(),
+    isDefaultAmount: boolean('is_default_amount').notNull().default(false),
+    status: mysqlEnum('status', getEnumValues(EnumPrepaymentStatus)).notNull().default(EnumPrepaymentStatus.pending),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),
@@ -18,13 +21,15 @@ export const tblPrepaymentRelations = relations(tblPrepayment, ({ one }) => ({
     reservation: one(tblReservation, { fields: [tblPrepayment.reservationId], references: [tblReservation.id] }),
 }));
 
+export type TPrepayment = typeof tblPrepayment.$inferSelect
+export type TPrepaymentInsert = typeof tblPrepayment.$inferInsert
 
 
 export const tblBillPayment = mysqlTable('reservation_bill_payment', {
     id: int('id').autoincrement().primaryKey(),
     reservationId: int('reservation_id').notNull(),
     amount: int('amount').notNull(),
-    status: mysqlEnum('status', ['pending', 'success', 'failed']).notNull(),
+    status: mysqlEnum('status', getEnumValues(EnumBillPaymentStatus)).notNull().default(EnumBillPaymentStatus.pending),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),

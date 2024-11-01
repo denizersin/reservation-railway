@@ -44,8 +44,8 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
     } = api.restaurant.getLanguages.useQuery()
 
 
-    const form = useForm<TRestaurantTagValidator.createRestaurantFormSchema>({
-        resolver: zodResolver(restaurantTagValidator.createRestaurantFormSchema),
+    const form = useForm<TRestaurantTagValidator.createRestaurantTagFormSchema>({
+        resolver: zodResolver(restaurantTagValidator.createRestaurantTagFormSchema),
         defaultValues: {
             translations: restaurantLanguages?.map(lang => ({
                 name: '',
@@ -55,7 +55,7 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
         },
     })
 
-    const onSubmit = (data: TRestaurantTagValidator.createRestaurantFormSchema) => {
+    const onSubmit = (data: TRestaurantTagValidator.createRestaurantTagFormSchema) => {
         if (tagId) {
             updateTagMutation.mutate({ id: tagId, translations: data.translations })
         } else {

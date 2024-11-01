@@ -3,14 +3,15 @@ import { boolean, int, mysqlEnum, mysqlTable, text, time, timestamp, unique } fr
 import { tblRestaurant } from '../restaurant';
 import { tblRoom, tblTable } from '../room';
 import { tblGuest, tblPersonel } from '../guest';
-import { tblMeal, tblReservationExistanceStatus, tblReserVationStatus } from '../predefined';
+import { tblMeal, tblReservationExistanceStatus } from '../predefined';
 import { tblPrepayment, tblBillPayment } from './prepayment';
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentType, EnumReservationStatus, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums';
 import { tblReservationNotification } from './notification';
 import { tblReservationLog } from './reservation-log';
 import { tblReservationNote } from './reservation-note';
-import { tblReservationTags } from './tag';
+import { tblReservationTag } from './tag';
+import { tblReserVationStatus } from './reservation-status';
 
 
 export const tblReservation = mysqlTable('reservation', {
@@ -20,17 +21,20 @@ export const tblReservation = mysqlTable('reservation', {
     guestId: int('guest_id').notNull(),
     mealId: int('restaurant_meal_id').notNull(),
     reservationStatusId: int('reservation_status_id').notNull(),
-    reservationExistenceStatusId: int('reservation_existence_status_id').notNull().default(EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist]),
+    reservationExistenceStatusId: int('reservation_existence_status_id')
+        .notNull().default(EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist]),
     personalId: int('personal_id'),
     prepaymentId: int('prepayment_id'),
     billPaymentId: int('bill_payment_id'),
     linkedReservationId: int('linked_reservation_id'),
     waitingSessionId: int('waiting_session_id').notNull(),
 
+    //if exists, it means that the reservation is created by restaurant owner
+    createdOwnerId: int('created_owner_id'),
 
     isCheckedin: boolean('is_checked_in').notNull().default(false),
 
-    prePaymentType: mysqlEnum('prepayment_type', getEnumValues(EnumReservationPrepaymentType)).notNull(),
+    prePaymentTypeId: int('prepayment_type_id').notNull(),
 
     reservationDate: timestamp('reservation_date').notNull(),
     guestNote: text('guest_note'),
@@ -65,8 +69,8 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
     tables: many(tblReservationTables),
     notifications: many(tblReservationNotification),
     logs: many(tblReservationLog),
-    notes: many(tblReservationNote),
-    tags: many(tblReservationTags),
+    reservationNotes: many(tblReservationNote),
+    tags: many(tblReservationTag),
 
     waitingSession: one(tblWaitingTableSession, { fields: [tblReservation.waitingSessionId], references: [tblWaitingTableSession.id] }),
 
@@ -134,13 +138,7 @@ type ReservationInsert = typeof tblReservation.$inferInsert;
 
 
 
-export type TReservation = TReservationSelect & {
-    tables: typeof tblReservationTables.$inferSelect[]
-    restaurant: typeof tblRestaurant.$inferSelect
-    room: typeof tblRoom.$inferSelect
-    meal: typeof tblMeal.$inferSelect
-    guest: typeof tblGuest.$inferSelect
-};
+export type TReservation = TReservationSelect 
 
 export type TReservationInsert = ReservationInsert & {
     tableIds: number[]

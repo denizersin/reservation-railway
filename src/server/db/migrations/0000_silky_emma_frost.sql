@@ -158,18 +158,18 @@ CREATE TABLE `meal` (
 	CONSTRAINT `meal_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `reservation_status` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`status` enum('draft','reservation','prepayment','confirmation','cancel','wait approve') NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
 CREATE TABLE `reservation_existance_status` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`status` enum('not exist','waiting table','in restaurant','checked out') NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	CONSTRAINT `reservation_existance_status_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_prepayment_type` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`type` enum('prepayment','none') NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `reservation_prepayment_type_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `restaurant_tags` (
@@ -294,7 +294,7 @@ CREATE TABLE `room` (
 	`is_active` boolean NOT NULL DEFAULT true,
 	`is_waiting_room` boolean DEFAULT false,
 	`layout_width` int NOT NULL DEFAULT 1200,
-	`layout_row_height` int NOT NULL DEFAULT 60,
+	`layout_row_height` int NOT NULL DEFAULT 120,
 	CONSTRAINT `room_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -368,8 +368,9 @@ CREATE TABLE `reservation` (
 	`bill_payment_id` int,
 	`linked_reservation_id` int,
 	`waiting_session_id` int NOT NULL,
+	`created_owner_id` int,
 	`is_checked_in` boolean NOT NULL DEFAULT false,
-	`prepayment_type` enum('prepayment','provision','none') NOT NULL,
+	`prepayment_type_id` int NOT NULL,
 	`reservation_date` timestamp NOT NULL,
 	`guest_note` text,
 	`reservation_time` time NOT NULL,
@@ -418,7 +419,7 @@ CREATE TABLE `reservation_bill_payment` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`reservation_id` int NOT NULL,
 	`amount` int NOT NULL,
-	`status` enum('pending','success','failed') NOT NULL,
+	`status` enum('pending','success','failed') NOT NULL DEFAULT 'pending',
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
@@ -430,7 +431,8 @@ CREATE TABLE `prepayment` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`reservation_id` int NOT NULL,
 	`amount` int NOT NULL,
-	`status` enum('pending','success','failed') NOT NULL,
+	`is_default_amount` boolean NOT NULL DEFAULT false,
+	`status` enum('pending','success','cancelled','failed') NOT NULL DEFAULT 'pending',
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
@@ -440,9 +442,9 @@ CREATE TABLE `prepayment` (
 --> statement-breakpoint
 CREATE TABLE `reservation_notification` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`reservation_id` int,
+	`reservation_id` int NOT NULL,
 	`type` enum('SMS','EMAIL') NOT NULL,
-	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation','Reservation Completed','Reservation Reminder','Reservation Feedback') NOT NULL,
+	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created') NOT NULL,
 	`message` text NOT NULL,
 	`sent_at` timestamp,
 	`status` enum('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
@@ -472,15 +474,29 @@ CREATE TABLE `reservation_note` (
 	CONSTRAINT `reservation_note_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `reservation_tags` (
+CREATE TABLE `reservation_tag` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`name` varchar(256) NOT NULL,
-	`color` text NOT NULL,
+	`tag_id` int NOT NULL,
+	`reservation_id` int NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
-	CONSTRAINT `reservation_tags_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_name` UNIQUE(`name`)
+	CONSTRAINT `reservation_tag_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_status` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`status` enum('draft','reservation','prepayment','confirmation','cancel','wait approve') NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_status_logs` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`status_id` int NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `reservation_status_logs_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `meal_day` (

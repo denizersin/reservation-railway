@@ -3,9 +3,11 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { TReservationRow } from '@/lib/reservation'
 import { api } from '@/server/trpc/react'
-import { EnumReservationExistanceStatusNumeric, EnumReservationStatus, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
+import { ReservationStatusGuestSection } from './reservation-status-guest-section'
+import { ReservationStatusLogs } from './reservation-status-logs'
+import { ReservationStatusActions } from './reservaton-status-actions'
 
 type Props = {
     isOpen: boolean
@@ -24,18 +26,16 @@ export const ReservationStatusModal = ({
         mutate: updateReservationStatus,
         isPending: isUpdatePending
     } = api.reservation.updateReservationStatus.useMutation({
-        onSuccess:()=>{
+        onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey:getQueryKey(api.reservation.getReservations),
+                queryKey: getQueryKey(api.reservation.getReservations),
             })
             queryClient.invalidateQueries({
-                queryKey:getQueryKey(api.reservation.getAllAvailableReservation2)
+                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
             })
         }
     })
 
-    console.log(EnumReservationStatus, 'EnumReservationStatus')
-    console.log(EnumReservationExistanceStatusNumeric, 'EnumReservationExistanceStatusNumeric')
 
     useShowLoadingModal([isUpdatePending])
 
@@ -46,18 +46,14 @@ export const ReservationStatusModal = ({
                 <DialogHeader>
                     CHange Status
                 </DialogHeader>
-                <div>
-                    <Button
-                        variant={'destructive'}
-                        onClick={() => {
-                            updateReservationStatus({
-                                reservationId: reservation.id,
-                                reservationStatusId: EnumReservationStatusNumeric.cancel
-                            })
-                        }}
-                    >
-                        Cancel Reservation
-                    </Button>
+                <div className=' flex'>
+                    <div className="c c1 w-1/3">
+                        <ReservationStatusGuestSection reservation={reservation} />
+                    </div>
+                    <div className="c c2 w-2/3">
+                        <ReservationStatusLogs reservation={reservation} />
+                        <ReservationStatusActions reservation={reservation} />
+                    </div>
                 </div>
 
             </DialogContent>

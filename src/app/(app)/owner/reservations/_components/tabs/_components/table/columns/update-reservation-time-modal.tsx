@@ -89,7 +89,6 @@ export const UpdateReservationTmeModal = ({
 
     const tableStatues = availableTableData?.tableStatues
     const roomTableStatues = tableStatues?.find(r => r.roomId === reservation.roomId)
-    console.log(roomTableStatues, 'roomTableStatues')
     // const hourTables = roomTableStatues?.statues.find((hour) => hour.hour === reservation.hour)?.tables
 
 
@@ -115,8 +114,6 @@ export const UpdateReservationTmeModal = ({
     const hasAnyAvailableTable = roomTableStatues?.statues.some((hour) => hour.tables.some((table) => !table.reservation))
 
     const isChangedAndisAvailable = isChanged && hasAnyAvailableTable
-
-    console.log(isChangedAndisAvailable, 'isChangedAndisAvailable')
 
 
 

@@ -15,7 +15,7 @@ export const tblRoom = mysqlTable('room', {
     isActive: boolean('is_active').notNull().default(true),
     isWaitingRoom: boolean('is_waiting_room').default(false),
     layoutWidth: int('layout_width').notNull().default(1200),
-    layoutRowHeight: int('layout_row_height').notNull().default(60),
+    layoutRowHeight: int('layout_row_height').notNull().default(120),
 });
 export const roomRelations = relations(tblRoom, ({ one, many }) => ({
     tables: many(tblTable),

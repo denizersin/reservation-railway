@@ -14,7 +14,6 @@ export const createReservation = async ({
     tableIds,
     ...data
 }: TReservationInsert) => {
-
     const newReservation = await db.insert(tblReservation).values({
         ...data,
     }).$returningId()
@@ -34,12 +33,14 @@ export const createReservation = async ({
 
 export const updateReservation = async ({
     data,
-    reservationId
+    reservationId,
+    trx = db
 }: {
     data: Partial<TReservationSelect>,
-    reservationId: number
+    reservationId: number,
+    trx?: TTransaction
 }) => {
-    await db.update(tblReservation).set(data).where(
+    await trx.update(tblReservation).set(data).where(
         eq(tblReservation.id, reservationId)
     )
 }

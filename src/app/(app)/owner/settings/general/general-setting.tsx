@@ -40,6 +40,7 @@ export const GeneralSettings = ({ }: Props) => {
             generalSettingID: generalSettings?.id!,
             generalSetting: {
                 ...changedFields,
+
             }
         })
     }
@@ -56,6 +57,8 @@ export const GeneralSettings = ({ }: Props) => {
             ...generalSettings,
         })
     }, [generalSettings])
+
+    console.log(form.formState.errors,'errors')
 
 
     return (
@@ -85,7 +88,7 @@ export const GeneralSettings = ({ }: Props) => {
                             <FormLabel>New Reservation Status</FormLabel>
                             <Select
                                 value={String(field.value)}
-                                onValueChange={(val) => field.onChange(Number(val))} >
+                                onValueChange={(val) => field.onChange(Number(val)??0)} >
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select status" />
@@ -112,8 +115,10 @@ export const GeneralSettings = ({ }: Props) => {
                             <FormLabel>Prepayment Price Per Guest</FormLabel>
                             <FormControl>
                                 <Input
+
                                     {...field}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    type='text'
+                                    onChange={(e) => field.onChange(Number(e.target.value)??0)}
                                     className="w-full"
                                 />
                             </FormControl>

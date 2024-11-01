@@ -10,7 +10,6 @@ export function useShowLoadingModal(loading: boolean[]) {
 
     useEffect(() => {
 
-        console.log(LoadingModal.isOpen, 'LoadingModal.isOpen');
         if (!LoadingModal.isOpen && wilShow) {
             LoadingModal.show()
         }

@@ -82,10 +82,6 @@ export const reservationRouter = createTRPCRouter({
     createMockReservation: ownerProcedure
         .input(reservationValidator.createReservation)
         .mutation(async ({ input, ctx }) => {
-            const { session: { user: { restaurantId } } } = ctx
-            console.log(input.reservationDate, 'input.reservationDate')
-            const hour = localHourToUtcHour(input.hour)
-            input.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
             await reservationUseCases.createReservation({ ctx, input })
         }),
 

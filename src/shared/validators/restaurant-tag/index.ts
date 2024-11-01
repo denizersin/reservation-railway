@@ -19,7 +19,7 @@ const translationSchema = z.array(z.object({
     languageId: z.number().int().positive()
 }))
 
-export const createRestaurantFormSchema = z.object({
+export const createRestaurantTagFormSchema = z.object({
     translations: translationSchema
 })
 
@@ -33,14 +33,14 @@ export const restaurantTagValidator = {
     getAllRestaurantTagsSchema,
     createRestaurantTagSchema,
     updateRestaurantTagSchema,
-    createRestaurantFormSchema
+    createRestaurantTagFormSchema
 }
 
 namespace TRestaurantTagValidator {
     export type getAllRestaurantTagsSchema = z.infer<typeof getAllRestaurantTagsSchema>
     export type createRestaurantTagSchema = z.infer<typeof createRestaurantTagSchema>
     export type updateRestaurantTagSchema = z.infer<typeof updateRestaurantTagSchema>
-    export type createRestaurantFormSchema = z.infer<typeof createRestaurantFormSchema>
+    export type createRestaurantTagFormSchema = z.infer<typeof createRestaurantTagFormSchema>
 }
 
 export default TRestaurantTagValidator

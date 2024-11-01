@@ -23,6 +23,8 @@ const RestaurantLanguagesMultiSelect = (props: Props) => {
         data: languages
     } = api.predefiend.getLanguages.useQuery()
 
+    
+
 
     const languageOptions = useMemo(() => {
         return languages?.map((language) => ({
@@ -35,6 +37,9 @@ const RestaurantLanguagesMultiSelect = (props: Props) => {
     const {
         data: restaurantLanguages
     } = api.restaurant.getLanguages.useQuery()
+
+    console.log(restaurantLanguages, 'restaurantLanguages')
+
 
     const selectedLanguages = restaurantLanguages?.map((language) => String(language.languageId)) || []
 

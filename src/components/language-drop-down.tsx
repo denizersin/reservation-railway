@@ -38,7 +38,6 @@ const LanguageDropDown = () => {
 
     if (!languages) return null;
 
-    console.log(languageCode, 'codee')
 
     const isUpdateing = isLoading || isPending
 
