@@ -28,7 +28,13 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem
+    --radius: 0.5rem;
+
+    --front-background: 0 0% 100%;
+    --front-foreground: 0 0% 20%;
+    --front-primary: 0 0% 20%;
+    --front-primary-foreground: 0 0% 98%;
+
   }
 
   .dark {
@@ -146,3 +152,5 @@ body>#root {
     @apply after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:hidden after:h-32 after:w-full after:bg-[linear-gradient(180deg, _transparent_10%, _hsl(var(--background))_70%)] after:md:block;
   }
 }
+
+

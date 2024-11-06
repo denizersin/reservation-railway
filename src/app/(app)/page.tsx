@@ -1,9 +1,18 @@
 "use client"
 
+import { AreaSelect } from "@/components/custom/front/area-select";
+import { FrontCard } from "@/components/custom/front/card";
+import { DateSelect } from "@/components/custom/front/date-select";
+import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
+import { GuestSelect } from "@/components/custom/front/guest-select";
+import HeadBanner from "@/components/custom/front/head-banner";
+import { TimeSelect } from "@/components/custom/front/time-select";
 import useAuth from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { localStorageStates } from "@/data/local-storage-states";
 import { EnumUserRole } from "@/shared/enums/predefined-enums";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 
 export default function Home() {
@@ -20,7 +29,9 @@ export default function Home() {
   useEffect(() => {
     if (session.isLoading) return;
     if (!session.isAuthenticated) {
-      router.push('/auth/login')
+      //!TODO: remove this
+      // router.push('/auth/login')
+      return;
     };
     if (session.session?.user.userRole === EnumUserRole.admin && !pathname.includes('admin')) {
       router.push('/admin')
@@ -31,14 +42,61 @@ export default function Home() {
 
   }, [session.isAuthenticated, session.isLoading])
 
+  const [date, setDate] = React.useState<Date | undefined>(new Date())
+  const [guestCount, setGuestCount] = React.useState<number>(1)
+  const [time, setTime] = React.useState<string | undefined>(undefined)
+  const [area, setArea] = React.useState<string | undefined>(undefined)
+
+  function handleContinue() {
+    localStorageStates.updateReservationState({
+      area: area!,
+      date: date!,
+      guestCount: guestCount,
+      time: time!
+    })
+
+    router.push('/reservation/user-info')
+  }
 
 
+  function onClickAddWaitList() {
+    router.push('/reservation/waitlist')
+  }
+
+  useEffect(() => {
+    const reservationState = localStorageStates.getReservationState()
+    if (reservationState) {
+      setGuestCount(reservationState.guestCount)
+      setDate(reservationState.date)
+      setTime(reservationState.time)
+      setArea(reservationState.area)
+    }
+
+  }, [])
 
 
   return (
-    <div className='relative h-full overflow-hidden bg-background flex'>
+    <div className='relative h-full overflow-hidden bg-background flex text-front-primary'>
       <div className="main h-screen overflow-y-scroll flex-1">
-        <div className="text-5xl h-[200vh]"></div>
+        <div className="text-5xl h-[200vh] ">
+          <HeadBanner />
+          <FrontMaxWidthWrapper className="mt-10">
+            <GuestSelect guestCount={guestCount} setGuestCount={setGuestCount} />
+            <DateSelect date={date!} setDate={setDate} onClickAddWaitList={onClickAddWaitList} />
+            <TimeSelect time={time} setTime={setTime} />
+            <AreaSelect area={area} setArea={setArea} />
+            <div className="px-2 md:px-0">
+              <Button onClick={handleContinue} className="bg-front-primary text-white w-full h-[45px] rounded-sm mt-6">Continue</Button>
+              <FrontCard className="mt-6">
+                <FrontCard.Title className="">Are you a large group?</FrontCard.Title>
+                <div className="font-light text-sm ">To ensure a smooth experience for all our guests, a
+                  <span className="font-medium"> maximum of 5 people </span>
+                  per booking are allowed on a single table.</div>
+              </FrontCard>
+            </div>
+          </FrontMaxWidthWrapper>
+
+        </div>
       </div>
     </div>
   );

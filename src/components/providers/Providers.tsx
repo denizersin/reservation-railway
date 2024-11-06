@@ -8,6 +8,8 @@ import LoadingModalWrapper from '../modal/loading';
 import { ThemeProvider } from './theme-provider';
 import { TooltipProvider } from '../ui/tooltip';
 import ConfirmModalWrapper from '../modal/confirm-modal';
+import { InferTailwind } from './InferTailwind';
+import { AppProvider } from './AppProcider';
 
 
 interface IProvidersProps {
@@ -17,17 +19,19 @@ interface IProvidersProps {
 const Providers = ({ children }: IProvidersProps) => {
     return (
         <TRPCReactProvider>
-            <ThemeProvider>
-                <TooltipProvider>
-                    <AuthProvider>
-                        {children}
-                        <ReactQueryDevtools initialIsOpen={false} />
-                        <LoadingModalWrapper />
-                        <ConfirmModalWrapper/>
-                    </AuthProvider>
-                </TooltipProvider>
-            </ThemeProvider>
-
+            <AppProvider>
+                <ThemeProvider>
+                    <TooltipProvider>
+                        <AuthProvider>
+                            {children}
+                            <ReactQueryDevtools initialIsOpen={false} />
+                            <LoadingModalWrapper />
+                            <ConfirmModalWrapper />
+                            <InferTailwind />
+                        </AuthProvider>
+                    </TooltipProvider>
+                </ThemeProvider>
+            </AppProvider>
         </TRPCReactProvider>
     )
 }

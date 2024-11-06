@@ -4,6 +4,8 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import NextTopLoader from 'nextjs-toploader';
 import { TRPCReactProvider } from "@/server/trpc/react";
+import { cn } from "@/lib/utils";
+import { inter } from "../font";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -20,7 +22,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#fff" />
 
       </head>
-      <body className="min-h-dvh">
+      <body className={cn(inter.className, "min-h-dvh text-base")}>
         <NextTopLoader
           // color="bla"
           showSpinner={false}

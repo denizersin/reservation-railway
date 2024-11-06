@@ -36,11 +36,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const pathname = usePathname();
-    const router = useRouter()
+    const router = useRouter();
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated && !pathname?.includes('auth')) {
-            router.push('/auth/login')
+            //!TODO: remove this
+            // router.push('/auth/login')
         }
     }, [isAuthenticated, isLoading])
 
