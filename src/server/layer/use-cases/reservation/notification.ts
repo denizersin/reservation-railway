@@ -343,6 +343,65 @@ export const handleNotifyPrepayment = async ({
 }: {
     reservation: TReservation
 }) => {
+    const message = await NotificationEntities.generateNotifyPrePaymentNotification({
+        reservation
+    })
+
+    const guest = await guestEntities.getGuestById({ guestId: reservation.guestId })
+    const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
+    const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
+
+    const notification: TReservationNotificationInsert = {
+        reservationId: reservation.id,
+        type: EnumNotificationType.SMS,
+        notificationMessageType: EnumNotificationMessageType.NotifiedForPrepayment,
+        status: EnumNotificationStatus.SENT,
+        message,
+    }
+
+    if (reservation.isSendEmail) {
+        try {
+            await sendEmail({});
+            notification.type = EnumNotificationType.EMAIL
+            await NotificationEntities.createReservationNotification(notification);
+            await ReservationLogEntities.createLog({
+                message: `sent email notify prepayment notification`,
+                reservationId: reservation.id,
+                owner: 'system'
+            });
+        } catch (e) {
+            notification.status = EnumNotificationStatus.FAILED
+            await NotificationEntities.createReservationNotification(notification);
+            await ReservationLogEntities.createLog({
+                message: `failed to send email notify prepayment notification`,
+                reservationId: reservation.id,
+                owner: 'system'
+            });
+        }
+    }
+
+    if (reservation.isSendSms) {
+        try {
+            await sendSms({});
+            notification.type = EnumNotificationType.SMS
+            await NotificationEntities.createReservationNotification(notification);
+            await ReservationLogEntities.createLog({
+                message: `sent sms notify prepayment notification`,
+                reservationId: reservation.id,
+                owner: 'system'
+            });
+        } catch (e) {
+            notification.status = EnumNotificationStatus.FAILED
+            await NotificationEntities.createReservationNotification(notification);
+            await ReservationLogEntities.createLog({
+                message: `failed to send sms notify prepayment notification`,
+                reservationId: reservation.id,
+                owner: 'system'
+            });
+        }
+    }
+
+
 
 }
 

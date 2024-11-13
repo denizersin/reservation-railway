@@ -821,7 +821,7 @@ export const notifyPrepayment = async ({
 
     const reservation = await ReservationEntities.getReservationById({ reservationId })
 
-    await notificationUseCases.handlePrePayment({ reservation })
+    await notificationUseCases.handleNotifyPrepayment({ reservation })
 
 }
 

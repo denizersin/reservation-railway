@@ -96,6 +96,13 @@ export const generateConfirmationNotification = async ({
     return `Will you be able to come to the restaurant?`
 }
 
+export const generateNotifyPrePaymentNotification = async ({
+    reservation
+}: {
+    reservation: TReservation
+}) => {
+    return `your need to pay the reservation`
+}
 
 
 
@@ -115,5 +122,6 @@ export const NotificationEntities = {
     generatePrePaymentNotification,
     generateReservationCancelledNotification,
     generateReservationConfirmedNotification,
-    generateConfirmationNotification
+    generateConfirmationNotification,
+    generateNotifyPrePaymentNotification
 }
