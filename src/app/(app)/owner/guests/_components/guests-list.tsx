@@ -105,7 +105,9 @@ const GuestsList = (props: Props) => {
                                 <TableCell>{guest.isVip ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>{new Date(guest.birthDate).toLocaleDateString()}</TableCell>
                                 <TableCell className="text-right">
-                                    <DropdownMenu>
+                                    <DropdownMenu
+                                        modal={false}
+                                    >
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="icon">
                                                 <MoreVertical className="h-4 w-4" />
@@ -128,13 +130,13 @@ const GuestsList = (props: Props) => {
                     </TableBody>
                 </Table>
             </CardContent>
-            {isCreateModalOpen && (
+            { (
                 <GuestCrudModal
                     open={isCreateModalOpen}
                     setOpen={setIsCreateModalOpen}
                 />
             )}
-            {isUpdateModalOpen && updateGuestData && (
+            {updateGuestData && (
                 <GuestCrudModal
                     open={isUpdateModalOpen}
                     setOpen={setIsUpdateModalOpen}

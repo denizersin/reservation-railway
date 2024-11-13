@@ -1,5 +1,5 @@
 import { db } from "@/server/db";
-import { tblReservationTables, TReservatioTable } from "@/server/db/schema";
+import { tblReservationTable, TReservatioTable } from "@/server/db/schema";
 import { tblRoom, tblRoomTranslation, tblTable, TRoomInsertWithTranslations, TRoomUpdateWithTranslations, TRoomWithTranslations, TTable, TTableInsert } from "@/server/db/schema/room";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
@@ -159,3 +159,14 @@ export const getTablesByRoomId = async ({
 
 
 
+export const getTableById = async ({
+    tableId
+}: {
+    tableId: number
+}) => {
+    const table = await db.query.tblTable.findFirst({ where: eq(tblTable.id, tableId) })
+    if (!table) {
+        throw new TRPCError({ message: 'Table not found', code: 'BAD_REQUEST' })
+    }
+    return table
+}

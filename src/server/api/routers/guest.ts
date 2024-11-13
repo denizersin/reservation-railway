@@ -50,5 +50,18 @@ export const guestRouter = createTRPCRouter({
         });
     }),
 
+    getGuestDetail: ownerProcedure.input(z.object({
+        guestId: z.number().int().positive()
+    })).query(async ({ input }) => {
+        return await guestEntities.getGuestDetail({ guestId: input.guestId })
+    }),
+    getGuest: ownerProcedure.input(z.object({
+        guestId: z.number().int().positive()
+    })).query(async ({ input }) => {
+        return await guestEntities.getGuestById({ guestId: input.guestId })
+    }),
+
+
+
 
 });

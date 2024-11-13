@@ -1,5 +1,6 @@
 "use client"
-import { TCountry, TLanguage, TMeal, TReservationStatus } from '@/server/db/schema/predefined';
+import { TReservationStatus } from '@/server/db/schema';
+import { TCountry, TLanguage, TMeal } from '@/server/db/schema/predefined';
 import { TRestaurantLanguages } from '@/server/db/schema/restaurant';
 import { api } from '@/server/trpc/react';
 import React, { createContext, useContext, useState, ReactNode } from 'react';

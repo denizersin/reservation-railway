@@ -18,6 +18,7 @@ import { getQueryKey } from '@trpc/react-query'
 import { api } from '@/server/trpc/react'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { StatusTableRowWithRelation } from './reservation-grid-status'
+import { useMutationCallback } from '@/hooks/useMutationCallback'
 
 type Props = {
     statusTableRow: StatusTableRowWithRelation,
@@ -46,11 +47,11 @@ export const GridStatusTableRowCard = ({
     const isCanRemoveTable = Boolean(statusTableRow.reservation) && statusTableRow.group.length > 1 && !isCanUnLinkReservation
     const hasOptions = isCanRemoveTable || isCanUnLinkReservation
 
+    const { onSuccessReservationUpdate } = useMutationCallback()
+
     const baseMutationOptions = {
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
-            })
+            onSuccessReservationUpdate(statusTableRow.reservation?.id!)
             onCrud?.(statusTableRow)
         }
     }

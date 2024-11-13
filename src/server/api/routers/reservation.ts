@@ -1,17 +1,17 @@
 import { db } from "@/server/db";
+import { tblRoom, tblTable } from "@/server/db/schema";
 import { tblReservation } from "@/server/db/schema/reservation";
 import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { ReservationEntities } from "@/server/layer/entities/reservation";
 import { reservationLimitationEntities } from "@/server/layer/entities/reservation-limitation";
+import { userEntities } from "@/server/layer/entities/user";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { reservationLimitationUseCases } from "@/server/layer/use-cases/reservation-limitation.ts";
-import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { reservationValidator } from "@/shared/validators/reservation";
 import { limitationValidator } from "@/shared/validators/reservation-limitation/inex";
-import { and, between, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
-import { tblRoom, tblTable } from "@/server/db/schema";
 
 
 
@@ -86,15 +86,6 @@ export const reservationRouter = createTRPCRouter({
         }),
 
 
-    deleteReservation: ownerProcedure
-        .input(z.object({
-            reservationId: z.number().int().positive()
-        }))
-        .mutation(async ({ input }) => {
-            await db.delete(tblReservation).where(
-                eq(tblReservation.id, input.reservationId)
-            )
-        }),
 
     getAllAvailableReservation2: ownerProcedure
         .input(reservationValidator.getTableStatues)
@@ -151,15 +142,18 @@ export const reservationRouter = createTRPCRouter({
     updateReservation: ownerProcedure
         .input(reservationValidator.updateReservation)
         .mutation(async (opts) => {
-            await reservationUseCases.updateReservation(opts)
+            const user = await userEntities.getUserById({ userId: opts.ctx.session.user.userId })
+            await reservationUseCases.updateReservation({
+                input: opts.input,
+                owner: user?.name || 'unknown'
+            })
         }),
 
     updateReservationTable: ownerProcedure
         .input(reservationValidator.updateReservationTable)
         .mutation(async (opts) => {
-            await ReservationEntities.updateReservationTable({
-                data: opts.input
-            })
+
+            await reservationUseCases.updateReservationTable(opts)
         }),
 
     getWaitingTables: ownerProcedure
@@ -234,11 +228,94 @@ export const reservationRouter = createTRPCRouter({
         .mutation(async (opts) => {
             await reservationUseCases.checkInReservation(opts)
         }),
-    
+
     takeReservationIn: ownerProcedure
         .input(reservationValidator.takeReservationIn)
         .mutation(async (opts) => {
             await reservationUseCases.takeReservationIn(opts)
         }),
 
+
+    makeReservationNotExist: ownerProcedure
+        .input(reservationValidator.makeReservationNotExist)
+        .mutation(async (opts) => {
+            await reservationUseCases.makeReservationNotExist(opts)
+        }),
+
+    getReservationDetail: ownerProcedure
+        .input(reservationValidator.getReservationDetail)
+        .query(async (opts) => {
+            return await reservationUseCases.getReservationDetail(opts)
+        }),
+
+    requestForConfirmation: ownerProcedure
+        .input(reservationValidator.requestForConfirmation)
+        .mutation(async (opts) => {
+            await reservationUseCases.requestForConfirmation(opts)
+        }),
+
+    confirmReservation: ownerProcedure
+        .input(reservationValidator.confirmReservation)
+        .mutation(async (opts) => {
+            await reservationUseCases.confirmReservation(opts)
+        }),
+
+    cancelReservation: ownerProcedure
+        .input(reservationValidator.cancelReservation)
+        .mutation(async (opts) => {
+            await reservationUseCases.cancelReservation(opts)
+        }),
+
+    notifyPrepayment: ownerProcedure
+        .input(reservationValidator.notifyPrepayment)
+        .mutation(async (opts) => {
+            await reservationUseCases.notifyPrepayment(opts)
+        }),
+
+    requestForPrepayment: ownerProcedure
+        .input(reservationValidator.requestForPrepayment)
+        .mutation(async (opts) => {
+            await reservationUseCases.requestForPrepayment(opts)
+        }),
+
+    cancelPrepayment: ownerProcedure
+        .input(reservationValidator.cancelPrepayment)
+        .mutation(async (opts) => {
+            await reservationUseCases.cancelPrepayment(opts)
+        }),
+
+    getReservationLogs: ownerProcedure
+        .input(reservationValidator.getReservationLogs)
+        .query(async (opts) => {
+            return await reservationUseCases.getReservationLogs(opts)
+        }),
+
+    getReservationNotifications: ownerProcedure
+        .input(reservationValidator.getReservationNotifications)
+        .query(async (opts) => {
+            return await reservationUseCases.getReservationNotifications(opts)
+        }),
+
+    repeatReservation: ownerProcedure
+        .input(reservationValidator.repeatReservation)
+        .mutation(async (opts) => {
+            // await reservationUseCases.repeatReservation(opts)
+        }),
+
+    askForBill: ownerProcedure
+        .input(reservationValidator.askForBill)
+        .mutation(async (opts) => {
+            // await reservationUseCases.askForBill(opts)
+        }),
+    deleteReservation: ownerProcedure
+        .input(reservationValidator.deleteReservation)
+        .mutation(async (opts) => {
+            await reservationUseCases.deleteReservation(opts)
+        }),
+
+    updateReservationTime: ownerProcedure
+        .input(reservationValidator.updateReservationTime)
+        .mutation(async (opts) => {
+            await reservationUseCases.updateReservationTime(opts)
+        }),
 });

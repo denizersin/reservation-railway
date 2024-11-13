@@ -85,3 +85,20 @@ export const getGeneralSettingsToUpdate = async ({
 
     return restaurantGeneralSetting
 }
+
+
+export const getGeneralSettingsByRestaurantId = async ({
+    restaurantId
+}: {
+    restaurantId: number
+}) => {
+    const restaurantGeneralSetting = await db.query.tblRestaurantGeneralSetting.findFirst({
+        where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId)
+    })
+
+    if (!restaurantGeneralSetting) {
+        throw new Error('Restaurant general setting not found')
+    }
+
+    return restaurantGeneralSetting
+}

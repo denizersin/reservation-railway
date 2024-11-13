@@ -35,7 +35,7 @@ export const ListViewCards = (props: Props) => {
         if (!data) return;
         const reservationCount = data.length
         const guestCount = data.reduce((acc, r) => acc + r.guestCount, 0)
-        const confirmedCount = data.filter((r) => r.reservationStatus.status === EnumReservationStatus.confirmation).length
+        const confirmedCount = data.filter((r) => r.reservationStatus.status === EnumReservationStatus.confirmed).length
         const noShowCount = data.filter((r) => r.reservationExistenceStatus.status === EnumReservationExistanceStatus.notExist
             && r.reservationStatus.status !== EnumReservationStatus.cancel
         ).length

@@ -22,6 +22,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { Button } from "@/components/custom/button";
 import CreatePermanentLimitationModal from "./create-permanent-limitation-modal";
+import { useMutationCallback } from "@/hooks/useMutationCallback";
 
 const PermanentLimitationsList = () => {
     const queryClient = useQueryClient();
@@ -34,9 +35,12 @@ const PermanentLimitationsList = () => {
         data: permanentLimitations
     } = api.reservation.getPermanentLimitations.useQuery();
 
+    const { onUpdateReservationLimitations } = useMutationCallback()
+
     const { mutate: deleteLimitationMutation, isPending: deleteLimitationIsPending } = api.reservation.deletePermanentLimitation.useMutation({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getQueryKey(api.reservation.getPermanentLimitations) });
+            onUpdateReservationLimitations()
             setIsDeleteModalOpen(false);
         }
     });

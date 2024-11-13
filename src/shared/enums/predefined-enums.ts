@@ -30,7 +30,7 @@ export enum EnumReservationStatus {
     prepayment = 'prepayment',
     confirmation = 'confirmation',
     cancel = 'cancel',
-    waitApprove = 'wait approve',
+    confirmed = 'confirmed',
 }
 
 export const EnumReservationStatusNumeric: Record<EnumReservationStatus, number> = {
@@ -39,7 +39,7 @@ export const EnumReservationStatusNumeric: Record<EnumReservationStatus, number>
     [EnumReservationStatus.prepayment]: 3,
     [EnumReservationStatus.confirmation]: 4,
     [EnumReservationStatus.cancel]: 5,
-    [EnumReservationStatus.waitApprove]: 6,
+    [EnumReservationStatus.confirmed]: 6,
 }
 
 
@@ -57,7 +57,7 @@ export enum EnumReservationExistanceStatus {
 
 
 
-export const EnumReservationExistanceStatusNumeric: Record<EnumReservationExistanceStatus, number> = {
+export const EnumReservationExistanceStatusNumeric: Record< EnumReservationExistanceStatus, number> = {
     [EnumReservationExistanceStatus.notExist]: 1,
     [EnumReservationExistanceStatus.waitingTable]: 3,
     [EnumReservationExistanceStatus.inRestaurant]: 4,
@@ -171,7 +171,8 @@ export enum EnumNotificationMessageType {
     DateTimeChange = "DateTime Change",
     GuestCountChange = "Guest Count Change",
     ReservationCancellation = "Reservation Cancellation",
-    ReservationConfirmation = "Reservation Confirmation",
+    ReservationConfirmationRequest = "Reservation Confirmation Request",
+    ReservationConfirmed = "Reservation Confirmed",
     ReservationCompleted = "Reservation Completed",
     ReservationReminder = "Reservation Reminder",
     ReservationFeedback = "Reservation Feedback",

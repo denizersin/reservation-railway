@@ -3,16 +3,19 @@ import { ReservationDateCalendar } from '@/app/(app)/owner/reservation/_componen
 import { Button } from '@/components/custom/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useMutationCallback } from '@/hooks/useMutationCallback';
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal';
 import { TReservationRow, TStatusTableRow } from '@/lib/reservation';
 import { cn } from '@/lib/utils';
-import { TReservation } from '@/server/db/schema';
 import { api } from '@/server/trpc/react';
-import { useQueryClient } from '@tanstack/react-query';
-import { getQueryKey } from '@trpc/react-query';
 import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
-
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TRestaurantMeal, TRoomWithTranslations } from '@/server/db/schema';
+import { TableStatues } from '@/app/(app)/owner/reservation/_components/table-statues';
+import RoomTabs from '@/components/room-tabs';
+import MealTabs from '@/components/meal-tabs';
+import { useToast } from '@/hooks/use-toast';
 
 type Props = {
     isOpen: boolean
@@ -25,36 +28,47 @@ export const UpdateReservationTmeModal = ({
     setOpen,
     reservation
 }: Props) => {
-
-
-    const queryClient = useQueryClient();
-
-    const [statusTableRow, setStatusTableRow] = useState<TStatusTableRow | undefined>(undefined)
-
+    // State for reservation data
     const [date, setDate] = useState<Date>(reservation.reservationDate)
     const [guestCount, setGuestCount] = useState<number>(reservation.guestCount)
+    const [selectedHour, setSelectedHour] = useState<string | undefined>(reservation.hour)
+    const [selectedTableId, setSelectedTableId] = useState<number | undefined>(reservation.tables[0]?.tableId)
+    const [selectedMeal, setSelectedMeal] = useState<TRestaurantMeal | undefined>(undefined)
+    const [selectedRoom, setSelectedRoom] = useState<TRoomWithTranslations | undefined>()
 
 
-    const [selectedHour, setSelectedHour] = useState<string | undefined>(undefined)
+    const { onSuccessReservationUpdate } = useMutationCallback()
+
+    // Fetch meals
+    const { data: meals } = api.restaurant.getRestaurantMeals.useQuery()
+
+    //Fetch Rooms
+    const { data: roomsData } = api.room.getRooms.useQuery({})
 
 
+    // Update mutation
+    const { mutate: updateReservationTime, isPending: updateReservationTimePending } =
+        api.reservation.updateReservationTime.useMutation({
+            onSuccess: () => {
+                onSuccessReservationUpdate(reservation.id)
+                setOpen(false)
+            }
+        })
 
-    const {
-        mutate: updateReservation,
-        isPending: updateReservationPending,
-    } = api.reservation.updateReservation.useMutation({
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getReservations)
+
+    const { toast } = useToast()
+    // Handle update
+    const handleUpdateReservation = () => {
+
+        if (isDateChanged && !selectedTableId) {
+            toast({
+                title: 'Lütfen masa seçiniz',
+                description: 'Masa seçimi yapmadan tarih güncelleme yapılamaz',
+                variant: 'destructive'
             })
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
-            })
-            
+            return
         }
-    })
 
-    const handleCreateReservation = () => {
         const hour = selectedHour || reservation.hour
         const newDate = new Date(date)
         newDate.setHours(
@@ -63,151 +77,104 @@ export const UpdateReservationTmeModal = ({
             0,
             0
         )
-        updateReservation({
+
+        updateReservationTime({
             reservationId: reservation.id,
             data: {
-                guestCount: guestCount,
+                guestCount,
                 reservationDate: newDate,
-                hour: selectedHour,
+                hour,
+                tableId: selectedTableId!,
+                roomId: selectedRoom!.id
             }
         })
-
     }
-
-    const queryDate = useMemo(() => {
-        const newDate = new Date(date)
-        newDate.setHours(0, 0, 0, 0)
-        return newDate.toISOString()
-    }, [date])
-
-    const { data: availableTableData,
-        isLoading: availableTableLoading
-    } = api.reservation.getAllAvailableReservation2.useQuery({
-        date: queryDate,
-        mealId: reservation.mealId
-    })
-
-    const tableStatues = availableTableData?.tableStatues
-    const roomTableStatues = tableStatues?.find(r => r.roomId === reservation.roomId)
-    // const hourTables = roomTableStatues?.statues.find((hour) => hour.hour === reservation.hour)?.tables
 
 
     useEffect(() => {
-        if (availableTableData) {
-            const r = availableTableData.tableStatues
-                .find(r => r.roomId === reservation.roomId)?.statues
-                .find(h => h.hour === reservation.hour)?.tables
-                .find(t => t.reservation?.id === reservation.id)
-
-            setStatusTableRow(r)
+        if (meals) {
+            setSelectedMeal(meals?.find(m => m.mealId === reservation.mealId))
         }
-    }, [availableTableData])
+    }, [meals, reservation.mealId])
 
 
-
-    useShowLoadingModal([updateReservationPending, availableTableLoading])
+    // Loading states
+    useShowLoadingModal([updateReservationTimePending])
     const isDateChanged = format(date, 'dd-MM-yyyy') !== format(reservation.reservationDate, 'dd-MM-yyyy')
-    const isHourChanged = Boolean(selectedHour) && (selectedHour !== reservation.hour)
-    const isGuestCountChanged = guestCount !== reservation.guestCount
-    const isChanged = isDateChanged || isHourChanged || isGuestCountChanged
-
-    const hasAnyAvailableTable = roomTableStatues?.statues.some((hour) => hour.tables.some((table) => !table.reservation))
-
-    const isChangedAndisAvailable = isChanged && hasAnyAvailableTable
 
 
+    useEffect(() => {
+        setSelectedRoom(roomsData?.find(r => r.id === reservation.roomId))
+    }, [roomsData, reservation.roomId])
+
+    useEffect(() => {
+        setSelectedMeal(meals?.[0]);
+    }, [meals])
+
+    useEffect(() => {
+        if (isDateChanged) {
+            setSelectedTableId(undefined)
+        }
+    }, [isDateChanged])
+
+
+    useEffect(() => {
+        if (selectedRoom?.id === reservation.roomId && date === reservation.reservationDate) {
+            setSelectedTableId(reservation.tables[0]?.tableId)
+        } else {
+            setSelectedTableId(undefined)
+        }
+    }, [date, selectedMeal, selectedRoom])
 
 
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
             <DialogContent className='max-w-[90vw]'>
                 <DialogHeader>
-                    <DialogTitle>{statusTableRow?.guest?.name}</DialogTitle>
-                    <DialogTitle>{statusTableRow?.reservation?.reservationDate?.toDateString()}</DialogTitle>
+                    <DialogTitle>{reservation?.guest?.name}</DialogTitle>
+                    <DialogTitle>{format(date, 'dd MMMM yyyy')}</DialogTitle>
                 </DialogHeader>
-
-                <ReservationDateCalendar date={date} setDate={setDate} />
-
-
-                <div className='flex gap-x-2 my-2'>
-                    {
-                        roomTableStatues?.statues?.map((hourStatus) => {
-
-                            const isCurrentReservationHour = hourStatus.hour === reservation.hour
-                            const isSelectedHour = selectedHour === hourStatus.hour
-
-                            const isHourNotAvailable = hourStatus.tables.every((table) => table.reservation)
-
-                            const disabled = isCurrentReservationHour ||
-                                (
-                                    isDateChanged &&
-                                    isHourNotAvailable
-                                )
-                            return (
-                                <div
-                                    onClick={() => {
-                                        if (disabled) {
-                                            return
-                                        }
-                                        if (isSelectedHour) {
-                                            setSelectedHour(undefined)
-
-                                        } else {
-                                            setSelectedHour(hourStatus.hour)
-                                        }
-                                    }}
-
-                                    key={hourStatus.hour} className={cn('flex flex-col shadow-md p-2 rounded-md px-4 bg-secondary hover:bg-secondary/20 cursor-pointer', {
-                                        'bg-primary text-primary-foreground hover:bg-primary ': isCurrentReservationHour,
-                                        'bg-green-400 text-black hover:bg-green-400 ': isSelectedHour,
-                                        'opacity-80 cursor-not-allowed ': disabled,
-                                        'bg-red-400 text-black hover:bg-red-400 ': isHourNotAvailable
-                                    })}>
-                                    <h1>{hourStatus.hour}</h1>
-                                    <h2> {hourStatus.limitationStatus?.avaliableGuest}</h2>
-
-                                </div>
-                            )
-                        }
-                        )
-                    }
-                </div>
                 <div>
-                    <div className='max-w-xs'>
-                        <Input
-                            placeholder='Guest Count'
-                            type='number'
-                            value={guestCount.toString()}
-                            onChange={(e) => setGuestCount(Number(e.target.value))}
-                        />
+
+                    <ReservationDateCalendar date={date} setDate={setDate} />
+
+                    {/* Meal Selection */}
+                    <MealTabs
+                        selectedMeal={selectedMeal}
+                        setSelectedMeal={setSelectedMeal}
+                    />
+                    <RoomTabs
+                        selectedRoom={selectedRoom}
+                        setSelectedRoom={setSelectedRoom}
+                    />
+
+                    {/* Hour Selection */}
+                    {selectedMeal && selectedRoom && <TableStatues
+                        selectedTableId={selectedTableId}
+                        setSelectedTableId={setSelectedTableId}
+                        date={date}
+                        selectedRoom={selectedRoom!}
+                        selectedMeal={selectedMeal}
+                        selectedHour={selectedHour}
+                        setSelectedHour={setSelectedHour}
+                        guestCount={guestCount}
+                        setGuestCount={setGuestCount}
+                    />}
+
+                    {/* Guest Count and Submit */}
+                    <div>
+
+
+                        <Button
+                            // disabled={!isChangedAndisAvailable}
+                            loading={updateReservationTimePending}
+                            onClick={handleUpdateReservation}
+                        >
+                            UPDATE
+                        </Button>
                     </div>
 
-
-                    <Button
-                        disabled={!isChangedAndisAvailable}
-                        loading={updateReservationPending}
-                        onClick={handleCreateReservation}
-                    >
-                        UPDATE
-                    </Button>
                 </div>
-
-                {
-                    isChanged&& <div className='text-red-500'>
-                        <div>
-                            Yeni rezervasyon tarihi ve saati: {format(date, 'dd-MM-yyyy')} {selectedHour}
-                        </div>
-                        kişi sayısı: {guestCount}
-                    </div>
-                }
-                {
-                    !hasAnyAvailableTable && <div className='text-red-500'>
-                        Bu tarihte uygun masa bulunmamaktadır
-                    </div>
-                }
-
-
-
 
 
 

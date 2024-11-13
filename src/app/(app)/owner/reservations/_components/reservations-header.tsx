@@ -28,12 +28,24 @@ export function ReservationHeader() {
         updateQueryParam({ view })
     }
 
+    const onClickPrevDate = () => {
+        const newDate = new Date(date)
+        newDate.setDate(newDate.getDate() - 1)
+        setDate(newDate)
+    }
+
+    const onClickNextDate = () => {
+        const newDate = new Date(date)
+        newDate.setDate(newDate.getDate() + 1)
+        setDate(newDate)
+    }
+
     const router = useRouter();
 
     return (
         <div>
             <div className="text-card-foreground text-2xl mb-4 font-normal">
-                TURK FATIH TUTAK | {date.toDateString() }
+                TURK FATIH TUTAK | {date.toDateString()}
             </div>
             <div className="flex  gap-x-3 py-2 ">
                 <div className="flex items-center space-x-2">
@@ -46,10 +58,7 @@ export function ReservationHeader() {
                     </Button>
                     <div className="flex items-center space-x-1 border bg-background text-black dark:text-white p-1 rounded-md h-full">
                         <Button
-                            onClick={() => {
-                                updateQueryParam({ new2: '23qwe' })
-
-                            }}
+                            onClick={onClickPrevDate}
                             tooltip="Geri" variant="ghost" size="icon" className="">
                             <ChevronLeftIcon className="h-4 w-4" />
                         </Button>
@@ -73,7 +82,7 @@ export function ReservationHeader() {
                                 />
                             </PopoverContent>
                         </Popover>
-                        <Button tooltip="ileri" variant="ghost" size="icon" className="">
+                        <Button onClick={onClickNextDate} tooltip="ileri" variant="ghost" size="icon" className="">
                             <ChevronRightIcon className="h-4 w-4" />
                         </Button>
                         <Button tooltip="yenile" variant="ghost" size="icon" className="">

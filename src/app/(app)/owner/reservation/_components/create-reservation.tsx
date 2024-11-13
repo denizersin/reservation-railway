@@ -18,6 +18,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { getEnumValues } from '@/server/utils/server-utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
+import { useMutationCallback } from '@/hooks/useMutationCallback';
+import RoomTabs from '@/components/room-tabs';
+import MealTabs from '@/components/meal-tabs';
 
 type Props = {}
 
@@ -85,18 +88,15 @@ export const CreateReservation = (props: Props) => {
 
     const [guestNote, setGuestNote] = useState('')
 
+    //!TODO mutation callback
+    const { onSuccessCreateReservation } = useMutationCallback()
 
     const {
         mutate: createReservation,
         isPending: createReservationPending,
     } = api.reservation.createMockReservation.useMutation({
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getReservations)
-            })
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
-            })
+            onSuccessCreateReservation(date)
             setSelectedTableId(undefined)
             setIsSendEmail(true)
             setIsSendSms(true)
@@ -129,11 +129,13 @@ export const CreateReservation = (props: Props) => {
                 isSendEmail: isSendEmail,
                 guestNote: guestNote,
 
+
             },
             data: {
                 reservationTagIds: selectedTagIds,
                 tableIds: [selectedTableId],
                 reservationNote: reservationNote,
+                customPrepaymentAmount: defineCustomPrepaymentAmount ? customPrepaymentAmount : undefined,
             }
         })
     }
@@ -185,27 +187,15 @@ export const CreateReservation = (props: Props) => {
 
             <ReservationDateCalendar date={date} setDate={setDate} />
 
-            <Tabs
-                onValueChange={(value) => setSelectedMeal(meals?.find((meal) => meal.id.toString() === value))}
-                defaultValue={selectedMeal?.id.toString()} className="w-[400px]">
-                <TabsList>
-                    {meals?.map((meal) => (
-                        <TabsTrigger key={meal.id} value={meal.id.toString()}>{meal.meal.name}</TabsTrigger>
-                    ))}
-                </TabsList>
-            </Tabs>
+            <MealTabs
+                selectedMeal={selectedMeal}
+                setSelectedMeal={setSelectedMeal}
+            />
 
-            <Tabs
-                onValueChange={(value) => setSelectedRoom(roomsData?.find((room) => room.id.toString() === value))}
-                defaultValue={selectedRoom?.id.toString()}
-                value={selectedRoom?.id.toString()}
-                className="mt-5">
-                <TabsList>
-                    {roomsData?.map((room) => (
-                        <TabsTrigger key={room.id} value={room.id.toString()}>{room.translations[0]?.name}</TabsTrigger>
-                    ))}
-                </TabsList>
-            </Tabs>
+            <RoomTabs
+                selectedRoom={selectedRoom}
+                setSelectedRoom={setSelectedRoom}
+            />
 
             {
 
@@ -222,6 +212,8 @@ export const CreateReservation = (props: Props) => {
                 />
             }
 
+
+
             <div className='flex flex-col md:flex-row gap-x-5 '>
 
 
@@ -231,7 +223,7 @@ export const CreateReservation = (props: Props) => {
                         options={tagsToSelect}
                         onValueChange={(value) => {
                             setSelectedTagIds(value.map((v) => Number(v)))
-                            console.log(value, 'value23') 
+                            console.log(value, 'value23')
                         }}
                         value={selectedTagIds.map((tagId) => String(tagId))}
                     />
@@ -259,7 +251,10 @@ export const CreateReservation = (props: Props) => {
                         {/* <div className="text-lg font-bold">Prepayment Type</div> */}
                         <div className="flex flex-col">
                             <div className="my-4">
-                                <RadioGroup value={String(selectedPrePaymentTypeId)} onValueChange={(value) => setSelectedPrePaymentTypeId(Number(value))}>
+                                <RadioGroup value={String(selectedPrePaymentTypeId)} onValueChange={(value) => {
+                                    setSelectedPrePaymentTypeId(Number(value))
+                                    setDefineCustomPrepaymentAmount(false)
+                                }}>
                                     <div className="flex gap-x-4 flex-wrap">
                                         {prePaymentTypes.map((type) => (
                                             <div key={type.value} className="flex items-center">
@@ -272,20 +267,22 @@ export const CreateReservation = (props: Props) => {
                                 </RadioGroup>
                             </div>
                         </div>
-                        <div>
-                            <Checkbox
-                                checked={defineCustomPrepaymentAmount}
-                                onCheckedChange={(checked) => setDefineCustomPrepaymentAmount(checked ? true : false)}
-                            />
-                            <label className="ml-2">Define Custom Prepayment Amount</label>
-                            {
-                                defineCustomPrepaymentAmount && <Input
+                        {
+                            selectedPrePaymentTypeId !== EnumReservationPrepaymentNumeric['none'] &&
+                            <div>
+                                {<Checkbox
+                                    checked={defineCustomPrepaymentAmount}
+                                    onCheckedChange={(checked) => setDefineCustomPrepaymentAmount(checked ? true : false)}
+                                />}
+                                <label className="ml-2">Define Custom Prepayment Amount</label>
+                                {defineCustomPrepaymentAmount && <Input
                                     className='max-w-sm my-2'
                                     value={customPrepaymentAmount}
                                     onChange={(e) => setCustomPrepaymentAmount(Number(e.target.value) || 0)}
-                                />
-                            }
-                        </div>
+                                />}
+                            </div>
+                        }
+
 
                         <div className="flex items-center gap-x-3 my-2 mt-6">
                             <Checkbox

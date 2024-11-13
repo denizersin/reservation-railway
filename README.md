@@ -27,3 +27,16 @@ admin:admin@gmail.com password:admin
 
 # Run the app
 bun run dev or pnpm run dev
+
+
+
+popover.tsx
+i removed the portal because it was causing an error when using in dialog
+https://github.com/shadcn-ui/ui/issues/1511
+
+
+if you have dropdown and dialogs on the same page, you might need to add this to the dropdown to prevent the dialog from not working
+<DropdownMenu modal={false} >
+https://github.com/shadcn-ui/ui/issues/1912
+
+

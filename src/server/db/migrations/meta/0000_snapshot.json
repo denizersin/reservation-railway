@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "969fd34a-ff37-4a35-b7f9-f9c3fae2e1d8",
+  "id": "51d6ac52-b148-4135-9187-9041b293171e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -508,7 +508,7 @@
           "name": "name",
           "type": "varchar(256)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "email": {
@@ -2314,6 +2314,20 @@
           "autoincrement": false,
           "default": false
         },
+        "confirmed_by": {
+          "name": "confirmed_by",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "prepayment_type_id": {
           "name": "prepayment_type_id",
           "type": "int",
@@ -2756,6 +2770,13 @@
           "autoincrement": false,
           "default": "'pending'"
         },
+        "created_by": {
+          "name": "created_by",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -2826,7 +2847,7 @@
         },
         "notification_message_type": {
           "name": "notification_message_type",
-          "type": "enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created')",
+          "type": "enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation Request','Reservation Confirmed','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -3084,7 +3105,7 @@
         },
         "status": {
           "name": "status",
-          "type": "enum('draft','reservation','prepayment','confirmation','cancel','wait approve')",
+          "type": "enum('draft','reservation','prepayment','confirmation','cancel','confirmed')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

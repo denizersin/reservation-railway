@@ -45,8 +45,8 @@ export const statuses = [
     },
 
     {
-        value: EnumReservationStatus.confirmation,
-        label: 'Confirmation',
+        value: EnumReservationStatus.confirmed,
+        label: 'Confirmed',
         icon: CheckCircledIcon,
     },
     {
@@ -55,8 +55,8 @@ export const statuses = [
         icon: CrossCircledIcon,
     },
     {
-        value: EnumReservationStatus.waitApprove,
-        label: 'Wait Approve',
+        value: EnumReservationStatus.confirmation,
+        label: 'Confirmation',
         icon: QuestionMarkCircledIcon,
     },
 ];

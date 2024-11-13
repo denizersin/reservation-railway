@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ReservationWaitingTableSelect, TWaitingTable } from './reservation-waiting-table-select'
+import { ConfirmModalGlobal } from '@/components/modal/confirm-modal'
+import { useMutationCallback } from '@/hooks/useMutationCallback'
 
 export type TSelectionRowState = {
     deSelectedRows: TStatusTableRow[];
@@ -52,7 +54,7 @@ export const ReservationGridStatusModal = ({
 
     const { deSelectedRows, selectedRows } = selectionRowState
 
-    const queryClient = useQueryClient();
+    const { onSuccessReservationUpdate } = useMutationCallback()
 
     function onSuccsessCrudTable() {
         setSelectionRowState({
@@ -61,16 +63,12 @@ export const ReservationGridStatusModal = ({
         })
     }
 
+    const queryClient = useQueryClient()
+
     const onSuccsessUpdate = () => {
-        queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.reservation.getAllAvailableReservation2),
-        })
-
-        queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.reservation.getReservations),
-        })
         onSuccsessCrudTable()
-
+        onSuccessReservationUpdate(reservation.id)
+        
     }
 
     const {
@@ -81,7 +79,7 @@ export const ReservationGridStatusModal = ({
     })
 
     const {
-        mutate: linkReservation,
+        mutateAsync: linkReservation,
         isPending: isPendingLinkReservation
     } = api.reservation.linkReservation.useMutation({
         onSuccess: onSuccsessUpdate
@@ -146,17 +144,33 @@ export const ReservationGridStatusModal = ({
 
     function onUpdate() {
         if (isUpdateReservationTable) {
+            const newTable = selectedRows[0]?.table!
             updateReservationTable({
                 id: deSelectedRows[0]?.reservation_tables?.id!,
-                tableId: selectedRows[0]?.table?.id!
+                tableId: newTable.id,
+                reservationId: reservation.id,
+                newRoomId: reservation.roomId != newTable.roomId ? newTable.roomId : undefined,
             })
+
         }
 
         if (isLinkingReservation) {
-            linkReservation({
-                reservationId: selectedRows[0]?.reservation?.id!,
-                linkedReservationId: reservation.id
+            // linkReservation({
+            //     reservationId: selectedRows[0]?.reservation?.id!,
+            //     linkedReservationId: reservation.id
+            // })
+
+            ConfirmModalGlobal.show({
+                type: "confirm",
+                onConfirm: async () => {
+                    await linkReservation({
+                        reservationId: selectedRows[0]?.reservation?.id!,
+                        linkedReservationId: reservation.id
+                    })
+                },
+                title: "Link Reservation"
             })
+
             return;
         }
         if (isAddingTableToReservation) {
@@ -180,6 +194,7 @@ export const ReservationGridStatusModal = ({
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
             <DialogContent className='max-w-[90vw]'>
+                <DialogTitle>Change Room-Table</DialogTitle>
                 <DialogHeader>
                     CHange Room-Table
                 </DialogHeader>
@@ -223,21 +238,21 @@ export const ReservationGridStatusModal = ({
                     >
                         Update
                     </Button>}
-                    {!reservation.isCheckedin&& < Button
+                    {!reservation.isCheckedin && < Button
                         className='bg-green-600 ml-auto'
-                    onClick={() => {
-                        checkInReservation({
-                            reservationId: reservation.id
-                        })
-                    }}
+                        onClick={() => {
+                            checkInReservation({
+                                reservationId: reservation.id
+                            })
+                        }}
                     >
-                    Check In
-                </Button>}
-            </div>
+                        Check In
+                    </Button>}
+                </div>
 
 
 
-        </DialogContent>
+            </DialogContent>
         </Dialog >
     )
 }

@@ -9,7 +9,7 @@ import { tblRestaurant } from './restaurant';
 
 export const tblUser = mysqlTable('user', {
     id: int("id").autoincrement().primaryKey(),
-    name: varchar('name', { length: 256 }),
+    name: varchar('name', { length: 256 }).notNull(),
     email: varchar('email', { length: 256 }).notNull().unique(),
     password: varchar('password', { length: 256 }).notNull(),
     role: mysqlEnum('role', getEnumValues(EnumUserRole)).notNull().default(EnumUserRole.user),

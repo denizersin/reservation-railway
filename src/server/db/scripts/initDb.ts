@@ -71,6 +71,7 @@ const seedFunctions = [
     async function createUsers() {
         const result_admin = await db.insert(tblUser).values({
             email: 'admin@gmail.com',
+            name: 'Admin',
             password: 'admin',
             role: EnumUserRole.admin
         }).$returningId()
@@ -78,6 +79,7 @@ const seedFunctions = [
 
         const result = await db.insert(tblUser).values({
             email: 'user@gmail.com',
+            name: 'User',
             password: 'user',
             role: EnumUserRole.user
         }).$returningId()
@@ -85,12 +87,14 @@ const seedFunctions = [
 
         const result2 = await db.insert(tblUser).values({
             email: 'owner@gmail.com',
+            name: 'Owner',
             password: 'owner',
             role: EnumUserRole.owner
         }).$returningId()
 
         const result2_2 = await db.insert(tblUser).values({
             email: 'owner2@gmail.com',
+            name: 'Owner2',
             password: 'owner2',
             role: EnumUserRole.owner
         }).$returningId()

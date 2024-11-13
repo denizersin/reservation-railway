@@ -45,25 +45,70 @@ const updateReservation = z.object({
 
 const updateReservationTable = z.object({
     id: z.number().int().positive(),
-}).merge(z.object({
+    reservationId: z.number().int().positive(),
     tableId: z.number().int().positive(),
-}).partial())
+    newRoomId: z.number().int().positive().optional()
+})
 
 
-export const getReservations = z.object({
+
+const getReservations = z.object({
     date: z.string(),
     status: z.enum(getEnumValues(EnumReservationStatus)).optional(),
     existenceStatus: z.enum(getEnumValues(EnumReservationExistanceStatus)).optional(),
     search: z.string().optional(),
 })
 
-export const baseUpdateReservation = z.object({
+const reservationIdSchema = z.object({
     reservationId: z.number().int().positive()
 })
 
-export const checkInReservation = baseUpdateReservation
+const checkInReservation = reservationIdSchema
 
-export const takeReservationIn = baseUpdateReservation
+const takeReservationIn = reservationIdSchema
+const makeReservationNotExist = reservationIdSchema
+const getReservationLogs = reservationIdSchema
+const getReservationNotifications = reservationIdSchema
+
+const confirmReservation = reservationIdSchema
+const cancelReservation = reservationIdSchema
+const requestForConfirmation = reservationIdSchema
+const notifyPrepayment = reservationIdSchema
+const cancelPrepayment = reservationIdSchema
+const requestForBill = reservationIdSchema
+
+const getReservationDetail = reservationIdSchema
+
+const repeatReservation = reservationIdSchema
+
+const askForBill = reservationIdSchema
+
+const deleteReservation = reservationIdSchema
+
+const returnPrepayment = reservationIdSchema
+
+const requestForPrepaymentForm = z.object({
+    customPrepaymentAmount: z.number().int().positive().optional(),
+})
+
+const requestForPrepayment = z.object({
+    reservationId: z.number().int().positive(),
+    data: requestForPrepaymentForm
+})
+
+const updateReservationTime = z.object({
+    reservationId: z.number().int().positive(),
+    data: z.object({
+        reservationDate: z.date(),
+        hour: z.string(),
+        tableId: z.number().int().positive(),
+        roomId: z.number().int().positive(),
+        guestCount: z.number().int().positive(),
+    })
+})
+
+
+
 
 export const reservationValidator = {
     getTableStatues,
@@ -72,7 +117,24 @@ export const reservationValidator = {
     updateReservationTable,
     getReservations,
     checkInReservation,
-    takeReservationIn
+    takeReservationIn,
+    getReservationLogs,
+    getReservationNotifications,
+    requestForPrepayment,
+    requestForConfirmation,
+    confirmReservation,
+    cancelReservation,
+    notifyPrepayment,
+    cancelPrepayment,
+    requestForBill,
+    getReservationDetail,
+    repeatReservation,
+    askForBill,
+    deleteReservation,
+    requestForPrepaymentForm,
+    returnPrepayment,
+    updateReservationTime,
+    makeReservationNotExist
 }
 
 namespace TReservationValidator {
@@ -83,6 +145,23 @@ namespace TReservationValidator {
     export type getReservations = z.infer<typeof getReservations>
     export type checkInReservation = z.infer<typeof checkInReservation>
     export type takeReservationIn = z.infer<typeof takeReservationIn>
+    export type getReservationLogs = z.infer<typeof getReservationLogs>
+    export type getReservationNotifications = z.infer<typeof getReservationNotifications>
+    export type requestForPrepayment = z.infer<typeof requestForPrepayment>
+    export type requestForConfirmation = z.infer<typeof requestForConfirmation>
+    export type confirmReservation = z.infer<typeof confirmReservation>
+    export type cancelReservation = z.infer<typeof cancelReservation>
+    export type notifyPrepayment = z.infer<typeof notifyPrepayment>
+    export type cancelPrepayment = z.infer<typeof cancelPrepayment>
+    export type requestForBill = z.infer<typeof requestForBill>
+    export type getReservationDetail = z.infer<typeof getReservationDetail>
+    export type repeatReservation = z.infer<typeof repeatReservation>
+    export type askForBill = z.infer<typeof askForBill>
+    export type requestForPrepaymentForm = z.infer<typeof requestForPrepaymentForm>
+    export type deleteReservation = z.infer<typeof deleteReservation>
+    export type returnPrepayment = z.infer<typeof returnPrepayment>
+    export type updateReservationTime = z.infer<typeof updateReservationTime>
+    export type makeReservationNotExist = z.infer<typeof makeReservationNotExist>
 }
 
 export default TReservationValidator

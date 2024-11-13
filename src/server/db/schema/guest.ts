@@ -31,6 +31,9 @@ export const tblGuest = mysqlTable('guest', {
     assistantPhone: varchar('assistant_phone', { length: 256 }),
     assistantEmail: varchar('assistant_email', { length: 256 }),
 
+    isContactAssistant: boolean('is_contact_assistant').notNull().default(false),
+
+
     //company information
     companyId: int('company_id'),
     position: varchar('position', { length: 256 }),

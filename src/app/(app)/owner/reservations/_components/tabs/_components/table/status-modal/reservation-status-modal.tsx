@@ -8,6 +8,9 @@ import { getQueryKey } from '@trpc/react-query'
 import { ReservationStatusGuestSection } from './reservation-status-guest-section'
 import { ReservationStatusLogs } from './reservation-status-logs'
 import { ReservationStatusActions } from './reservaton-status-actions'
+import { ReservationStatusFooter } from './reservation-status-footer'
+import { useToast } from '@/hooks/use-toast'
+import { useMutationCallback } from '@/hooks/useMutationCallback'
 
 type Props = {
     isOpen: boolean
@@ -20,39 +23,35 @@ export const ReservationStatusModal = ({
     setOpen,
     reservation
 }: Props) => {
-
-    const queryClient = useQueryClient()
+    const { onSuccessReservationUpdate } = useMutationCallback()
     const {
         mutate: updateReservationStatus,
         isPending: isUpdatePending
     } = api.reservation.updateReservationStatus.useMutation({
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getReservations),
-            })
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2)
-            })
+            onSuccessReservationUpdate(reservation.id)
         }
     })
 
 
     useShowLoadingModal([isUpdatePending])
 
+    const { toast } = useToast()
 
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
-            <DialogContent className='max-w-[90vw]'>
+            <DialogContent className='md:max-w-[70vw] max-h-[90vh] overflow-y-auto'>
                 <DialogHeader>
                     CHange Status
                 </DialogHeader>
                 <div className=' flex'>
-                    <div className="c c1 w-1/3">
+                    <div className="c c1 w-1/4">
                         <ReservationStatusGuestSection reservation={reservation} />
                     </div>
-                    <div className="c c2 w-2/3">
+                    <div className="c c2 w-2/3 flex flex-col">
                         <ReservationStatusLogs reservation={reservation} />
                         <ReservationStatusActions reservation={reservation} />
+                        <ReservationStatusFooter reservation={reservation} />
                     </div>
                 </div>
 

@@ -54,6 +54,8 @@ export function ReservationDataTable({
 
   const { data } = api.reservation.getReservations.useQuery({
     date: queryDate
+  },{
+    staleTime:0
   })
 
 

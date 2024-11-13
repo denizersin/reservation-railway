@@ -14,11 +14,14 @@ import { ReservationStatusModal } from '../status-modal/reservation-status-modal
 import useRealTimeCounter, { CounterOptions } from '@/hooks/useTimeCounter'
 import { ExistenceCounter } from './_components/existence-counter'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/custom/button'
 import { api } from '@/server/trpc/react'
 import { getQueryKey } from '@trpc/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { useMutationCallback } from '@/hooks/useMutationCallback'
+import { EnumReservationExistanceStatus } from '@/shared/enums/predefined-enums'
+import { ArrowRightFromLine, RotateCcw, Undo2 } from 'lucide-react'
 
 
 // data
@@ -151,6 +154,11 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
       const [isSurpassedTime, setIsSurpassedTime] = useState(false)
 
       const isInWaiting = reservation.waitingSession.isinWaiting
+      const isInRestaurant = reservation.reservationExistenceStatus.status === EnumReservationExistanceStatus.inRestaurant
+
+      const isCheckedin = reservation.isCheckedin
+
+      const { onSuccessReservationUpdate } = useMutationCallback()
 
       useEffect(() => {
 
@@ -167,7 +175,10 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           setCountOptions({
             initialCount: diffInMinutes,
             interval: 60000,
-            // targetCount
+            onComplete: () => {
+              setIsSurpassedTime(true)
+            },
+            targetCount: 1
           })
         }
 
@@ -183,21 +194,27 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
         isPending: isTakeReservationInPending,
       } = api.reservation.takeReservationIn.useMutation({
         onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.reservation.getReservations),
-          })
-          queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.reservation.getAllAvailableReservation2),
-          })
+          onSuccessReservationUpdate(reservation.id)
         },
       })
 
-      useShowLoadingModal([isTakeReservationInPending])
+      const {
+        mutate: makeReservationNotExist,
+        isPending: isMakeReservationNotExistPending,
+      } = api.reservation.makeReservationNotExist.useMutation({
+        onSuccess: () => {
+          onSuccessReservationUpdate(reservation.id)
+        },
+      })
+
+      useShowLoadingModal([isTakeReservationInPending, isMakeReservationNotExistPending])
+
+
 
       return <div
         className={cn('p-2', {
           // 'cursor-pointer': true,
-          'bg-red-300/20 h-full': isSurpassedTime,
+          'bg-red-300/20 h-full': isSurpassedTime && !isInRestaurant,
 
         })}
       >
@@ -219,20 +236,32 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
 
 
         </div>
-        {
-          isInWaiting &&
-          isSurpassedTime &&
-          <div className='flex w-full justify-between mt-2'>
-            <Badge variant={'destructive'}>Zaman Aşımı</Badge>
+        <div className='flex gap-2 justify-end'>
 
+          {
+            isCheckedin &&isInWaiting&&
             <Button
-              className=' '
-              size={'sm'}
+              tooltip='içeri al'
+              className=' bg-green-500 hover:bg-green-600'
+              size={'xs-icon'}
               onClick={() => takeReservationIn({ reservationId: reservation.id })}
-            >İçeri al</Button>
+            >
+              <ArrowRightFromLine className='size-4' />
+            </Button>
+          }
+          {
+            isCheckedin && isInRestaurant &&
+            <Button
 
-          </div>
-        }
+              onClick={() => makeReservationNotExist({ reservationId: reservation.id })}
+              size={'xs-icon'}
+              tooltip='gelmedi durumuna geri al'>
+              <Undo2 className='size-4' />
+            </Button>
+          }
+        </div>
+
+
 
         <ReservationGridStatusModal
           reservation={row.original}
@@ -260,11 +289,13 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           onClick={() => setIsOpen(true)}>
           {row.original.hour}
         </div>
-        <UpdateReservationTmeModal
+        {<UpdateReservationTmeModal
           reservation={row.original}
           isOpen={isOpen}
           setOpen={setIsOpen}
-        />
+          key={isOpen.toString()}
+
+        />}
       </div>
     },
 

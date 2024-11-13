@@ -60,13 +60,15 @@ export const ReservationGridStatus = ({
     const { data: availableTableData } = api.reservation.getAllAvailableReservation2.useQuery({
         date: queryDate,
         mealId: reservation.mealId
+    }, {
+        staleTime: 0
     })
 
     const [groupData, gridData] = useMemo(() => {
+
         const tableStatues = availableTableData?.tableStatues.find(r => r.roomId === selectedRoom?.id)
             ?.statues.find((hour) => hour.hour === statusTableRow?.reservation?.hour)?.tables
         const groups = groupTableStatues(tableStatues ?? [])
-        console.log(tableStatues, 'tableStatues')
         const tablesWithRelationMap: Record<number, StatusTableRowWithRelation> = {}
 
         groups.forEach((group) => {
@@ -195,8 +197,8 @@ export const ReservationGridStatus = ({
         return [groups, gridData]
     }, [availableTableData, selectedRoom])
 
-    console.log(groupData, 'groupData')
-    console.log(gridData, 'gridData')
+    console.log(gridData, 'gridData')   
+
 
 
     useEffect(() => {
@@ -206,15 +208,21 @@ export const ReservationGridStatus = ({
     }, [roomsData, statusTableRow])
 
     useEffect(() => {
+        console.log(availableTableData, 'availableTableData')
+        console.log(reservation.roomId,'roomid')
         if (availableTableData) {
             const r = availableTableData.tableStatues
                 .find(r => r.roomId === reservation.roomId)?.statues
                 .find(h => h.hour === reservation.hour)?.tables
                 .find(t => t.reservation?.id === reservation.id)
 
+                
+
             setStatusTableRow(r)
         }
     }, [availableTableData])
+
+    console.log(statusTableRow, 'statusTableRow')
 
     const layout = useMemo(() => {
         return gridData.map((r, index) => r.layout)
@@ -223,7 +231,6 @@ export const ReservationGridStatus = ({
     useEffect(() => {
 
         const rows = groupData.find((group) => group.some((t) => t.reservation?.id === reservation.id))
-        console.log(rows, 'rows')
         setThisTableRows(rows ?? [])
     }, [groupData])
 

@@ -1,18 +1,19 @@
 import { db } from "@/server/db";
-import { tblGuest, tblRestaurantGeneralSetting, tblRoomTranslation, TReservationNotificationInsert } from "@/server/db/schema";
-import { tblReservation, tblReservationTables, tblWaitingTableSession } from "@/server/db/schema/reservation";
+import { tblGuest, tblPrepayment, tblReservationLog, tblReservationNotification, tblReservationTag, tblRestaurantGeneralSetting, tblRoomTranslation } from "@/server/db/schema";
+import { tblReservation, tblReservationTable, tblWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
 import { tblRoom, tblTable } from "@/server/db/schema/room";
-import { TUseCaseOwnerLayer } from "@/server/types/types";
-import { createTransaction } from "@/server/utils/db-utils";
+import { TUseCaseOwnerLayer, TUseCasePublicLayer } from "@/server/types/types";
+import { createTransaction, TTransaction } from "@/server/utils/db-utils";
 import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
-import { EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
+import { EnumPrepaymentStatus, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
 import { and, between, count, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
 import { ReservationEntities } from "../../entities/reservation";
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
-import { NotificationEntities } from "../../entities/notification/reservation-notification";
+import { restaurantSettingEntities } from "../../entities/restaurant-setting";
+import { userEntities } from "../../entities/user";
 import { notificationUseCases } from "./notification";
 
 
@@ -62,9 +63,6 @@ function getAvaliabels({ date, mealId, restaurantId }: { date: Date, mealId: num
         )
         .groupBy(tblReservationLimitation.id)
 }
-
-
-
 export const getAllAvailableReservations = async ({
     input,
     ctx
@@ -89,12 +87,12 @@ export const getAllAvailableReservations = async ({
 
     const getReservationTables = () => db
         .select({
-            RESERVATION_TABLE_ID: tblReservationTables.id,
-            RESERVATION_ID: tblReservationTables.reservationId,
-            TABLE_ID: tblReservationTables.tableId,
+            RESERVATION_TABLE_ID: tblReservationTable.id,
+            RESERVATION_ID: tblReservationTable.reservationId,
+            TABLE_ID: tblReservationTable.tableId,
         })
         .from(tblReservation)
-        .leftJoin(tblReservationTables, eq(tblReservationTables.reservationId, tblReservation.id))
+        .leftJoin(tblReservationTable, eq(tblReservationTable.reservationId, tblReservation.id))
         .where(
             and(
                 eq(tblReservation.mealId, input.mealId),
@@ -115,7 +113,7 @@ export const getAllAvailableReservations = async ({
         .leftJoin(tblReservation, and(
             eq(tblReservation.id, reservationTables.RESERVATION_ID),
         ))
-        .leftJoin(tblReservationTables, eq(tblReservationTables.id, reservationTables.RESERVATION_TABLE_ID))
+        .leftJoin(tblReservationTable, eq(tblReservationTable.id, reservationTables.RESERVATION_TABLE_ID))
         .leftJoin(tblMealHours, eq(tblMealHours.mealId, input.mealId))
         .leftJoin(tblGuest, eq(tblGuest.id, tblReservation.guestId))
         .leftJoin(tblWaitingTableSession, and(isNotNull(tblReservation.id), eq(tblWaitingTableSession.reservationId, tblReservation.id)))
@@ -263,7 +261,6 @@ export const getAllAvailableReservations = async ({
     }
 }
 
-
 export const createReservation = async ({
     input,
     ctx
@@ -272,6 +269,9 @@ export const createReservation = async ({
     const { session: { user: { restaurantId } } } = ctx
     const { reservationData, data } = input
 
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
+
+    //set reservation time to utc
     const hour = localHourToUtcHour(reservationData.hour)
     reservationData.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
 
@@ -281,6 +281,8 @@ export const createReservation = async ({
     if (!restaurantSettings) throw new Error('Restaurant settings not found')
 
     const hasPrepayment = reservationData.prepaymentId === EnumReservationPrepaymentNumeric.prepayment
+    const prePaymentAmount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount
+    const isDefaultAmount = data.customPrepaymentAmount ? false : true
 
     const reservation = await createTransaction(async (trx) => {
 
@@ -307,7 +309,6 @@ export const createReservation = async ({
             trx,
         })
 
-        //tblReservation has'nt got reservationNote column.  reservation_note doesnt throw error while insert 
         if (data.reservationNote) {
             await ReservationEntities.createReservationNote({
                 reservationId: newReservation.id,
@@ -325,16 +326,17 @@ export const createReservation = async ({
         }
 
 
-        if (reservationData.prepaymentId === EnumReservationPrepaymentNumeric.prepayment) {
-            const amount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest
+        if (hasPrepayment) {
             const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
                 data: {
                     reservationId: newReservation.id,
-                    amount,
-                    isDefaultAmount: data.customPrepaymentAmount ? false : true,
+                    amount: prePaymentAmount,
+                    isDefaultAmount,
+                    createdBy: owner.name
                 },
                 trx
             })
+
             await ReservationEntities.updateReservation({
                 data: {
                     prepaymentId: newPrepaymentId,
@@ -343,12 +345,8 @@ export const createReservation = async ({
                 reservationId: newReservation.id,
                 trx
             })
+
         }
-
-
-
-
-
 
         return newReservation
     })
@@ -356,45 +354,38 @@ export const createReservation = async ({
     await ReservationLogEntities.createLog({
         message: `Reservation created`,
         reservationId: reservation.id,
-        owner: ctx.session.user.userId.toString()
+        owner: owner.name,
     })
 
+
     //notifications
-
-
-
-
-
-
     if (hasPrepayment) {
-        console.log('hasPrepayment')
-        await notificationUseCases.sendPrePaymentNotification({ reservation })
+        await notificationUseCases.handlePrePayment({ reservation })
 
         await ReservationLogEntities.createLog({
             message: `Asked for prepayment`,
             reservationId: reservation.id,
-            owner: ctx.session.user.userId.toString()
+            owner: owner.name,
         })
     }
 
-    
-
-
-
-
 }
-
+//update reservation without relations and with logging 
 export const updateReservation = async ({
     input,
-    ctx
-}: TUseCaseOwnerLayer<TReservationValidator.updateReservation>) => {
+    trx,
+    owner
+}: TUseCasePublicLayer<TReservationValidator.updateReservation, {
+    trx?: TTransaction,
+    owner?: string
+}>) => {
     await ReservationEntities.updateReservation({
         data: input.data,
-        reservationId: input.reservationId
+        reservationId: input.reservationId,
+        trx
     })
 
 }
-
 
 export const getWaitingStatus = async ({
     date,
@@ -430,7 +421,6 @@ export const getWaitingStatus = async ({
 
 }
 
-
 export const getReservations = async ({
     ctx,
     input
@@ -446,8 +436,6 @@ export const getReservations = async ({
     })
     const whereConditions = [];
 
-    const guestWhereConditions = [];
-    const companyWhereConditions = [];
 
     if (input.status) {
         whereConditions.push(
@@ -464,17 +452,7 @@ export const getReservations = async ({
         )
     }
 
-    // if (input.search) {
-    //     guestWhereConditions.push(
-    //         or(
-    //             like(tblGuest.name, `%${input.search}%`),
-    //             like(tblGuest.phone, `%${input.search}%`),
-    //         )
-    //     )
-    //     companyWhereConditions.push(
-    //         like(tblGusetCompany.companyName, `%${input.search}%`)
-    //     )
-    // }
+
 
     const sessionLangId = ctx.userPrefrences.language.id;
     const reservations = await db.query.tblReservation.findMany({
@@ -491,13 +469,7 @@ export const getReservations = async ({
                     }
                 }
             },
-            guest: {
-                with: {
-                    company: true,
-                    country: true,
-                    language: true,
-                },
-            },
+            guest: true,
             waitingSession: {
                 with: {
                     tables: {
@@ -530,7 +502,6 @@ export const getReservations = async ({
 
 }
 
-
 export const checkInReservation = async ({
     ctx,
     input: { reservationId }
@@ -550,7 +521,7 @@ export const checkInReservation = async ({
         await updateReservation({
             reservationId,
             data: {
-                reservationExistenceStatusId: EnumReservationExistanceStatusNumeric["waiting table"],
+                reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.waitingTable],
                 isCheckedin: true,
             }
         })
@@ -573,7 +544,6 @@ export const checkInReservation = async ({
 
 }
 
-
 export const takeReservationIn = async ({
     ctx,
     input: { reservationId }
@@ -593,7 +563,7 @@ export const takeReservationIn = async ({
             reservationId,
 
             data: {
-                reservationExistenceStatusId: EnumReservationExistanceStatusNumeric["in restaurant"],
+                reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.inRestaurant],
             }
         })
 
@@ -609,4 +579,365 @@ export const takeReservationIn = async ({
     })
 }
 
+export const makeReservationNotExist = async ({
+    input
+}: TUseCaseOwnerLayer<TReservationValidator.makeReservationNotExist>) => {
+    const { reservationId } = input
 
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist],
+            isCheckedin: false,
+            
+        }
+    })
+
+    await ReservationEntities.updateReservationWaitingSession({
+        waitingSessionId: reservation.waitingSessionId,
+        data: {
+            isinWaiting: false,
+            enteredAt: null,
+        }
+    })
+}
+
+export const getReservationLogs = async ({
+    input
+}: TUseCaseOwnerLayer<TReservationValidator.getReservationLogs>) => {
+    const logs = await db.query.tblReservationLog.findMany({
+        where: eq(tblReservationLog.reservationId, input.reservationId)
+    })
+    return logs
+}
+
+export const getReservationNotifications = async ({
+    input
+}: TUseCaseOwnerLayer<TReservationValidator.getReservationNotifications>) => {
+    const notifications = await db.query.tblReservationNotification.findMany({
+        where: eq(tblReservationNotification.reservationId, input.reservationId)
+    })
+    return notifications
+}
+
+export const getReservationDetail = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.getReservationDetail>) => {
+
+    const reservationDetail = await ReservationEntities.getReservationDetail({ reservationId: input.reservationId })
+
+    return reservationDetail
+}
+
+export const requestForPrepayment = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.requestForPrepayment>) => {
+    const { reservationId, data: { customPrepaymentAmount } } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+    const restaurantId = reservation.restaurantId
+    const restaurantSettings = await restaurantSettingEntities.getGeneralSettingsByRestaurantId({ restaurantId })
+
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
+
+    const prepayment = await db.query.tblPrepayment.findFirst({
+        where: (eq(tblPrepayment.reservationId, reservationId))
+    })
+
+    if (prepayment && prepayment.status === EnumPrepaymentStatus.pending) {
+        throw new Error('Prepayment already requested')
+    }
+
+    const amount = customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservation.guestCount
+    const isDefaultAmount = customPrepaymentAmount ? true : false
+
+    const [result] = await db.insert(tblPrepayment).values({
+        reservationId,
+        amount,
+        status: EnumPrepaymentStatus.pending,
+        createdBy: ctx.session.user.userId.toString(),
+        isDefaultAmount,
+    }).$returningId()
+
+    const newPrepaymentId = result?.id
+
+    if (!newPrepaymentId) throw new Error('Failed to create prepayment')
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            prepaymentId: newPrepaymentId,
+            reservationStatusId: EnumReservationStatusNumeric.prepayment,
+            prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+        },
+    })
+
+    await ReservationLogEntities.createLog({
+        message: 'Asked for prepayment',
+        reservationId,
+        owner: owner.name
+    })
+
+    await notificationUseCases.handlePrePayment({ reservation })
+
+
+}
+
+
+export const cancelPrepayment = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.cancelPrepayment>) => {
+    const { reservationId } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    if (!reservation.prepaymentId) throw new Error('Reservation has no prepayment')
+    const prepayment = await ReservationEntities.getPrepaymentByReservationId({ reservationId })
+
+    if (prepayment.status === EnumPrepaymentStatus.success) throw new Error('Prepayment already paid')
+
+    createTransaction(async (trx) => {
+        await trx.delete(tblPrepayment).where(
+            eq(tblPrepayment.id, prepayment.id)
+        )
+        await ReservationEntities.updateReservation({
+            reservationId,
+            data: {
+                reservationStatusId: EnumReservationStatusNumeric[EnumReservationStatus.reservation],
+                prepaymentId: null,
+                prePaymentTypeId: EnumReservationPrepaymentNumeric.none,
+            },
+            trx
+        })
+    })
+
+    await notificationUseCases.handleReservationCancelled({ reservation })
+
+}
+
+
+export const requestForConfirmation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.requestForConfirmation>) => {
+    const { reservationId } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
+
+    createTransaction(async (trx) => {
+        await ReservationEntities.createConfirmationRequest({
+            data: {
+                reservationId,
+                createdBy: owner.name
+            },
+            trx
+        })
+        await ReservationEntities.updateReservation({
+            reservationId,
+            data: {
+                reservationStatusId: EnumReservationStatusNumeric.confirmation,
+            },
+        })
+        await notificationUseCases.handleConfirmationRequest({ reservation })
+        await ReservationLogEntities.createLog({
+            message: 'Asked for confirmation',
+            reservationId,
+            owner: ctx.session.user.userId.toString()
+        })
+
+    })
+
+
+
+
+}
+
+export const confirmReservation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.confirmReservation>) => {
+    const { reservationId } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            reservationStatusId: EnumReservationStatusNumeric.confirmed,
+            confirmedBy: owner.name,
+            confirmedAt: new Date(),
+        },
+    })
+
+
+
+    await ReservationLogEntities.createLog({
+        message: 'Reservation confirmed',
+        reservationId,
+        owner: owner.name
+    })
+
+    await notificationUseCases.handleReservationConfirmed({ reservation })
+
+}
+
+export const cancelReservation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.cancelReservation>) => {
+    const { reservationId } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            reservationStatusId: EnumReservationStatusNumeric.cancel,
+        },
+    })
+
+    await ReservationLogEntities.createLog({
+        message: 'Reservation canceled',
+        reservationId,
+        owner: ctx.session.user.userId.toString()
+    })
+
+    await notificationUseCases.handleReservationCancelled({ reservation })
+}
+
+export const notifyPrepayment = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.notifyPrepayment>) => {
+    const { reservationId } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    await notificationUseCases.handlePrePayment({ reservation })
+
+}
+
+
+
+
+export const deleteReservation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.deleteReservation>) => {
+    const { reservationId } = input
+
+    await db.delete(tblReservation).where(eq(tblReservation.id, reservationId))
+
+}
+
+export const repeatReservation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.repeatReservation>) => {
+    const { reservationId } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    const reservationTags = await db.query.tblReservationTag.findMany({
+        where: eq(tblReservationTag.reservationId, reservationId)
+    })
+
+    // const newReservationInput: TReservationValidator.createReservation = {
+    //     data: {
+
+    //     },
+    //     reservationData: {}
+    // }
+
+}
+
+export const returnPrepayment = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.returnPrepayment>) => {
+    const { reservationId } = input
+}
+
+export const updateReservationTime = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationTime>) => {
+    const { reservationId, data } = input
+
+    const hour = localHourToUtcHour(data.hour)
+    data.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            reservationDate: data.reservationDate,
+            hour,
+            guestCount: data.guestCount,
+        },
+    })
+
+
+    const reservation = await db.query.tblReservation.findFirst({
+        where: eq(tblReservation.id, reservationId),
+        with: {
+            tables: true
+        }
+    })
+
+    if (!reservation) throw new Error('Reservation not found')
+
+    const isDateChanged = reservation.reservationDate.toISOString() !== data.reservationDate.toISOString()
+
+    console.log(isDateChanged, 'isDateChanged')
+    console.log(reservation.reservationDate, data.reservationDate, 'reservation.reservationDate, data.reservationDate')
+
+    if (isDateChanged) {
+        await ReservationEntities.resetReservationTablesAndLinks({
+            reservationId,
+            tableId: data.tableId
+        })
+    }
+
+
+}
+
+export const updateReservationTable = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationTable>) => {
+
+    const { reservationId, newRoomId, tableId } = input
+
+    if (newRoomId) {
+        await ReservationEntities.resetReservationTablesAndLinks({
+            reservationId,
+            tableId
+        })
+    }
+    else {
+        await ReservationEntities.updateReservationTable({
+            data: {
+                id: input.id,
+                tableId,
+            }
+        })
+        await ReservationEntities.updateReservation({
+            reservationId: input.reservationId,
+            data: {
+                roomId: input.newRoomId
+            }
+        })
+    }
+
+
+}
+
+// export const

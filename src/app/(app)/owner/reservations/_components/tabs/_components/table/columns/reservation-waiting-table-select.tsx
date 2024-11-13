@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { Button } from '@/components/custom/button'
+import { useMutationCallback } from '@/hooks/useMutationCallback'
 
 type Props = {
     reservation: TReservationRow,
@@ -104,15 +105,17 @@ export const ReservationWaitingTableSelect = ({
         setSelectedTables(selectedTableIds || [])
     }, [currentReservationTable,reservedWaitingTables])
 
-    const queryClient = useQueryClient();
+    const queryClient=useQueryClient();
+
+    const { onSuccessReservationUpdate } = useMutationCallback()
 
     const baseMutationOptions = {
         onSuccess: () => {
+            onSuccessReservationUpdate(reservation.id)
             queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getReservationWaitingTables)
-            })
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getReservations)
+                queryKey: getQueryKey(api.reservation.getReservationWaitingTables, {
+                    date: queryDate
+                })
             })
         }
     }

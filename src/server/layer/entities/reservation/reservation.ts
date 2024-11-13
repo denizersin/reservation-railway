@@ -1,9 +1,11 @@
 
 import { db } from "@/server/db";
-import { tblReservationTables, TReservationInsert } from "@/server/db/schema";
+import { tblReservationTable, TReservationInsert } from "@/server/db/schema";
 import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
-import { TTransaction } from "@/server/utils/db-utils";
+import { tblConfirmationRequest, TConfirmationRequestInsert } from "@/server/db/schema/reservation/confirmation-request";
+import { createTransaction, TTransaction } from "@/server/utils/db-utils";
 import { and, eq } from "drizzle-orm";
+import { RoomEntities } from "../room";
 
 
 
@@ -19,7 +21,7 @@ export const createReservation = async ({
     }).$returningId()
 
     const reservationId = newReservation[0]?.id!
-    await db.insert(tblReservationTables).values(tableIds.map(tableId => ({
+    await db.insert(tblReservationTable).values(tableIds.map(tableId => ({
         reservationId: reservationId,
         tableId: tableId,
 
@@ -68,7 +70,7 @@ export const addNewTablesToReservation = async (reservationTables: {
     }[]
 }) => {
     if (reservationTables.reservationTables.length === 0) return
-    await db.insert(tblReservationTables).values(reservationTables.reservationTables)
+    await db.insert(tblReservationTable).values(reservationTables.reservationTables)
 }
 
 export const removeTableFromReservation = async ({
@@ -78,10 +80,10 @@ export const removeTableFromReservation = async ({
     reservationId: number,
     reservationTableId: number
 }) => {
-    await db.delete(tblReservationTables).where(
+    await db.delete(tblReservationTable).where(
         and(
-            eq(tblReservationTables.reservationId, reservationId),
-            eq(tblReservationTables.id, reservationTableId)
+            eq(tblReservationTable.reservationId, reservationId),
+            eq(tblReservationTable.id, reservationTableId)
         )
     )
 }
@@ -113,20 +115,114 @@ export const unlinkReservation = async ({
 }
 
 export const updateReservationTable = async ({
-    data
+    data,
+    trx = db
 }: {
     data: Partial<TReservatioTable> & {
         id: number
-    }
+    },
+    trx?: TTransaction
 }) => {
     //update reservation table
-    await db.update(tblReservationTables).set(data).where(
-        eq(tblReservationTables.id, data.id)
+    await trx.update(tblReservationTable).set(data).where(
+        eq(tblReservationTable.id, data.id)
     )
 }
 
+export const createConfirmationRequest = async ({
+    data,
+    trx = db
+}: {
+    data: TConfirmationRequestInsert,
+    trx?: TTransaction
+}) => {
+    await trx?.insert(tblConfirmationRequest).values(data)
+}
+
+
+export const getReservationDetail = async ({
+    reservationId
+}: {
+    reservationId: number
+}) => {
+    const reservation = await db.query.tblReservation.findFirst({
+        where: eq(tblReservation.id, reservationId),
+        with: {
+            tables: {
+                with: {
+                    table: true,
+                }
+            },
+            room: true,
+            guest: true,
+            reservationStatus: true,
+            reservationExistenceStatus: true,
+            reservationNotes: true,
+            logs: true,
+            notifications: true,
+            prepayment: true,
+            meal: true,
+            personal: true,
+            tags: true,
+            waitingSession: {
+                with: {
+                    tables: {
+                        with: {
+                            table: true
+                        }
+                    }
+                }
+            },
+            billPayment: true,
+            createdOwner: true,
+            confirmationRequests: true
+
+        }
+    })
+
+    if (!reservation) throw new Error('Reservation not found')
+    return reservation
+}
+
+//reset reservation tables and links
+//this is used when changing reservation time or change room
+export const resetReservationTablesAndLinks = async ({
+    reservationId,
+    tableId,
+}: {
+    reservationId: number,
+    tableId: number
+}) => {
 
 
 
+    createTransaction(async (trx) => {
 
+        const table = await RoomEntities.getTableById({ tableId })
+
+        await trx.delete(tblReservationTable).where(
+            eq(tblReservationTable.reservationId, reservationId),
+        )
+
+        await trx.update(tblReservation).set({
+            linkedReservationId: null
+        }).where(
+            eq(tblReservation.linkedReservationId, reservationId)
+        )
+
+        await trx.insert(tblReservationTable).values({
+            reservationId: reservationId,
+            tableId: table.id,
+        })
+
+        await trx.update(tblReservation).set({
+            roomId: table.roomId,
+        }).where(
+            eq(tblReservation.id, reservationId)
+        )
+
+
+    })
+
+}
 

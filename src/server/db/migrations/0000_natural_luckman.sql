@@ -74,7 +74,7 @@ CREATE TABLE `refresh_token` (
 --> statement-breakpoint
 CREATE TABLE `user` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`name` varchar(256),
+	`name` varchar(256) NOT NULL,
 	`email` varchar(256) NOT NULL,
 	`password` varchar(256) NOT NULL,
 	`role` enum('admin','owner','user') NOT NULL DEFAULT 'user',
@@ -370,6 +370,8 @@ CREATE TABLE `reservation` (
 	`waiting_session_id` int NOT NULL,
 	`created_owner_id` int,
 	`is_checked_in` boolean NOT NULL DEFAULT false,
+	`confirmed_by` varchar(255),
+	`confirmed_at` timestamp,
 	`prepayment_type_id` int NOT NULL,
 	`reservation_date` timestamp NOT NULL,
 	`guest_note` text,
@@ -433,6 +435,7 @@ CREATE TABLE `prepayment` (
 	`amount` int NOT NULL,
 	`is_default_amount` boolean NOT NULL DEFAULT false,
 	`status` enum('pending','success','cancelled','failed') NOT NULL DEFAULT 'pending',
+	`created_by` varchar(255) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
@@ -444,7 +447,7 @@ CREATE TABLE `reservation_notification` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`reservation_id` int NOT NULL,
 	`type` enum('SMS','EMAIL') NOT NULL,
-	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created') NOT NULL,
+	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation Request','Reservation Confirmed','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created') NOT NULL,
 	`message` text NOT NULL,
 	`sent_at` timestamp,
 	`status` enum('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
@@ -486,7 +489,7 @@ CREATE TABLE `reservation_tag` (
 --> statement-breakpoint
 CREATE TABLE `reservation_status` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`status` enum('draft','reservation','prepayment','confirmation','cancel','wait approve') NOT NULL,
+	`status` enum('draft','reservation','prepayment','confirmation','cancel','confirmed') NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
 );

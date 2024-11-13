@@ -17,7 +17,7 @@ export const ReservationDataProvider = ({
     children
 }: Props) => {
 
-    const { data: roomsData } = api.room.getRooms.useQuery(undefined, {
+    const { data: roomsData } = api.room.getRooms.useQuery({}, {
         initialData: restaurantRooms
     })
 

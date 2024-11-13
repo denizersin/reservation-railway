@@ -12,7 +12,7 @@ export const createReservationPrepayment = async ({
 }) => {
 
     const newPrepayment = await trx.insert(tblPrepayment).values(data).$returningId()
-    
+
     if (!newPrepayment) throw new Error('Failed to create prepayment')
 
     return newPrepayment[0]?.id!
@@ -30,4 +30,31 @@ export const updateReservationPrepayment = async ({
 
     await trx.update(tblPrepayment).set(data).where(eq(tblPrepayment.id, data.id))
 
+}
+
+export const getPrepaymentByReservationId = async ({
+    reservationId
+}: {
+    reservationId: number
+}) => {
+    const prepayment = await db.query.tblPrepayment.findFirst({
+        where: eq(tblPrepayment.reservationId, reservationId)
+    })
+
+    if (!prepayment) {
+        throw new Error('Prepayment not found')
+    }
+
+    return prepayment
+}
+
+
+export const deleteReservationPrepayment = async ({
+    id
+}: {
+    id: number
+}) => {
+    await db.delete(tblPrepayment).where(
+        eq(tblPrepayment.id, id)
+    )
 }

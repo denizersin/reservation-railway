@@ -10,6 +10,7 @@ import { TooltipProvider } from '../ui/tooltip';
 import ConfirmModalWrapper from '../modal/confirm-modal';
 import { InferTailwind } from './InferTailwind';
 import { AppProvider } from './AppProcider';
+import { Toaster } from '../ui/toaster';
 
 
 interface IProvidersProps {
@@ -28,6 +29,7 @@ const Providers = ({ children }: IProvidersProps) => {
                             <LoadingModalWrapper />
                             <ConfirmModalWrapper />
                             <InferTailwind />
+                            <Toaster />
                         </AuthProvider>
                     </TooltipProvider>
                 </ThemeProvider>

@@ -6,10 +6,11 @@ import { EnumBillPaymentStatus, EnumPrepaymentStatus } from '@/shared/enums/pred
 
 export const tblPrepayment = mysqlTable('prepayment', {
     id: int('id').autoincrement().primaryKey(),
-    reservationId: int('reservation_id').notNull(),
+    reservationId: int('reservation_id').notNull().references(() => tblReservation.id, { onDelete: 'cascade' }),
     amount: int('amount').notNull(),
     isDefaultAmount: boolean('is_default_amount').notNull().default(false),
     status: mysqlEnum('status', getEnumValues(EnumPrepaymentStatus)).notNull().default(EnumPrepaymentStatus.pending),
+    createdBy: varchar('created_by', { length: 255 }).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),

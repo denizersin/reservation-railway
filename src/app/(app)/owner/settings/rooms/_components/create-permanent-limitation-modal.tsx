@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useMutationCallback } from '@/hooks/useMutationCallback';
 
 type Props = {
     isOpen: boolean;
@@ -27,13 +28,14 @@ type Props = {
 };
 
 const CreatePermanentLimitationModal: React.FC<Props> = ({ isOpen, setOpen }) => {
-    const queryClient = useQueryClient();
-
+    const { onUpdateReservationLimitations } = useMutationCallback()
+    const queryClient = useQueryClient()
     const { data: rooms } = api.room.getRooms.useQuery({});
 
     const { mutate: createPermanentLimitation, isPending } = api.reservation.createPermanentLimitation.useMutation({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getQueryKey(api.reservation.getPermanentLimitations) });
+            onUpdateReservationLimitations()
             setOpen(false);
             form.reset();
         },

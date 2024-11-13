@@ -1,4 +1,6 @@
 "use client"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
 import React, { forwardRef, useImperativeHandle, useState } from 'react'
 import {
     AlertDialog,
@@ -20,7 +22,7 @@ export type ConfirmModalRef = {
 
 interface ConfirmModalOptions {
     type: 'confirm' | 'delete' | 'warning'
-    onConfirm: () => void
+    onConfirm: () => Promise<void>
     onCancel?: () => void
     title: string
     description?: string
@@ -78,16 +80,18 @@ const ConfirmModal = forwardRef<ConfirmModalRef, {}>((props, ref) => {
     }
 
     return (
-        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>{description}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel onClick={handleCancel}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent>
+                <DialogTitle>{title}</DialogTitle>
+                <DialogHeader>
+                    {/* <AlertDialogDescription>{description}</AlertDialogDescription> */}
+                </DialogHeader>
+                <DialogFooter>
+                    <Button
+                        variant={'outline'}
+                    onClick={handleCancel}>
                         {cancelButtonText || defaultCancelTextMap[type]}
-                    </AlertDialogCancel>
+                    </Button>
                     <Button
                         loading={isLoading}
                         onClick={handleConfirm}
@@ -96,9 +100,9 @@ const ConfirmModal = forwardRef<ConfirmModalRef, {}>((props, ref) => {
                     >
                         {confirmButtonText || defaultActionTextMap[type]}
                     </Button>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 })
 

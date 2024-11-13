@@ -25,13 +25,15 @@ import { useForm } from 'react-hook-form'
 type Props = {
     open: boolean,
     setOpen: (open: boolean) => void
-    guestData?: TGuest
+    guestData?: TGuest,
+    guestId?: number
 }
 
 const GuestCrudModal = ({
     open,
     setOpen,
-    guestData
+    guestData,
+    guestId
 }: Props) => {
     const queryClient = useQueryClient();
 
@@ -41,8 +43,8 @@ const GuestCrudModal = ({
     const { selectData: guestCompanies, isLoading: isLoadingGuestCompanies } = useGuestCompanySelectData();
 
 
-    const form = useForm<TGuestValidator.CreateGuest>({
-        resolver: zodResolver(guestValidator.createGuestSchema),
+    const form = useForm<TGuestValidator.CreateGuestForm>({
+        resolver: zodResolver(guestValidator.createGuestSchemaForm),
         defaultValues: {
             isVip: false,
             isSendSmsAndEmail: false,
@@ -61,20 +63,27 @@ const GuestCrudModal = ({
     }
 
     const { mutate: createGuest } = api.guest.createGuest.useMutation({
-        onSuccess:onSuccsessCrud
+        onSuccess: onSuccsessCrud
     })
     const { mutate: updateGuest } = api.guest.updateGuest.useMutation({
-        onSuccess:onSuccsessCrud
+        onSuccess: onSuccsessCrud
+    })
+
+    const { data: guestDetailData } = api.guest.getGuestDetail.useQuery({
+        guestId: guestId!
+    }, {
+        enabled: !!guestId
     })
 
 
     const onSubmit = (data: TGuestValidator.CreateGuest) => {
-        if (guestData) {
-            console.log(data,)
+        if (isUpdate) {
+            const id = guestData?.id || guestId!
             updateGuest({
                 data: {
                     ...data,
-                }, id: guestData.id
+                },
+                id
             })
         } else {
             createGuest(data)
@@ -94,6 +103,26 @@ const GuestCrudModal = ({
         }
     }, [guestData])
 
+    useEffect(() => {
+        if (guestDetailData?.guest) {
+            const { guest: { tags, ...rest }, guestReservations } = guestDetailData;
+            form.reset({
+                ...rest,
+                tagIds: tags.map((tag) => tag.tagId)
+            })
+
+        }
+    }, [guestDetailData])
+
+    useEffect(() => {
+        form.reset()
+    }, [open])
+
+    console.log(form.getValues(), 'values')
+
+    const isUpdate = !!guestId || !!guestData
+
+
     const isLoading = isLoadingRestaurantTags || isLoadingCountries || isLoadingLanguages || isLoadingGuestCompanies
     const isDisabled = isLoading || form.formState.isSubmitting
 
@@ -101,7 +130,7 @@ const GuestCrudModal = ({
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className='max-h-[90vh] overflow-y-auto'>
                 <DialogHeader>
-                    <DialogTitle>Create Guest</DialogTitle>
+                    <DialogTitle>{isUpdate ? 'Update Guest' : 'Create Guest'}</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className=" grid grid-cols-2 gap-4 ">
@@ -394,15 +423,31 @@ const GuestCrudModal = ({
                             </FormItem>
                         )} />
 
-                        <FormControl>
-                            <Button
-                                disabled={isDisabled}
-                                type="submit"
-                                loading={isLoading || form.formState.isSubmitting}
-                            >
-                                {guestData ? 'Update Guest' : 'Create Guest'}
-                            </Button>
-                        </FormControl>
+                        <div className='col-span-2 '>
+                            <FormField control={form.control} name="isContactAssistant" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Contact Assistant</FormLabel>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                        </div>
+                        <div className='col-span-2 flex justify-end'>
+                            <FormControl >
+                                <Button
+                                    className='w-fit'
+                                    disabled={isDisabled}
+                                    type="submit"
+                                    loading={isLoading || form.formState.isSubmitting}
+                                >
+                                    {isUpdate ? 'Update Guest' : 'Create Guest'}
+                                </Button>
+                            </FormControl>
+                        </div>
+
                     </form>
                 </Form>
             </DialogContent>

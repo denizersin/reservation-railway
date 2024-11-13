@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 // Register Validator
 const registerSchema = z.object({
-    name: z.string().max(256, "Name cannot exceed 256 characters").optional().nullable(),
+    name: z.string().max(256, "Name cannot exceed 256 characters"),
 
     email: z.string().email("Invalid email address").max(256, "Email cannot exceed 256 characters"),
     password: z.string().min(4, "Password must be at least 8 characters long").max(256, "Password cannot exceed 256 characters"),
@@ -19,7 +19,7 @@ const loginSchema = z.object({
 });
 
 const updateUserByAdminSchema = z.object({
-    name: z.string().optional().nullable(),
+    name: z.string().optional(),
 
     id: z.number().int().positive(),
     email: z.string(),

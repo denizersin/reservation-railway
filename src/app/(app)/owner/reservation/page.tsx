@@ -1,6 +1,5 @@
 import { api } from "@/server/trpc/server"
 import { ReservationDataProvider } from "./reservation-data-provider"
-import { ReservationList2 } from "./_components/ReservationList2"
 import { CreateReservation } from "./_components/create-reservation"
 
 export default async function Page() {

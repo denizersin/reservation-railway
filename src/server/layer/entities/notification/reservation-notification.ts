@@ -2,6 +2,7 @@ import { languagesData } from "@/server/data";
 import { db } from "@/server/db";
 import { tblGuest, tblPrepayment, tblPrepaymentMessage, TReservation } from "@/server/db/schema";
 import { tblReservationNotification, TReservationNotification, TReservationNotificationInsert } from "@/server/db/schema/reservation/notification";
+import { reservationLinks } from "@/server/utils/front-link";
 import { EnumLanguage } from "@/shared/enums/predefined-enums";
 import { and, eq } from "drizzle-orm";
 
@@ -19,7 +20,17 @@ export const generateReservationCreatedNotification = async ({
     reservation
 }: {
     reservation: TReservation
-}) => { }
+}) => {
+    const guest = await db.query.tblGuest.findFirst({
+        where: eq(tblGuest.id, reservation.guestId)
+    })
+    if (!guest) throw new Error('Guest not found')
+
+
+    return `${guest.name} has created a reservation`
+
+
+}
 
 
 export const generatePrePaymentNotification = async ({
@@ -51,7 +62,7 @@ export const generatePrePaymentNotification = async ({
 
 
 
-    const prepaymentLink = `/reservation/${reservation.id}/prepayment`
+    const prepaymentLink = reservationLinks.prepayment({ reservationId: reservation.id })
 
     const message = `${guest!.name} 
     ${msg}
@@ -60,6 +71,34 @@ export const generatePrePaymentNotification = async ({
     return message
 
 }
+
+export const generateReservationCancelledNotification = async ({
+    reservation
+}: {
+    reservation: TReservation
+}) => {
+    return `your reservation has been cancelled`
+}
+
+export const generateReservationConfirmedNotification = async ({
+    reservation
+}: {
+    reservation: TReservation
+}) => {
+    return `your reservation has been confirmed`
+}
+
+export const generateConfirmationNotification = async ({
+    reservation
+}: {
+    reservation: TReservation
+}) => {
+    return `Will you be able to come to the restaurant?`
+}
+
+
+
+
 
 
 export const updateNotification = (data: Partial<TReservationNotification> & {
@@ -73,5 +112,8 @@ export const NotificationEntities = {
     createReservationNotification,
     updateNotification,
     generateReservationCreatedNotification,
-    generatePrePaymentNotification
+    generatePrePaymentNotification,
+    generateReservationCancelledNotification,
+    generateReservationConfirmedNotification,
+    generateConfirmationNotification
 }

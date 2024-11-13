@@ -5,6 +5,8 @@ export type TStatusTableRow = TStatusTableRows[0]
 
 export type TReservationRow = RouterOutputs['reservation']['getReservations'][0]
 
+export type TReservationDetail = RouterOutputs['reservation']['getReservationDetail']
+
 export type GroupedTables = TStatusTableRows[]
 
 export const groupTableStatues = (tables: TStatusTableRows): TStatusTableRow[][] => {

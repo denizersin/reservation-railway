@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, int, mysqlEnum, mysqlTable, text, time, timestamp, unique } from 'drizzle-orm/mysql-core';
+import { boolean, int, mysqlEnum, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 import { tblRestaurant } from '../restaurant';
 import { tblRoom, tblTable } from '../room';
 import { tblGuest, tblPersonel } from '../guest';
@@ -12,6 +12,8 @@ import { tblReservationLog } from './reservation-log';
 import { tblReservationNote } from './reservation-note';
 import { tblReservationTag } from './tag';
 import { tblReserVationStatus } from './reservation-status';
+import { tblUser } from '..';
+import { tblConfirmationRequest } from './confirmation-request';
 
 
 export const tblReservation = mysqlTable('reservation', {
@@ -34,7 +36,11 @@ export const tblReservation = mysqlTable('reservation', {
 
     isCheckedin: boolean('is_checked_in').notNull().default(false),
 
+    confirmedBy: varchar('confirmed_by', { length: 255 }),
+    confirmedAt: timestamp('confirmed_at'),
+
     prePaymentTypeId: int('prepayment_type_id').notNull(),
+
 
     reservationDate: timestamp('reservation_date').notNull(),
     guestNote: text('guest_note'),
@@ -45,6 +51,8 @@ export const tblReservation = mysqlTable('reservation', {
 
 
 
+
+
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),
@@ -52,7 +60,7 @@ export const tblReservation = mysqlTable('reservation', {
 
 }));
 
-export const tblReservationTables = mysqlTable('reservation_tables', {
+export const tblReservationTable = mysqlTable('reservation_tables', {
     id: int('id').autoincrement().primaryKey(),
     reservationId: int('reservation_id').notNull().references(() => tblReservation.id, { onDelete: 'cascade' }),
     tableId: int('table_id').notNull(),
@@ -60,19 +68,21 @@ export const tblReservationTables = mysqlTable('reservation_tables', {
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),
 });
-export const tblReservationTableRelations = relations(tblReservationTables, ({ one }) => ({
-    reservation: one(tblReservation, { fields: [tblReservationTables.reservationId], references: [tblReservation.id] }),
-    table: one(tblTable, { fields: [tblReservationTables.tableId], references: [tblTable.id] }),
+export const tblReservationTableRelations = relations(tblReservationTable, ({ one }) => ({
+    reservation: one(tblReservation, { fields: [tblReservationTable.reservationId], references: [tblReservation.id] }),
+    table: one(tblTable, { fields: [tblReservationTable.tableId], references: [tblTable.id] }),
 }));
 
 export const tblReservationRelations = relations(tblReservation, ({ one, many }) => ({
-    tables: many(tblReservationTables),
+    tables: many(tblReservationTable),
     notifications: many(tblReservationNotification),
     logs: many(tblReservationLog),
     reservationNotes: many(tblReservationNote),
     tags: many(tblReservationTag),
 
     waitingSession: one(tblWaitingTableSession, { fields: [tblReservation.waitingSessionId], references: [tblWaitingTableSession.id] }),
+    confirmationRequests: many(tblConfirmationRequest),
+    createdOwner: one(tblUser, { fields: [tblReservation.createdOwnerId], references: [tblUser.id] }),
 
     reservationStatus: one(tblReserVationStatus, { fields: [tblReservation.reservationStatusId], references: [tblReserVationStatus.id] }),
     reservationExistenceStatus: one(tblReservationExistanceStatus, { fields: [tblReservation.reservationExistenceStatusId], references: [tblReservationExistanceStatus.id] }),
@@ -138,7 +148,7 @@ type ReservationInsert = typeof tblReservation.$inferInsert;
 
 
 
-export type TReservation = TReservationSelect 
+export type TReservation = TReservationSelect
 
 export type TReservationInsert = ReservationInsert & {
     tableIds: number[]
@@ -150,4 +160,4 @@ type ReservationUpdate = TReservationSelect & {
 
 export type TUpdateReservation = Partial<ReservationUpdate>
 
-export type TReservatioTable = typeof tblReservationTables.$inferSelect
+export type TReservatioTable = typeof tblReservationTable.$inferSelect

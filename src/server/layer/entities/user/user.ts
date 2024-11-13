@@ -53,6 +53,7 @@ export async function getUserById({
     const user = await db.query.tblUser.findFirst({
         where: eq(tblUser.id, userId)
     })
+    if (!user) throw new Error('User not found')
     return user
 }
 

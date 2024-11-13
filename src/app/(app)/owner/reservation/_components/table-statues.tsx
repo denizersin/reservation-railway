@@ -53,7 +53,8 @@ export const TableStatues = ({
         date: queryDate,
         mealId: selectedMeal.mealId,
     }, {
-        enabled: [date, selectedMeal, selectedRoom].every(Boolean)
+        enabled: [date, selectedMeal, selectedRoom].every(Boolean),
+        staleTime: 0
     })
 
 
@@ -63,7 +64,7 @@ export const TableStatues = ({
     const hourTables = roomTableStatues?.statues.find((hour) => hour.hour === selectedHour)?.tables
 
     useEffect(() => {
-        if (mealHours) {
+        if (mealHours && !selectedHour) {
             setSelectedHour(mealHours[0]?.hour!)
         }
 

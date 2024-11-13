@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { SelectTableRowModal } from './select-table-row-modal'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
+import { useMutationCallback } from '@/hooks/useMutationCallback'
 
 type Props = {
     reservation: TReservation
@@ -44,8 +45,11 @@ export const ReservationTableUpdateModal = ({
     const { data: availableTableData } = api.reservation.getAllAvailableReservation2.useQuery({
         date: queryDate,
         mealId: reservation.mealId
+    }, {
+        staleTime: 0
     })
 
+    const { onSuccessReservationUpdate } = useMutationCallback()
 
     const groupedTables = useMemo(() => {
         const tableStatues = availableTableData?.tableStatues.find(r => r.roomId === selectedRoom?.id)
@@ -62,13 +66,8 @@ export const ReservationTableUpdateModal = ({
 
 
     const onSuccsessUpdate = () => {
-        queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.reservation.getAllAvailableReservation2),
-        })
-
-        queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.reservation.getReservations),
-        })
+        //TODO mutation callback
+        onSuccessReservationUpdate(reservation.id)
     }
 
 
@@ -102,8 +101,8 @@ export const ReservationTableUpdateModal = ({
             ConfirmModalGlobal.show({
                 title: 'Unlink Reservation',
                 type: 'delete',
-                onConfirm: () => {
-                    unlinkReservation({
+                onConfirm: async () => {
+                    await unlinkReservation({
                         reservationId: row.reservation?.id!
                     })
                 }
@@ -115,8 +114,8 @@ export const ReservationTableUpdateModal = ({
         ConfirmModalGlobal.show({
             title: 'Remove Table',
             type: 'delete',
-            onConfirm: () => {
-                removeTableFromReservation({
+            onConfirm: async () => {
+                await removeTableFromReservation({
                     reservationId: row.reservation?.id!,
                     reservationTableId: row.reservation_tables?.id!
                 })

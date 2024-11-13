@@ -22,6 +22,7 @@ import { ConfirmationDialog } from "@/components/modal/confirmation-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { Button } from "@/components/custom/button";
+import { useMutationCallback } from "@/hooks/useMutationCallback";
 
 type Props = {}
 
@@ -39,9 +40,11 @@ const LimitationsList = (props: Props) => {
         data: reservationLimitations
     } = api.reservation.getReservationLimitations.useQuery()
 
+    const { onUpdateReservationLimitations } = useMutationCallback()
     const { mutate: deleteLimitationMutation, isPending: deleteLimitationIsPending } = api.reservation.deleteReservationLimitation.useMutation({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getQueryKey(api.reservation.getReservationLimitations) })
+            onUpdateReservationLimitations()
             setIsDeleteModalOpen(false)
         }
     })
@@ -52,6 +55,7 @@ const LimitationsList = (props: Props) => {
     } = api.reservation.updateReservationLimitation.useMutation({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getQueryKey(api.reservation.getReservationLimitations) })
+            onUpdateReservationLimitations()
             setIsUpdateModalOpen(false)
         }
     })

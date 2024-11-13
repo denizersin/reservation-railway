@@ -1,4 +1,5 @@
 import { db } from "@/server/db";
+import { tblReservation } from "@/server/db/schema";
 import { tblGuest, tblGuestTags, tblGusetCompany, TGuest, TGuestInsert, TGusetCompanyInsert } from "@/server/db/schema/guest";
 import { TPagination } from "@/server/types/types";
 import TGuestValidator from "@/shared/validators/guest";
@@ -16,15 +17,16 @@ export const createGuest = async ({ guestData }: {
     if (tagIds.length > 0) {
         await db.insert(tblGuestTags).values(tagIds.map(tagId => ({ guestId: result?.id!, tagId })));
     }
+
 };
+
+
 
 export const updateGuest = async ({ id, guestData }: {
     id: number,
     guestData: Partial<TGuestInsert>
 }) => {
     const { tagIds, ..._guestData } = guestData;
-    console.log(guestData, 'guestData')
-    console.log(_guestData, '_guestData')
     await db.update(tblGuest).set(_guestData).where(eq(tblGuest.id, id));
 
     if (tagIds && tagIds.length > 0) {
@@ -33,6 +35,7 @@ export const updateGuest = async ({ id, guestData }: {
     } else if (tagIds && tagIds.length === 0) {
         await db.delete(tblGuestTags).where(eq(tblGuestTags.guestId, id));
     }
+
 };
 
 
@@ -106,3 +109,35 @@ export const getAllGuests = async ({
 }
 
 
+export const getGuestById = async ({ guestId }: { guestId: number }) => {
+    const [result] = await db.select().from(tblGuest).where(eq(tblGuest.id, guestId));
+    if (!result) throw new Error('Guest not found')
+    return result;
+}
+
+
+
+
+export const getGuestDetail = async ({ guestId }: { guestId: number }) => {
+    const guest = await db.query.tblGuest.findFirst({
+        with: {
+            tags: true,
+            country: true,
+            language: true,
+            company: true,
+
+        },
+        where: eq(tblGuest.id, guestId)
+    })
+
+    const guestReservations = await db.query.tblReservation.findMany({
+        with: {
+            reservationStatus: true,
+        },
+        where: eq(tblReservation.guestId, guestId)
+    })
+
+
+
+    return { guest, guestReservations }
+}
