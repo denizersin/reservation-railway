@@ -2,6 +2,7 @@
 import { Button } from '@/components/custom/button'
 import { CustomSelect } from '@/components/custom/custom-select'
 import { usePersonalSelectData } from '@/hooks/predefined/predfined'
+import { useToast } from '@/hooks/use-toast'
 import { useMutationCallback } from '@/hooks/useMutationCallback'
 import { TReservationRow } from '@/lib/reservation'
 import { api } from '@/server/trpc/react'
@@ -18,13 +19,21 @@ export const ReservationPersonel = ({ reservation }: Props) => {
     const [selectedPersonalId, setSelectedPersonalId] = useState(reservation.assignedPersonalId)
 
 
-    const {onSuccessReservationUpdate}=useMutationCallback()
+    const { onSuccessReservationUpdate } = useMutationCallback()
+
+    const { toast } = useToast();
 
     const {
         mutate: updateReservationAssignedPersonal,
         isPending: isUpdatingReservationAssignedPersonal
     } = api.reservation.updateReservationAssignedPersonal.useMutation({
-        onSuccess: ()=>onSuccessReservationUpdate(reservation.id)
+        onSuccess: () => {
+            onSuccessReservationUpdate(reservation.id)
+            toast({
+                title: 'Reservation updated',
+                description: 'Reservation assigned personal updated',
+            })
+        }
     })
 
     function handleUpdateReservationAssignedPersonal() {

@@ -373,6 +373,9 @@ CREATE TABLE `reservation` (
 	`is_checked_in` boolean NOT NULL DEFAULT false,
 	`confirmed_by` varchar(255),
 	`confirmed_at` timestamp,
+	`checkedin_at` timestamp,
+	`entered_main_table_at` timestamp,
+	`checkedout_at` timestamp,
 	`prepayment_type_id` int NOT NULL,
 	`reservation_date` timestamp NOT NULL,
 	`guest_note` text,
@@ -490,7 +493,7 @@ CREATE TABLE `reservation_tag` (
 --> statement-breakpoint
 CREATE TABLE `reservation_status` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`status` enum('draft','reservation','prepayment','confirmation','cancel','confirmed') NOT NULL,
+	`status` enum('draft','reservation','prepayment','confirmation','cancel','confirmed','completed') NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	CONSTRAINT `reservation_status_id` PRIMARY KEY(`id`)
 );

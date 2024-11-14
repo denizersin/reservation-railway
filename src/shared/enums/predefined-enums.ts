@@ -31,6 +31,7 @@ export enum EnumReservationStatus {
     confirmation = 'confirmation',
     cancel = 'cancel',
     confirmed = 'confirmed',
+    completed = 'completed',
 }
 
 export const EnumReservationStatusNumeric: Record<EnumReservationStatus, number> = {
@@ -40,6 +41,8 @@ export const EnumReservationStatusNumeric: Record<EnumReservationStatus, number>
     [EnumReservationStatus.confirmation]: 4,
     [EnumReservationStatus.cancel]: 5,
     [EnumReservationStatus.confirmed]: 6,
+    [EnumReservationStatus.completed]: 7,
+
 }
 
 

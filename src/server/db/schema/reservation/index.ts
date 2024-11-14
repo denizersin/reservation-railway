@@ -39,6 +39,10 @@ export const tblReservation = mysqlTable('reservation', {
     confirmedBy: varchar('confirmed_by', { length: 255 }),
     confirmedAt: timestamp('confirmed_at'),
 
+    checkedinAt: timestamp('checkedin_at'),
+    enteredMainTableAt: timestamp('entered_main_table_at'),
+    checkedoutAt: timestamp('checkedout_at'),
+
     prePaymentTypeId: int('prepayment_type_id').notNull(),
 
 

@@ -1,28 +1,27 @@
-import { groupTableStatues, TReservationRow, TStatusTableRow } from '@/lib/reservation'
-import { TReservation, TRoomWithTranslations, TTable } from '@/server/db/schema'
-import { api } from '@/server/trpc/react'
-import React, { useEffect, useMemo, useState } from 'react'
-import { ShapeType, RelationType } from 'react-archer/lib/types';
-import ReactGridLayout, { Layout } from 'react-grid-layout';
-import "/node_modules/react-grid-layout/css/styles.css"
-import "/node_modules/react-resizable/css/styles.css"
-import { ArcherContainer, ArcherElement, } from 'react-archer';
-import { cn } from '@/lib/utils';
-import { EnumTableShape } from '@/shared/enums/predefined-enums';
-import { GridStatusTableRowCard } from './grid-status-table-row-card';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TSelectionRowState } from './reservation-grid-status-modal';
 import { Button } from '@/components/ui/button';
+import { groupTableStatues, TReservationRow, TTableStatuesRow } from '@/lib/reservation';
+import { cn, groupByWithKeyFn } from '@/lib/utils';
+import { TRoomWithTranslations, TTable } from '@/server/db/schema';
+import { api } from '@/server/trpc/react';
+import { EnumTableShape } from '@/shared/enums/predefined-enums';
+import { useEffect, useMemo, useState } from 'react';
+import { ArcherContainer, ArcherElement, } from 'react-archer';
+import { RelationType } from 'react-archer/lib/types';
+import ReactGridLayout, { Layout } from 'react-grid-layout';
+import { GridStatusTableRowCard } from './grid-status-table-row-card';
+import { TSelectionRowState } from './reservation-grid-status-modal';
+import "/node_modules/react-grid-layout/css/styles.css";
+import "/node_modules/react-resizable/css/styles.css";
 
 const colors = ['blue', 'red', 'green', 'purple', 'pink', 'orange', 'gray', 'indigo', 'teal', 'cyan', 'lime', 'amber', 'brown', 'lightBlue', 'lightGreen', 'deepOrange', 'deepPurple', 'blueGray']
 
 type Props = {}
 
-export type StatusTableRowWithRelation = TStatusTableRow & {
+export type StatusTableRowWithRelation = TTableStatuesRow & {
     layout: Layout
     relations?: RelationType[],
     isCurrentReservation: boolean
-    group: TStatusTableRow[]
+    group: TTableStatuesRow[]
 }
 
 export const ReservationGridStatus = ({
@@ -34,21 +33,21 @@ export const ReservationGridStatus = ({
     selectionRowState
 }: {
     reservation: TReservationRow,
-    selectedRoom: TRoomWithTranslations|undefined,
-    setSelectedRoom: (room: TRoomWithTranslations|undefined) => void,
+    selectedRoom: TRoomWithTranslations | undefined,
+    setSelectedRoom: (room: TRoomWithTranslations | undefined) => void,
     selectionRowState: TSelectionRowState,
     setSelectionRowState: (state: TSelectionRowState) => void,
     onSucessCrudTable: () => void
 }) => {
 
     const { data: roomsData } = api.room.getRooms.useQuery({})
-    const [statusTableRow, setStatusTableRow] = useState<TStatusTableRow | undefined>(undefined)
+    const [statusTableRow, setStatusTableRow] = useState<TTableStatuesRow | undefined>(undefined)
     const [count, setCount] = useState(0)
 
 
     const { deSelectedRows, selectedRows } = selectionRowState
 
-    const [thisTableRows, setThisTableRows] = useState<TStatusTableRow[]>([])
+    const [thisTableRows, setThisTableRows] = useState<TTableStatuesRow[]>([])
 
 
 
@@ -57,7 +56,7 @@ export const ReservationGridStatus = ({
         date.setHours(0, 0, 0, 0)
         return date.toISOString()
     }, [reservation.reservationDate])
-    const { data: availableTableData } = api.reservation.getAllAvailableReservation2.useQuery({
+    const { data: availableTableData } = api.reservation.getTableStatues.useQuery({
         date: queryDate,
         mealId: reservation.mealId
     }, {
@@ -66,9 +65,8 @@ export const ReservationGridStatus = ({
 
     const [groupData, gridData] = useMemo(() => {
 
-        const tableStatues = availableTableData?.tableStatues.find(r => r.roomId === selectedRoom?.id)
-            ?.statues.find((hour) => hour.hour === statusTableRow?.reservation?.hour)?.tables
-        const groups = groupTableStatues(tableStatues ?? [])
+        const tables = availableTableData?.find(r => r.roomId === selectedRoom?.id)?.tables
+        const groups = groupTableStatues(tables ?? [])
         const tablesWithRelationMap: Record<number, StatusTableRowWithRelation> = {}
 
         groups.forEach((group) => {
@@ -87,12 +85,7 @@ export const ReservationGridStatus = ({
                     }
                 })
 
-                // tablesWithRelationMap[group[0]?.table?.id!] = {
-                //     ...group[0],
-                //     layout: getLayoutOfTable(group[0].table!),
-                //     relations: [],
-                //     group
-                // }
+
                 return;
             }
 
@@ -100,46 +93,41 @@ export const ReservationGridStatus = ({
             // [t,t,linked] ,[t,t,t] ,[t,linked,linked]
 
 
+
             //reservation tables
             const unlinkedTables = group.filter(t => !(t?.reservation?.linkedReservationId))
 
-            if (unlinkedTables.length > 1) {
-                //multi tables
-                const firstTable = unlinkedTables[0]!
-                const firstTableWithRelation: StatusTableRowWithRelation = {
-                    ...firstTable,
-                    layout: getLayoutOfTable(firstTable.table!),
-                    relations: unlinkedTables.slice(1).map((table) => ({
-                        targetId: table?.table?.id.toString()!,
-                        targetAnchor: 'middle',
-                        sourceAnchor: 'middle',
-                    })),
-                    group,
-                    isCurrentReservation: firstTable.reservation?.id === reservation.id
-                }
-                tablesWithRelationMap[firstTable?.table?.id!] = firstTableWithRelation
-
-                unlinkedTables.slice(1).forEach((table) => {
-                    tablesWithRelationMap[table?.table?.id!] = {
-                        ...table,
-                        layout: getLayoutOfTable(table.table!),
-                        relations: [],
-                        group,
-                        isCurrentReservation: table.reservation?.id === reservation.id
-                        // relations: [{
-                        //     targetId: firstTable.table?.id?.toString()!,
-                        //     targetAnchor: 'right',
-                        //     sourceAnchor: 'left',
-                        // }]
-                    }
-                })
-
+            //multi tables
+            const firstTable = unlinkedTables[0]!
+            const firstTableWithRelation: StatusTableRowWithRelation = {
+                ...firstTable,
+                layout: getLayoutOfTable(firstTable.table!),
+                relations: unlinkedTables.slice(1).map((table) => ({
+                    targetId: table?.table?.id.toString()!,
+                    targetAnchor: 'middle',
+                    sourceAnchor: 'middle',
+                }))??[],
+                group,
+                isCurrentReservation: firstTable.reservation?.id === reservation.id
             }
+
+            tablesWithRelationMap[firstTable?.table?.id!] = firstTableWithRelation
+
+            unlinkedTables.slice(1).forEach((table) => {
+                tablesWithRelationMap[table?.table?.id!] = {
+                    ...table,
+                    layout: getLayoutOfTable(table.table!),
+                    relations: [],
+                    group,
+                    isCurrentReservation: table.reservation?.id === reservation.id
+                }
+            })
+
+
 
             const linkedTables = group.filter(t => (t?.reservation?.linkedReservationId))
 
-            //main table of linked tables
-            const unLinkedTables = group.filter(t => !(t?.reservation?.linkedReservationId))
+
 
             linkedTables.forEach((table) => {
                 const linkedReservationRow = group.find(t => t.reservation?.id === table?.reservation?.linkedReservationId)
@@ -164,16 +152,7 @@ export const ReservationGridStatus = ({
                 }
             })
 
-            // unLinkedTables.forEach((table) => {
-            //     if(tablesWithRelationMap[table?.table?.id!]) return;
-            //     tablesWithRelationMap[table?.table?.id!] = {
-            //         ...table,
-            //         layout: getLayoutOfTable(table.table!),
-            //         relations: [],
-            //         group,
-            //         isCurrentReservation: table.reservation?.id === reservation.id
-            //     }
-            // })
+
 
 
 
@@ -182,22 +161,12 @@ export const ReservationGridStatus = ({
 
         const gridData = Object.values(tablesWithRelationMap)
 
-        // let lastColorIndex = 0
-        // gridData.forEach((r, index) => {
-        //     if (r.relations?.length) {
-        //         r.relations?.forEach(r => {
-        //             r.style = {
-        //                 strokeColor: colors[lastColorIndex]
-        //             }
-        //         })
-        //     }
-        //     lastColorIndex++
-        // })
+
 
         return [groups, gridData]
     }, [availableTableData, selectedRoom])
 
-    console.log(gridData, 'gridData')   
+    console.log(gridData, 'gridData')
 
 
 
@@ -209,14 +178,11 @@ export const ReservationGridStatus = ({
 
     useEffect(() => {
         console.log(availableTableData, 'availableTableData')
-        console.log(reservation.roomId,'roomid')
+        console.log(reservation.roomId, 'roomid')
         if (availableTableData) {
-            const r = availableTableData.tableStatues
-                .find(r => r.roomId === reservation.roomId)?.statues
-                .find(h => h.hour === reservation.hour)?.tables
-                .find(t => t.reservation?.id === reservation.id)
-
-                
+            const r = availableTableData
+                .find(r => r.roomId === reservation.roomId)?.tables
+                .find(r => r.reservation?.id === reservation.id)
 
             setStatusTableRow(r)
         }
@@ -285,10 +251,6 @@ export const ReservationGridStatus = ({
     }
 
     useEffect(() => {
-        // OnChangeSelectedRows({
-        //     deSelectedRows,
-        //     selectedRows: selectedRows
-        // })
 
         setSelectionRowState({
             deSelectedRows,

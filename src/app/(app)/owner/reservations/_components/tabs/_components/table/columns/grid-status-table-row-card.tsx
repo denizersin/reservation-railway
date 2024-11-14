@@ -39,8 +39,8 @@ export const GridStatusTableRowCard = ({
 }: Props) => {
     const queryClient = useQueryClient();
     const table = statusTableRow.table!
-    const { isReserved, isReachedLimit, isAppliedLimit } = table
-    const isAvailable = !isReserved && !isReachedLimit
+    const isReserved = Boolean(statusTableRow.reservation)
+    const isAvailable = !isReserved
 
 
     const isCanUnLinkReservation = statusTableRow.reservation?.linkedReservationId
@@ -71,7 +71,7 @@ export const GridStatusTableRowCard = ({
     function onRemoveTable() {
         removeTableFromReservation({
             reservationId: statusTableRow.reservation?.id!,
-            reservationTableId: statusTableRow.reservation_tables?.id!
+            reservationTableId: statusTableRow.reservationTable?.id!
         })
     }
     function onUnLinkReservation() {
@@ -143,7 +143,7 @@ export const GridStatusTableRowCard = ({
                 <div className="flex items-center text-xs ">
                     {isReserved && <div className='flex'>
                         <Users className="w-3 h-3 mr-1" />
-                        {statusTableRow.reservation?.guestCount}/{statusTableRow.table?.avaliableGuestWithLimit}
+                        {statusTableRow.reservation?.guestCount}/{statusTableRow.table?.maxCapacity}
 
                     </div>}
                 </div>

@@ -59,6 +59,11 @@ export const statuses = [
         label: 'Confirmation',
         icon: QuestionMarkCircledIcon,
     },
+    {
+        value: EnumReservationStatus.completed,
+        label: 'Completed',
+        icon: CheckCircledIcon,
+    },
 ];
 export const priorities = [
     {

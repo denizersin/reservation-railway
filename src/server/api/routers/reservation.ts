@@ -235,6 +235,12 @@ export const reservationRouter = createTRPCRouter({
             await reservationUseCases.checkInReservation(opts)
         }),
 
+    checkOutAndCompleteReservation: ownerProcedure
+        .input(reservationValidator.checkOutAndCompleteReservation)
+        .mutation(async (opts) => {
+            await reservationUseCases.checkOutAndCompleteReservation(opts)
+        }),
+
     takeReservationIn: ownerProcedure
         .input(reservationValidator.takeReservationIn)
         .mutation(async (opts) => {

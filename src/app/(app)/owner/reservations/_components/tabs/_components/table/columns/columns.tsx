@@ -8,7 +8,7 @@ import { DataTableRowActions } from '../data-table-row-actions'
 import { labels, priorities, statuses } from '../data'
 import { TReservationRow } from '@/lib/reservation'
 import { ReservationGridStatusModal } from './reservation-grid-status-modal'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { UpdateReservationTmeModal } from './update-reservation-time-modal'
 import { ReservationStatusModal } from '../status-modal/reservation-status-modal'
 import useRealTimeCounter, { CounterOptions } from '@/hooks/useTimeCounter'
@@ -99,10 +99,24 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='area' />
     ),
-    cell: ({ row }) => {
+    cell: ({ row, table, }) => {
 
       const area = row.original.room.translations[0]?.name
       const tables = row.original.tables.map(t => t.table.no).join(', ')
+      const thisReservation = row.original
+      const thisReservationId = row.original.id
+
+
+      const linkedToThisTables = table.getRowModel().rows.map(r => r.original)
+        .filter(t => t.id !== thisReservationId && t?.linkedReservationId && t?.linkedReservationId === thisReservationId).map(t => t.tables.map(t => t.table.no).join(', ')).join(', ')
+
+      const isLinkedToOtherTables = Boolean(thisReservation.linkedReservationId)
+
+      const thisLinkedWithOtherTables = table.getRowModel().rows.map(r => r.original)
+        .filter(t => t.id !== thisReservationId && t?.id === thisReservation.linkedReservationId).map(t => t.tables.map(t => t.table.no).join(', ')).join(', ')
+
+
+
 
       const [isOpen, setIsOpen] = useState(false)
 
@@ -116,8 +130,12 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
             }}
           >
 
-            <div>{area}</div>
-            <div className="text-gray-500">{tables}</div>
+            <div>{area} </div>
+            <div className="text-gray-500 flex">
+              {tables}
+              <div>{linkedToThisTables ? `->(${linkedToThisTables})` : ''}</div>
+              {isLinkedToOtherTables && <div className="text-gray-500">{'->'}({thisLinkedWithOtherTables})</div>}
+            </div>
           </div>
 
           {<ReservationGridStatusModal
@@ -147,7 +165,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
       const [isOpen, setIsOpen] = useState(false)
 
       const [countOptions, setCountOptions] = useState<CounterOptions | undefined>()
-
+      const [mainTableCountOptions, setmainTableCountOptions] = useState<CounterOptions | undefined>(undefined)
 
       const waitingTables = row.original.waitingSession.tables.map(t => t.table.no).join(', ')
 
@@ -157,6 +175,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
       const isInRestaurant = reservation.reservationExistenceStatus.status === EnumReservationExistanceStatus.inRestaurant
 
       const isCheckedin = reservation.isCheckedin
+      const isCheckedout = Boolean(reservation.checkedoutAt)
 
       const { onSuccessReservationUpdate } = useMutationCallback()
 
@@ -186,7 +205,21 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           setCountOptions(undefined)
         }
 
+        if (reservation.enteredMainTableAt && !isCheckedout) {
+          setmainTableCountOptions({
+            interval: 60000,
+          })
+        }
 
+        if (isCheckedout && mainTableCountOptions) {
+          setmainTableCountOptions(undefined)
+        }
+
+
+      }, [reservation])
+
+      const elapsedTimeOnMainTable = useMemo(() => {
+        return reservation.enteredMainTableAt ? Math.round((new Date().getTime() - reservation.enteredMainTableAt.getTime()) / 1000 / 60) : 0
       }, [reservation])
 
       const {
@@ -231,17 +264,16 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           <div>
             {countOptions && <ExistenceCounter countOptions={countOptions} />}
           </div>
-          <div>
-            {waitingTables}
-          </div>
+          <div>{waitingTables}</div>
 
-
+          {mainTableCountOptions && <ExistenceCounter countOptions={mainTableCountOptions} />}
+          {isCheckedout && <div>{elapsedTimeOnMainTable} dk</div>}
 
         </div>
         <div className='flex gap-2 justify-end'>
 
           {
-            isCheckedin &&isInWaiting&&
+            isCheckedin && isInWaiting &&
             <Button
               tooltip='içeri al'
               className=' bg-green-500 hover:bg-green-600'

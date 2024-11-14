@@ -4,8 +4,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useMutationCallback } from '@/hooks/useMutationCallback'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
-import { TReservationRow, TStatusTableRow } from '@/lib/reservation'
-import { TRoomWithTranslations, TTable } from '@/server/db/schema'
+import { TReservationRow, TTableStatuesRow } from '@/lib/reservation'
+import { TRoomWithTranslations } from '@/server/db/schema'
 import { api } from '@/server/trpc/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -13,10 +13,11 @@ import { ReservationGridStatus } from './reservation-grid-status'
 import { ReservationWaitingTableSelect, TWaitingTable } from './reservation-waiting-table-select'
 import { ReservationPersonel } from './reservation-personel'
 import { ReservationNote } from './reservation-note'
+import { EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
 
 export type TSelectionRowState = {
-    deSelectedRows: TStatusTableRow[];
-    selectedRows: TStatusTableRow[];
+    deSelectedRows: TTableStatuesRow[];
+    selectedRows: TTableStatuesRow[];
 }
 
 export type TSelctionWaitingState = {
@@ -51,8 +52,11 @@ export const ReservationGridStatusModal = ({
     })
 
 
+    const isCompleted = reservation.reservationStatusId === EnumReservationStatusNumeric.completed
 
     const { deSelectedRows, selectedRows } = selectionRowState
+
+    console.log(selectedRows, deSelectedRows, 'selectedRows, deSelectedRows')
 
     const { onSuccessReservationUpdate } = useMutationCallback()
 
@@ -113,6 +117,11 @@ export const ReservationGridStatusModal = ({
         isPending: isPendingCheckInReservation
     } = api.reservation.checkInReservation.useMutation({ onSuccess: onSuccsessUpdate })
 
+    const {
+        mutate: checkOutAndCompleteReservation,
+        isPending: isPendingCheckOutAndCompleteReservation
+    } = api.reservation.checkOutAndCompleteReservation.useMutation({ onSuccess: onSuccsessUpdate })
+
 
     const isUpdateReservationTable = selectedRows.length === 1 && deSelectedRows.length === 1
 
@@ -146,7 +155,7 @@ export const ReservationGridStatusModal = ({
         if (isUpdateReservationTable) {
             const newTable = selectedRows[0]?.table!
             updateReservationTable({
-                id: deSelectedRows[0]?.reservation_tables?.id!,
+                id: deSelectedRows[0]?.reservationTable?.id!,
                 tableId: newTable.id,
                 reservationId: reservation.id,
             })
@@ -178,7 +187,7 @@ export const ReservationGridStatusModal = ({
         }
     }
 
-    useShowLoadingModal([isPendingAddNewTables, isPendingLinkReservation, isPendingUpdateReservation, isPendingCreateReservation, isPendingUpdateReservationWaitingSession, isPendingCheckInReservation])
+    useShowLoadingModal([isPendingAddNewTables, isPendingLinkReservation, isPendingUpdateReservation, isPendingCreateReservation, isPendingUpdateReservationWaitingSession, isPendingCheckInReservation, isPendingCheckOutAndCompleteReservation])
 
     const isWaitinfRoom = selectedRoom?.isWaitingRoom
 
@@ -241,6 +250,16 @@ export const ReservationGridStatusModal = ({
                         >
                             Check In
                         </Button>}
+                        {
+                            reservation.isCheckedin && !isCompleted && <Button
+                                className=' ml-auto'
+                                onClick={() => {
+                                    checkOutAndCompleteReservation({ reservationId: reservation.id })
+                                }}
+                            >
+                                Check Out
+                            </Button>
+                        }
                     </div>
                 </div>
 

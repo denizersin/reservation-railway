@@ -86,6 +86,8 @@ const deleteReservation = reservationIdSchema
 
 const returnPrepayment = reservationIdSchema
 
+const checkOutAndCompleteReservation = reservationIdSchema
+
 const requestForPrepaymentForm = z.object({
     customPrepaymentAmount: z.number().int().positive().optional(),
 })
@@ -144,7 +146,8 @@ export const reservationValidator = {
     makeReservationNotExist,
     updateReservationAssignedPersonal,
     updateReservationNote,
-    
+    checkOutAndCompleteReservation,
+
 }
 
 namespace TReservationValidator {
@@ -174,7 +177,7 @@ namespace TReservationValidator {
     export type makeReservationNotExist = z.infer<typeof makeReservationNotExist>
     export type updateReservationAssignedPersonal = z.infer<typeof updateReservationAssignedPersonal>
     export type updateReservationNote = z.infer<typeof updateReservationNote>
-    
+    export type checkOutAndCompleteReservation = z.infer<typeof checkOutAndCompleteReservation>
 }
 
 export default TReservationValidator

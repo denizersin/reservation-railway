@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "78573d40-1cb2-4aaf-8849-ebbf25b9813e",
+  "id": "b3d46f4e-ae0e-404f-99c6-45edd4da3873",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -2336,6 +2336,27 @@
           "notNull": false,
           "autoincrement": false
         },
+        "checkedin_at": {
+          "name": "checkedin_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "entered_main_table_at": {
+          "name": "entered_main_table_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "checkedout_at": {
+          "name": "checkedout_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "prepayment_type_id": {
           "name": "prepayment_type_id",
           "type": "int",
@@ -3127,7 +3148,7 @@
         },
         "status": {
           "name": "status",
-          "type": "enum('draft','reservation','prepayment','confirmation','cancel','confirmed')",
+          "type": "enum('draft','reservation','prepayment','confirmation','cancel','confirmed','completed')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

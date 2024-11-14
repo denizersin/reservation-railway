@@ -45,6 +45,11 @@ export const useMutationCallback = () => {
                     date: queryDate
                 })
             })
+            queryClient.invalidateQueries({
+                queryKey: getQueryKey(api.reservation.getTableStatues, {
+                    date: queryDate
+                })
+            })
 
 
         },
@@ -56,6 +61,12 @@ export const useMutationCallback = () => {
 
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.reservation.getAllAvailableReservation2, {
+                    date: createdQueryDate.toISOString()
+                })
+            })
+
+            queryClient.invalidateQueries({
+                queryKey: getQueryKey(api.reservation.getTableStatues, {
                     date: createdQueryDate.toISOString()
                 })
             })

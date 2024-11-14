@@ -1,5 +1,6 @@
 import { Button } from '@/components/custom/button'
 import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
 import { useMutationCallback } from '@/hooks/useMutationCallback'
 import { TReservationRow } from '@/lib/reservation'
 import { api } from '@/server/trpc/react'
@@ -15,11 +16,19 @@ export const ReservationNote = ({ reservation }: Props) => {
 
     const { onSuccessReservationUpdate } = useMutationCallback()
 
+    const { toast } = useToast();
+
     const {
         mutate: updateReservationNote,
         isPending: isUpdatingReservationNote
     } = api.reservation.updateReservationNote.useMutation({
-        onSuccess: () => onSuccessReservationUpdate(reservation.id)
+        onSuccess: () => {
+            onSuccessReservationUpdate(reservation.id)
+            toast({
+                title: 'Reservation updated',
+                description: 'Reservation note updated',
+            })
+        }
     })
 
     function handleUpdateReservationNote() {

@@ -12,11 +12,13 @@ export type GroupedTables = TStatusTableRows[]
 
 export type TTableStatuesRow = RouterOutputs['reservation']['getTableStatues'][0]['tables'][0]
 
-export const groupTableStatues = (tables: TStatusTableRows): TStatusTableRow[][] => {
+export const groupTableStatues = (tables: TTableStatuesRow[]): TTableStatuesRow[][] => {
     // const reservatedTables = tables.filter((table) => table.reservation)
-    const reservatedTables = tables
-    const groupedTables = groupBy(reservatedTables, (table) => table.reservation?.id!)
+
+    const groupedTables = groupBy(tables, (table) => table.reservation?.id!)
+
     const removeIndex: number[] = []
+
     Object.values(groupedTables).forEach((g,i) => {
         g.forEach(t => {
             if (t.reservation?.linkedReservationId &&
@@ -28,7 +30,13 @@ export const groupTableStatues = (tables: TStatusTableRows): TStatusTableRow[][]
             }
         })
     })
+
+    
+    
     const grouped = Object.values(groupedTables).filter((_,i) => !removeIndex.includes(i))
+
+    console.log(grouped, 'grouped')
+
     return grouped
 }
 

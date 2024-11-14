@@ -17,6 +17,7 @@ import { userEntities } from "../../entities/user";
 import { notificationUseCases } from "./notification";
 import { RoomEntities } from "../../entities/room";
 import { groupBy, groupByWithKeyFn } from "@/lib/utils";
+import { format } from 'date-fns';
 
 
 function getAvaliabels({ date, mealId, restaurantId }: { date: Date, mealId: number, restaurantId: number }) {
@@ -340,8 +341,22 @@ export const getAllAvailableReservations2 = async ({
             tables: roomRows
         }
 
+
     })
 
+    limitationStatus.forEach(r => {
+        if (r.hour) {
+            r.hour = utcHourToLocalHour(r.hour)
+        }
+    })
+
+    result.forEach(r => {
+        r.tables.forEach(t => {
+            if (t.reservation?.hour) {
+                t.reservation.hour = utcHourToLocalHour(t.reservation.hour)
+            }
+        })
+    })
 
     return result
 
@@ -621,6 +636,7 @@ export const checkInReservation = async ({
             data: {
                 reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.waitingTable],
                 isCheckedin: true,
+                checkedinAt: new Date(),
             }
         })
 
@@ -662,6 +678,7 @@ export const takeReservationIn = async ({
 
             data: {
                 reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.inRestaurant],
+                enteredMainTableAt: new Date(),
             }
         })
 
@@ -689,6 +706,9 @@ export const makeReservationNotExist = async ({
         data: {
             reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist],
             isCheckedin: false,
+            checkedinAt: null,
+            enteredMainTableAt: null,
+            checkedoutAt: null,
 
         }
     })
@@ -964,6 +984,22 @@ export const returnPrepayment = async ({
     const { reservationId } = input
 }
 
+export const checkOutAndCompleteReservation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.checkOutAndCompleteReservation>) => {
+    const { reservationId } = input
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            reservationStatusId: EnumReservationStatusNumeric.completed,
+            reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.checkedOut],
+            checkedoutAt: new Date(),
+        }
+    })
+}
+
 export const updateReservationTime = async ({
     input,
     ctx
@@ -982,10 +1018,21 @@ export const updateReservationTime = async ({
 
     if (!reservation) throw new Error('Reservation not found')
 
-    const isDateChanged = reservation.reservationDate.toISOString() !== data.reservationDate.toISOString()
+    const reservationDate = getLocalTime(reservation.reservationDate)
+    const newReservationDate = getLocalTime(data.reservationDate)
+    const isDateChanged = format(reservationDate, 'dd-MM-yyyy') !== format(newReservationDate, 'dd-MM-yyyy')
 
 
-    if (isDateChanged) {
+    // const isDateChanged = format
+
+    console.log(isDateChanged, 'isDateChanged')
+    console.log(format(reservationDate, 'dd-MM-yyyy'), format(newReservationDate, 'dd-MM-yyyy'), 'reservationDate, newReservationDate')
+
+    const tableData = await RoomEntities.getTableById({ tableId: data.tableId })
+
+    const isRoomChanged = reservation.roomId !== tableData.roomId
+
+    if (isDateChanged || isRoomChanged) {
 
         const table = await RoomEntities.getTableById({ tableId: data.tableId })
 
