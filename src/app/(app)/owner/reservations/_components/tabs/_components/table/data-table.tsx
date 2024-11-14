@@ -58,6 +58,14 @@ export function ReservationDataTable({
     staleTime:0
   })
 
+  const { data: tableStatues } = api.reservation.getTableStatues.useQuery({
+    date: queryDate,
+    mealId: 3,
+
+  },{
+    staleTime:0
+  })
+
 
 
 

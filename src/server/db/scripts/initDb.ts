@@ -150,6 +150,7 @@ const seedFunctions = [
 
         await RoomEntities.createRoomWithTranslations({
             order: 2,
+            
             restaurantId: 1,
             translations: [
                 {
@@ -191,7 +192,23 @@ const seedFunctions = [
                 minCapacity: 2,
                 no: 'R1-' + i.toString(),
                 order: i,
-                roomId: 1
+                roomId: 1,
+                x: (i % 5),
+                y: Math.floor(i / 5),
+            })),
+        })
+
+
+        await RoomEntities.createTables({
+            tables: new Array(10).fill(undefined).map((_, i) => ({
+                capacity: 2,
+                maxCapacity: 2,
+                minCapacity: 2,
+                no: 'S-' + i.toString(),
+                order: i,
+                roomId: 2,
+                x: (i % 5) ,
+                y: Math.floor(i / 5) ,
             })),
         })
 
@@ -241,9 +258,17 @@ const seedFunctions = [
 
     },
     async function createGuests() {
-        for (const guest of seedDatas.guests) {
+        for (const guest of seedDatas.getGuests(1)) {
             await db.insert(schema.tblGuest).values(guest)
         }
+
+        for (const personel of seedDatas.getPersonels(1)) {
+            await db.insert(schema.tblPersonel).values(personel)
+        }
+
+  
+
+
     },
     async function createNotificationsTables() {
         await db.insert(schema.tblPrepaymentMessage).values({

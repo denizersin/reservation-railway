@@ -92,6 +92,12 @@ export const reservationRouter = createTRPCRouter({
         .query(async (opts) => {
             return await reservationUseCases.getAllAvailableReservations(opts)
         }),
+
+    getTableStatues: ownerProcedure
+        .input(reservationValidator.getTableStatues)
+        .query(async (opts) => {
+            return await reservationUseCases.getAllAvailableReservations2(opts)
+        }),
     removeTableFromReservation: ownerProcedure
         .input(z.object({
             reservationId: z.number().int().positive(),
@@ -318,4 +324,15 @@ export const reservationRouter = createTRPCRouter({
         .mutation(async (opts) => {
             await reservationUseCases.updateReservationTime(opts)
         }),
+    updateReservationAssignedPersonal: ownerProcedure
+        .input(reservationValidator.updateReservationAssignedPersonal)
+        .mutation(async (opts) => {
+            await reservationUseCases.updateReservationAssignedPersonal(opts)
+        }),
+    updateReservationNote: ownerProcedure
+        .input(reservationValidator.updateReservationNote)
+        .mutation(async (opts) => {
+            await reservationUseCases.updateReservationNote(opts)
+        }),
+
 });

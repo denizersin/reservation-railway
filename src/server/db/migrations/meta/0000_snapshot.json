@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "51d6ac52-b148-4135-9187-9041b293171e",
+  "id": "78573d40-1cb2-4aaf-8849-ebbf25b9813e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -119,6 +119,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "is_contact_assistant": {
+          "name": "is_contact_assistant",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "company_id": {
           "name": "company_id",
           "type": "int",
@@ -217,8 +225,8 @@
       },
       "uniqueConstraints": {}
     },
-    "guest_tags": {
-      "name": "guest_tags",
+    "guest_tag": {
+      "name": "guest_tag",
       "columns": {
         "id": {
           "name": "id",
@@ -245,8 +253,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "guest_tags_id": {
-          "name": "guest_tags_id",
+        "guest_tag_id": {
+          "name": "guest_tag_id",
           "columns": [
             "id"
           ]
@@ -2264,8 +2272,8 @@
           "autoincrement": false,
           "default": 1
         },
-        "personal_id": {
-          "name": "personal_id",
+        "assigned_personal_id": {
+          "name": "assigned_personal_id",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
@@ -2803,7 +2811,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "prepayment_reservation_id_reservation_id_fk": {
+          "name": "prepayment_reservation_id_reservation_id_fk",
+          "tableFrom": "prepayment",
+          "tableTo": "reservation",
+          "columnsFrom": [
+            "reservation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "prepayment_id": {
           "name": "prepayment_id",
@@ -3169,6 +3191,81 @@
       "compositePrimaryKeys": {
         "reservation_status_logs_id": {
           "name": "reservation_status_logs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "confirmation_request": {
+      "name": "confirmation_request",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "reservation_id": {
+          "name": "reservation_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "confirmation_request_reservation_id_reservation_id_fk": {
+          "name": "confirmation_request_reservation_id_reservation_id_fk",
+          "tableFrom": "confirmation_request",
+          "tableTo": "reservation",
+          "columnsFrom": [
+            "reservation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "confirmation_request_id": {
+          "name": "confirmation_request_id",
           "columns": [
             "id"
           ]

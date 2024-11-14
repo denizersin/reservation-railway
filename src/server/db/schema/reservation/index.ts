@@ -25,7 +25,7 @@ export const tblReservation = mysqlTable('reservation', {
     reservationStatusId: int('reservation_status_id').notNull(),
     reservationExistenceStatusId: int('reservation_existence_status_id')
         .notNull().default(EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist]),
-    personalId: int('personal_id'),
+    assignedPersonalId: int('assigned_personal_id'),
     prepaymentId: int('prepayment_id'),
     billPaymentId: int('bill_payment_id'),
     linkedReservationId: int('linked_reservation_id'),
@@ -86,7 +86,7 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
 
     reservationStatus: one(tblReserVationStatus, { fields: [tblReservation.reservationStatusId], references: [tblReserVationStatus.id] }),
     reservationExistenceStatus: one(tblReservationExistanceStatus, { fields: [tblReservation.reservationExistenceStatusId], references: [tblReservationExistanceStatus.id] }),
-    personal: one(tblPersonel, { fields: [tblReservation.personalId], references: [tblPersonel.id] }),
+    assignedPersonal: one(tblPersonel, { fields: [tblReservation.assignedPersonalId], references: [tblPersonel.id] }),
     restaurant: one(tblRestaurant, { fields: [tblReservation.restaurantId], references: [tblRestaurant.id] }),
     room: one(tblRoom, { fields: [tblReservation.roomId], references: [tblRoom.id] }),
     meal: one(tblMeal, { fields: [tblReservation.mealId], references: [tblMeal.id] }),

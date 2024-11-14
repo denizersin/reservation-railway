@@ -15,6 +15,7 @@ CREATE TABLE `guest` (
 	`assistant_name` varchar(256),
 	`assistant_phone` varchar(256),
 	`assistant_email` varchar(256),
+	`is_contact_assistant` boolean NOT NULL DEFAULT false,
 	`company_id` int,
 	`position` varchar(256),
 	`department` varchar(256),
@@ -29,11 +30,11 @@ CREATE TABLE `guest` (
 	CONSTRAINT `guest_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `guest_tags` (
+CREATE TABLE `guest_tag` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`guest_id` int NOT NULL,
 	`tag_id` int NOT NULL,
-	CONSTRAINT `guest_tags_id` PRIMARY KEY(`id`)
+	CONSTRAINT `guest_tag_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `guest_company` (
@@ -363,7 +364,7 @@ CREATE TABLE `reservation` (
 	`restaurant_meal_id` int NOT NULL,
 	`reservation_status_id` int NOT NULL,
 	`reservation_existence_status_id` int NOT NULL DEFAULT 1,
-	`personal_id` int,
+	`assigned_personal_id` int,
 	`prepayment_id` int,
 	`bill_payment_id` int,
 	`linked_reservation_id` int,
@@ -502,6 +503,16 @@ CREATE TABLE `reservation_status_logs` (
 	CONSTRAINT `reservation_status_logs_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `confirmation_request` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`created_by` varchar(255) NOT NULL,
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`deleted_at` timestamp,
+	CONSTRAINT `confirmation_request_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `meal_day` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`meal_id` int NOT NULL,
@@ -515,4 +526,6 @@ CREATE TABLE `meal_day` (
 ALTER TABLE `refresh_token` ADD CONSTRAINT `refresh_token_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `reservation_tables` ADD CONSTRAINT `reservation_tables_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `waiting_session_tables` ADD CONSTRAINT `waiting_session_tables_table_id_table_id_fk` FOREIGN KEY (`table_id`) REFERENCES `table`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `prepayment` ADD CONSTRAINT `prepayment_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `confirmation_request` ADD CONSTRAINT `confirmation_request_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;

@@ -1,17 +1,18 @@
-import { TReservationRow, TStatusTableRow } from '@/lib/reservation'
-import { TReservation, TRoomWithTranslations, TTable } from '@/server/db/schema'
-import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ReservationGridStatus } from './reservation-grid-status'
-import { api } from '@/server/trpc/react'
-import { getQueryKey } from '@trpc/react-query'
-import { useQueryClient } from '@tanstack/react-query'
-import { Button } from '@/components/ui/button'
-import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ReservationWaitingTableSelect, TWaitingTable } from './reservation-waiting-table-select'
 import { ConfirmModalGlobal } from '@/components/modal/confirm-modal'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useMutationCallback } from '@/hooks/useMutationCallback'
+import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { TReservationRow, TStatusTableRow } from '@/lib/reservation'
+import { TRoomWithTranslations, TTable } from '@/server/db/schema'
+import { api } from '@/server/trpc/react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { ReservationGridStatus } from './reservation-grid-status'
+import { ReservationWaitingTableSelect, TWaitingTable } from './reservation-waiting-table-select'
+import { ReservationPersonel } from './reservation-personel'
+import { ReservationNote } from './reservation-note'
 
 export type TSelectionRowState = {
     deSelectedRows: TStatusTableRow[];
@@ -50,7 +51,6 @@ export const ReservationGridStatusModal = ({
     })
 
 
-    const [selectedTables, setSelectedTables] = useState<TTable[]>([])
 
     const { deSelectedRows, selectedRows } = selectionRowState
 
@@ -68,7 +68,7 @@ export const ReservationGridStatusModal = ({
     const onSuccsessUpdate = () => {
         onSuccsessCrudTable()
         onSuccessReservationUpdate(reservation.id)
-        
+
     }
 
     const {
@@ -149,17 +149,11 @@ export const ReservationGridStatusModal = ({
                 id: deSelectedRows[0]?.reservation_tables?.id!,
                 tableId: newTable.id,
                 reservationId: reservation.id,
-                newRoomId: reservation.roomId != newTable.roomId ? newTable.roomId : undefined,
             })
 
         }
 
         if (isLinkingReservation) {
-            // linkReservation({
-            //     reservationId: selectedRows[0]?.reservation?.id!,
-            //     linkedReservationId: reservation.id
-            // })
-
             ConfirmModalGlobal.show({
                 type: "confirm",
                 onConfirm: async () => {
@@ -189,67 +183,66 @@ export const ReservationGridStatusModal = ({
     const isWaitinfRoom = selectedRoom?.isWaitingRoom
 
 
-
-
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
-            <DialogContent className='max-w-[90vw]'>
-                <DialogTitle>Change Room-Table</DialogTitle>
-                <DialogHeader>
-                    CHange Room-Table
-                </DialogHeader>
+            <DialogContent className='w-[90vw] max-w-[90vw] min-h-[90vh] flex flex-col'>
+                <div className='w-full  flex flex-col flex-1'>
+                    <div className=''>Change Room-Table</div>
+                    <div className=" my-1">
+                        <Tabs
+                            onValueChange={(value) => setSelectedRoom(roomsData?.find((room) => room.id.toString() === value))}
+                            defaultValue={selectedRoom?.id.toString()} className="mt-1">
+                            <TabsList>
+                                {roomsData?.map((room) => (
+                                    <TabsTrigger key={room.id} value={room.id.toString()}>{room.translations[0]?.name}</TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </Tabs>
+                    </div>
 
-                <div className="">
-                    <Tabs
-                        onValueChange={(value) => setSelectedRoom(roomsData?.find((room) => room.id.toString() === value))}
-                        defaultValue={selectedRoom?.id.toString()} className="mt-5">
-                        <TabsList>
-                            {roomsData?.map((room) => (
-                                <TabsTrigger key={room.id} value={room.id.toString()}>{room.translations[0]?.name}</TabsTrigger>
-                            ))}
-                        </TabsList>
-                    </Tabs>
+                    <div className="w-full max-h-[400px] overflow-auto">
+
+                        {
+                            !isWaitinfRoom ?
+
+                                <ReservationGridStatus
+                                    reservation={reservation}
+                                    selectedRoom={selectedRoom}
+                                    setSelectedRoom={setSelectedRoom}
+                                    selectionRowState={selectionRowState}
+                                    setSelectionRowState={setSelectionRowState}
+                                    onSucessCrudTable={onSuccsessCrudTable}
+                                // key={}
+                                /> : <ReservationWaitingTableSelect
+                                    reservation={reservation}
+                                    selectionWaitingState={selectionWaitingState}
+                                    setselectionWaitingState={setselectionWaitingState}
+                                />
+                        }
+
+                    </div>
+
+                    <ReservationPersonel reservation={reservation} />
+                    <ReservationNote reservation={reservation} />
+
+                    <div className="flex my-1 flex-1 items-end ">
+                        {!isWaitinfRoom && <Button
+                            onClick={() => isWaitinfRoom ? onUpdateWaiting() : onUpdate()}
+                        >
+                            Update
+                        </Button>}
+                        {!reservation.isCheckedin && < Button
+                            className='bg-green-600 ml-auto'
+                            onClick={() => {
+                                checkInReservation({
+                                    reservationId: reservation.id
+                                })
+                            }}
+                        >
+                            Check In
+                        </Button>}
+                    </div>
                 </div>
-
-                <div className="w-full max-h-[600px] overflow-auto">
-
-                    {
-                        !isWaitinfRoom ?
-
-                            <ReservationGridStatus
-                                reservation={reservation}
-                                selectedRoom={selectedRoom}
-                                setSelectedRoom={setSelectedRoom}
-                                selectionRowState={selectionRowState}
-                                setSelectionRowState={setSelectionRowState}
-                                onSucessCrudTable={onSuccsessCrudTable}
-                            // key={}
-                            /> : <ReservationWaitingTableSelect
-                                reservation={reservation}
-                                selectionWaitingState={selectionWaitingState}
-                                setselectionWaitingState={setselectionWaitingState}
-                            />
-                    }
-
-                </div>
-                <div className="flex ">
-                    {!isWaitinfRoom && <Button
-                        onClick={() => isWaitinfRoom ? onUpdateWaiting() : onUpdate()}
-                    >
-                        Update
-                    </Button>}
-                    {!reservation.isCheckedin && < Button
-                        className='bg-green-600 ml-auto'
-                        onClick={() => {
-                            checkInReservation({
-                                reservationId: reservation.id
-                            })
-                        }}
-                    >
-                        Check In
-                    </Button>}
-                </div>
-
 
 
             </DialogContent>

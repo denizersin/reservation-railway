@@ -204,6 +204,8 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
       } = api.reservation.makeReservationNotExist.useMutation({
         onSuccess: () => {
           onSuccessReservationUpdate(reservation.id)
+          setCountOptions(undefined)
+          setIsSurpassedTime(false)
         },
       })
 

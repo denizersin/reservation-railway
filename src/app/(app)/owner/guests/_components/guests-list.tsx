@@ -14,16 +14,32 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
+
+
 import { TGuest } from '@/server/db/schema/guest';
 import { api } from '@/server/trpc/react';
 import { MoreVertical, Pencil, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GuestCrudModal from './guest-crud-modal';
 import { ConfirmationDialog } from "@/components/modal/confirmation-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { Button } from "@/components/custom/button";
-
+import TGuestValidator from "@/shared/validators/guest";
+import { GuestsFilterModal } from './guests-filter-modal';
+import { CustomPagination } from "@/components/custom-pagination";
+import { DEFAULT_ROWS_PER_PAGE } from "@/lib/constants";
+import { Input } from "@/components/ui/input";
 type Props = {}
 
 const GuestsList = (props: Props) => {
@@ -36,12 +52,22 @@ const GuestsList = (props: Props) => {
     const [updateGuestData, setUpdateGuestData] = useState<TGuest>()
     const [deleteGuestData, setDeleteGuestData] = useState<TGuest>()
 
-    const {
-        data: guests
-    } = api.guest.getAllGuests.useQuery({
+
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+
+    const [queryInput, setQueryInput] = useState<TGuestValidator.GuestsPaginationValidatorSchema>({
         page: 1,
-        limit: 20
+        limit: DEFAULT_ROWS_PER_PAGE,
     })
+
+    const {
+        data: guestsPaginationData,
+        isLoading,
+        isError,
+    } = api.guest.getGuestsPagination.useQuery(queryInput)
+
+
+
 
     const { mutate: deleteGuestMutation, isPending: deleteGuestIsPending } = api.guest.deleteGuest.useMutation({
         onSuccess: () => {
@@ -50,15 +76,6 @@ const GuestsList = (props: Props) => {
         }
     })
 
-    const {
-        mutate: updateGuestMutation,
-        isPending: updateGuestIsPending
-    } = api.guest.updateGuest.useMutation({
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getQueryKey(api.guest.getAllGuests) })
-            setIsUpdateModalOpen(false)
-        }
-    })
 
     const handleAddNewGuest = () => {
         setIsCreateModalOpen(true)
@@ -74,11 +91,39 @@ const GuestsList = (props: Props) => {
         setIsDeleteModalOpen(true)
     }
 
+    const handleFilterModal = () => {
+        setIsFilterModalOpen(true)
+    }
+
+    function removeFilters() {
+        setQueryInput({
+            page: 1,
+            limit: DEFAULT_ROWS_PER_PAGE
+        })
+    }
+
+    console.log(queryInput, 'queryInput')
+
+
     return (
         <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Guests</CardTitle>
-                <Button onClick={handleAddNewGuest}>Add New Guest</Button>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 ">
+                <CardTitle className="">Guests</CardTitle>
+                <div className="mb-2 flex flex-col items-start justify-start gap-2">
+                    <Button className="ml-auto" onClick={handleAddNewGuest}>Add New Guest</Button>
+                    <div className="flex gap-2">
+
+                        <Button onClick={handleFilterModal}>Advanced Filter</Button>
+                        <Input className="w-[300px]" placeholder="Search name phone or email"
+                            value={queryInput.search??''}
+                            onChange={(e) => {
+                                setQueryInput((prev) => ({ ...prev, search: e.target.value, page: 1 }))
+                            }} />
+                        <Button variant="outline" onClick={removeFilters}>Remove Filters</Button>
+                    </div>
+
+                </div>
+
             </CardHeader>
             <CardContent>
                 <Table>
@@ -95,7 +140,7 @@ const GuestsList = (props: Props) => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {guests?.data?.map((guest) => (
+                        {guestsPaginationData?.data?.map((guest) => (
                             <TableRow key={guest.id}>
                                 <TableCell>{guest.name}</TableCell>
                                 <TableCell>{guest.surname}</TableCell>
@@ -129,14 +174,20 @@ const GuestsList = (props: Props) => {
                         ))}
                     </TableBody>
                 </Table>
+                {guestsPaginationData?.pagination
+                    && <CustomPagination
+                        paginationData={guestsPaginationData.pagination}
+                        pagination={queryInput}
+                        setPagination={(pagination) => setQueryInput(pagination)}
+                    />}
             </CardContent>
-            { (
+            {isCreateModalOpen && (
                 <GuestCrudModal
                     open={isCreateModalOpen}
                     setOpen={setIsCreateModalOpen}
                 />
             )}
-            {updateGuestData && (
+            {isUpdateModalOpen && updateGuestData && (
                 <GuestCrudModal
                     open={isUpdateModalOpen}
                     setOpen={setIsUpdateModalOpen}
@@ -156,6 +207,13 @@ const GuestsList = (props: Props) => {
                     }}
                 />
             )}
+
+            <GuestsFilterModal
+                open={isFilterModalOpen}
+                setOpen={setIsFilterModalOpen}
+                queryInput={queryInput}
+                setQueryInput={setQueryInput}
+            />
         </Card>
     )
 }

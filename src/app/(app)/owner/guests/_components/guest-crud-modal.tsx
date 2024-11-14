@@ -90,7 +90,6 @@ const GuestCrudModal = ({
         }
     }
 
-    console.log(form.formState.errors, 'errors')
 
 
     useEffect(() => {
@@ -128,7 +127,7 @@ const GuestCrudModal = ({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className='max-h-[90vh] overflow-y-auto'>
+            <DialogContent className='max-h-[90vh] overflow-y-auto max-w-[800px]'>
                 <DialogHeader>
                     <DialogTitle>{isUpdate ? 'Update Guest' : 'Create Guest'}</DialogTitle>
                 </DialogHeader>
@@ -186,7 +185,6 @@ const GuestCrudModal = ({
                             <FormItem>
                                 <FormLabel>Birth Date</FormLabel>
                                 <FormItem className="flex flex-col">
-                                    <FormLabel>Start Date</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -227,7 +225,6 @@ const GuestCrudModal = ({
                             <FormItem>
                                 <FormLabel>Anniversary Date</FormLabel>
                                 <FormItem className="flex flex-col">
-                                    <FormLabel>Start Date</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -321,7 +318,7 @@ const GuestCrudModal = ({
                         )} />
                         <FormField control={form.control} name="languageId" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Country</FormLabel>
+                                <FormLabel>Language</FormLabel>
                                 <CustomSelect
                                     data={languages}
                                     onValueChange={(value) => field.onChange(Number(value))}
@@ -347,12 +344,16 @@ const GuestCrudModal = ({
 
                         {/* VIP Information */}
                         <FormField control={form.control} name="isVip" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Is VIP</FormLabel>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
+                            <FormItem className='flex flex-col flex-1'>
+                                <FormLabel className='opacity-0'>Is VIP</FormLabel>
+                                <div className='flex flex-1 items-center  gap-2'>
+                                    <FormLabel>Is VIP</FormLabel>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </div>
+
                                 <FormMessage />
                             </FormItem>
                         )} />
@@ -370,42 +371,55 @@ const GuestCrudModal = ({
 
                         {/* Notification Information */}
                         <FormField control={form.control} name="isSendSmsAndEmail" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Send SMS and Email</FormLabel>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
+                            <FormItem className='flex flex-col flex-1'>
+                                <FormLabel className='opacity-0'>Send SMS and Email</FormLabel>
+                                <div className='flex flex-1 items-center  gap-2'>
+                                    <FormLabel>Send SMS and Email</FormLabel>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </div>
+
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="isSendConfirmationNotifs" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Send Confirmation Notifications</FormLabel>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
+                            <FormItem className='flex flex-col flex-1'>
+                                <FormLabel className='opacity-0'>Send Confirmation Notifications</FormLabel>
+                                <div className='flex flex-1 items-center  gap-2'>
+                                    <FormLabel>Send Confirmation Notifications</FormLabel>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </div>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="isClaimProvision" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Claim Provision</FormLabel>
-                                <Checkbox
-                                    checked={field.value}
+                            <FormItem className='flex flex-col flex-1'>
+                                <FormLabel className='opacity-0'>Claim Provision</FormLabel>
+                                <div className='flex flex-1 items-center  gap-2'>
+                                    <FormLabel>Claim Provision</FormLabel>
+                                    <Checkbox
+                                        checked={field.value}
                                     onCheckedChange={field.onChange}
-                                />
+                                    />
+                                </div>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="isSendReviewNotifs" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Send Review Notifications</FormLabel>
-                                <Checkbox
-                                    checked={field.value}
+                            <FormItem className='flex flex-col flex-1'>
+                                <FormLabel className='opacity-0'>Send Review Notifications</FormLabel>
+                                <div className='flex flex-1 items-center  gap-2'>
+                                    <FormLabel>Send Review Notifications</FormLabel>
+                                    <Checkbox
+                                        checked={field.value}
                                     onCheckedChange={field.onChange}
-                                />
+                                    />
+                                </div>
                                 <FormMessage />
                             </FormItem>
                         )} />
@@ -425,12 +439,15 @@ const GuestCrudModal = ({
 
                         <div className='col-span-2 '>
                             <FormField control={form.control} name="isContactAssistant" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Contact Assistant</FormLabel>
-                                    <Checkbox
-                                        checked={field.value}
+                                <FormItem className='flex flex-col flex-1'>
+                                    <FormLabel className='opacity-0'>Contact Assistant</FormLabel>
+                                    <div className='flex flex-1 items-center  gap-2'>
+                                        <FormLabel>Contact Assistant</FormLabel>
+                                        <Checkbox
+                                            checked={field.value}
                                         onCheckedChange={field.onChange}
-                                    />
+                                        />
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )} />

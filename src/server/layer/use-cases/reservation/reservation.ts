@@ -1,5 +1,5 @@
 import { db } from "@/server/db";
-import { tblGuest, tblPrepayment, tblReservationLog, tblReservationNotification, tblReservationTag, tblRestaurantGeneralSetting, tblRoomTranslation } from "@/server/db/schema";
+import { tblGuest, tblPrepayment, tblReservationLog, tblReservationNote, tblReservationNotification, tblReservationTag, tblRestaurantGeneralSetting, tblRoomTranslation } from "@/server/db/schema";
 import { tblReservation, tblReservationTable, tblWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
@@ -9,12 +9,14 @@ import { createTransaction, TTransaction } from "@/server/utils/db-utils";
 import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumPrepaymentStatus, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
-import { and, between, count, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
+import { and, asc, between, count, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
 import { ReservationEntities } from "../../entities/reservation";
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
 import { restaurantSettingEntities } from "../../entities/restaurant-setting";
 import { userEntities } from "../../entities/user";
 import { notificationUseCases } from "./notification";
+import { RoomEntities } from "../../entities/room";
+import { groupBy, groupByWithKeyFn } from "@/lib/utils";
 
 
 function getAvaliabels({ date, mealId, restaurantId }: { date: Date, mealId: number, restaurantId: number }) {
@@ -228,6 +230,8 @@ export const getAllAvailableReservations = async ({
 
 
 
+
+
     result.forEach(r => {
         if (r.reservation?.hour) {
             r.reservation.hour = utcHourToLocalHour(r.reservation.hour)
@@ -261,6 +265,100 @@ export const getAllAvailableReservations = async ({
     }
 }
 
+export const getAllAvailableReservations2 = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.getTableStatues>) => {
+
+    const { session: { user: { restaurantId } } } = ctx
+    const { start, end } = getStartAndEndOfDay({
+        date:
+            getLocalTime((new Date(input.date)))
+    })
+
+    const limitationStatus = await getAvaliabels({
+        date: getLocalTime(new Date(input.date)),
+        mealId: input.mealId,
+        restaurantId
+    })
+
+    limitationStatus.forEach(r => {
+        r.avaliableGuest = r.avaliableGuest ?? r.maxGuest
+        r.totalGuest = r.totalGuest ?? 0
+    })
+
+    const getReservationTables = () => db
+        .select({
+            RESERVATION_TABLE_ID: tblReservationTable.id,
+            RESERVATION_ID: tblReservationTable.reservationId,
+            TABLE_ID: tblReservationTable.tableId,
+        })
+        .from(tblReservation)
+        .leftJoin(tblReservationTable, eq(tblReservationTable.reservationId, tblReservation.id))
+        .where(
+            and(
+                eq(tblReservation.mealId, input.mealId),
+                between(tblReservation.reservationDate, start, end),
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel)
+
+            )
+        )
+
+    const reservationTables = getReservationTables().as('reservationTables')
+
+
+    const TEST = await db
+        .select({
+            reservationTable: tblReservationTable,
+            reservation: tblReservation,
+            table: tblTable,
+            room: tblRoom,
+            guest: tblGuest,
+            waitingSession: tblWaitingTableSession
+        })
+        .from(tblRoom)
+        .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
+        .leftJoin(reservationTables, eq(reservationTables.TABLE_ID, tblTable.id))
+        .leftJoin(tblReservation, and(
+            eq(tblReservation.id, reservationTables.RESERVATION_ID),
+        ))
+        .leftJoin(tblReservationTable, eq(tblReservationTable.id, reservationTables.RESERVATION_TABLE_ID))
+        .leftJoin(tblGuest, eq(tblGuest.id, tblReservation.guestId))
+        .leftJoin(tblWaitingTableSession, and(isNotNull(tblReservation.id), eq(tblWaitingTableSession.reservationId, tblReservation.id)))
+        .where(and(
+            eq(tblRoom.restaurantId, restaurantId),
+            isNotNull(tblTable.id),
+            ne(tblRoom.isWaitingRoom, true)
+        ))
+
+
+    const groupedByRoom = groupByWithKeyFn<typeof TEST[0], number>(TEST, (t) => t.room.id)
+
+    const result = Object.values(groupedByRoom).map((roomRows) => {
+        return {
+            roomId: roomRows?.[0]?.room.id!,
+            tables: roomRows
+        }
+
+    })
+
+
+    return result
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
 export const createReservation = async ({
     input,
     ctx
@@ -280,7 +378,7 @@ export const createReservation = async ({
     })
     if (!restaurantSettings) throw new Error('Restaurant settings not found')
 
-    const hasPrepayment = reservationData.prepaymentId === EnumReservationPrepaymentNumeric.prepayment
+    const hasPrepayment = reservationData.prepaymentTypeId === EnumReservationPrepaymentNumeric.prepayment
     const prePaymentAmount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount
     const isDefaultAmount = data.customPrepaymentAmount ? false : true
 
@@ -294,7 +392,7 @@ export const createReservation = async ({
             restaurantId,
             waitingSessionId: newUnclaimedWaitingSessionId,
             reservationStatusId: restaurantSettings.newReservationStatusId,
-            prePaymentTypeId: reservationData.prepaymentId ?? EnumReservationPrepaymentNumeric.none,
+            prePaymentTypeId: reservationData.prepaymentTypeId,
             tableIds: data.tableIds,
 
             //!TODO: split this to two different functions
@@ -591,7 +689,7 @@ export const makeReservationNotExist = async ({
         data: {
             reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist],
             isCheckedin: false,
-            
+
         }
     })
 
@@ -875,16 +973,6 @@ export const updateReservationTime = async ({
     const hour = localHourToUtcHour(data.hour)
     data.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
 
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            reservationDate: data.reservationDate,
-            hour,
-            guestCount: data.guestCount,
-        },
-    })
-
-
     const reservation = await db.query.tblReservation.findFirst({
         where: eq(tblReservation.id, reservationId),
         with: {
@@ -896,15 +984,35 @@ export const updateReservationTime = async ({
 
     const isDateChanged = reservation.reservationDate.toISOString() !== data.reservationDate.toISOString()
 
-    console.log(isDateChanged, 'isDateChanged')
-    console.log(reservation.reservationDate, data.reservationDate, 'reservation.reservationDate, data.reservationDate')
 
     if (isDateChanged) {
+
+        const table = await RoomEntities.getTableById({ tableId: data.tableId })
+
+
         await ReservationEntities.resetReservationTablesAndLinks({
             reservationId,
             tableId: data.tableId
         })
+
+        await ReservationEntities.updateReservation({
+            reservationId,
+            data: {
+                roomId: table.roomId
+            }
+        })
+
     }
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            reservationDate: data.reservationDate,
+            hour,
+            guestCount: data.guestCount,
+        },
+    })
+
 
 
 }
@@ -914,12 +1022,19 @@ export const updateReservationTable = async ({
     ctx
 }: TUseCaseOwnerLayer<TReservationValidator.updateReservationTable>) => {
 
-    const { reservationId, newRoomId, tableId } = input
-
-    if (newRoomId) {
+    const { reservationId, tableId } = input
+    const table = await RoomEntities.getTableById({ tableId })
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+    if (reservation.roomId != table.roomId) {
         await ReservationEntities.resetReservationTablesAndLinks({
             reservationId,
             tableId
+        })
+        await ReservationEntities.updateReservation({
+            reservationId,
+            data: {
+                roomId: table.roomId
+            }
         })
     }
     else {
@@ -929,15 +1044,48 @@ export const updateReservationTable = async ({
                 tableId,
             }
         })
-        await ReservationEntities.updateReservation({
-            reservationId: input.reservationId,
-            data: {
-                roomId: input.newRoomId
-            }
-        })
+
     }
 
 
 }
 
-// export const
+
+export const updateReservationAssignedPersonal = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationAssignedPersonal>) => {
+    const { reservationId, assignedPersonalId } = input
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            assignedPersonalId
+        }
+    })
+}
+
+export const updateReservationNote = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationNote>) => {
+    const { reservationId, note } = input
+
+    const [firstNote] = await db.query.tblReservationNote.findMany({
+        where: eq(tblReservationNote.reservationId, reservationId),
+        orderBy: [asc(tblReservationNote.createdAt)],
+        limit: 1
+    })
+
+    if (firstNote) {
+        await db.update(tblReservationNote).set({
+            note
+        }).where(eq(tblReservationNote.id, firstNote.id))
+    } else {
+        await db.insert(tblReservationNote).values({
+            note,
+            reservationId
+        })
+    }
+
+}

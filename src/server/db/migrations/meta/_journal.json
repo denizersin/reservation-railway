@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1731308422821,
-      "tag": "0000_natural_luckman",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1731347097132,
-      "tag": "0001_stale_swordsman",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1731431073588,
-      "tag": "0002_small_vengeance",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1731443412968,
-      "tag": "0003_eminent_monster_badoon",
+      "when": 1731589320458,
+      "tag": "0000_blue_post",
       "breakpoints": true
     }
   ]

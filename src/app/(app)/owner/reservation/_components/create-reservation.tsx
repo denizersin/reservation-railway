@@ -124,7 +124,7 @@ export const CreateReservation = (props: Props) => {
                 reservationDate: newDate,
                 hour: selectedHour,
                 mealId: selectedMeal.mealId,
-                prepaymentId: selectedPrePaymentTypeId,
+                prepaymentTypeId: selectedPrePaymentTypeId,
                 isSendSms: isSendSms,
                 isSendEmail: isSendEmail,
                 guestNote: guestNote,

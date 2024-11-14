@@ -25,7 +25,11 @@ export const ReservationStatusGuestSection = ({
         setOpenGuestUpdateModal(true)
     }
 
+    const handleSearchOnGoogle = () => {
+        window.open(`https://www.google.com/search?q=${guest.name} ${guest.surname}`, '_blank')
+    }
 
+    
 
 
     return (
@@ -47,7 +51,7 @@ export const ReservationStatusGuestSection = ({
                     size={'sm'} variant='outline'>Edit</Button>
             </div>
             <div className="">
-                <Button className='text-blue-500' variant='link'>Search On Google</Button>
+                <Button onClick={handleSearchOnGoogle} className='text-blue-500' variant='link'>Search On Google</Button>
             </div>
 
             <GuestCrudModal

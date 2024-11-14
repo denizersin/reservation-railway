@@ -35,7 +35,7 @@ export function getChangedFields<T extends ObjectType>(newData: T, originalData:
       if (Array.isArray(newValue) && Array.isArray(originalValue)) {
         if (newValue.length !== originalValue.length) {
           (changedFields as any)[key] = newValue;
-          return; 
+          return;
         }
         const changedArrayFields = newValue.filter((item, index) =>
           item !== undefined && item !== null &&
@@ -59,3 +59,39 @@ export function getChangedFields<T extends ObjectType>(newData: T, originalData:
 }
 
 
+
+
+
+export function groupBy<T, K extends keyof T>(
+  array: T[],
+  key: K,
+): Record<string, T[]> {
+  return array.reduce(
+    (result, currentValue) => {
+      const groupKey = currentValue[key] as unknown as string;
+      if (!result[groupKey]) {
+        result[groupKey] = [];
+      }
+      result[groupKey].push(currentValue);
+      return result;
+    },
+    {} as Record<string, T[]>,
+  );
+}
+
+export function groupByWithKeyFn<T, K>(
+  array: T[],
+  keyFn: (item: T) => K
+): Record<string, T[]> {
+  return array.reduce(
+    (result, currentValue) => {
+      const groupKey = keyFn(currentValue) as unknown as string;
+      if (!result[groupKey]) {
+        result[groupKey] = [];
+      }
+      result[groupKey].push(currentValue);
+      return result;
+    },
+    {} as Record<string, T[]>
+  );
+}

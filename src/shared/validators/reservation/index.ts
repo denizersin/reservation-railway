@@ -16,7 +16,7 @@ const createReservationBase = z.object({
     roomId: z.number().int().positive(),
     guestId: z.number().int().positive(),
     mealId: z.number().int().positive(),
-    prepaymentId: z.number().int().positive().nullable().optional(),
+    prepaymentTypeId: z.number().int().positive(),
     reservationDate: z.date(),
     hour: z.string(),
     guestCount: z.number().int().positive(),
@@ -47,7 +47,6 @@ const updateReservationTable = z.object({
     id: z.number().int().positive(),
     reservationId: z.number().int().positive(),
     tableId: z.number().int().positive(),
-    newRoomId: z.number().int().positive().optional()
 })
 
 
@@ -107,7 +106,15 @@ const updateReservationTime = z.object({
     })
 })
 
+const updateReservationAssignedPersonal = z.object({
+    reservationId: z.number().int().positive(),
+    assignedPersonalId: z.number().int().positive().nullable(),
+})
 
+const updateReservationNote = z.object({
+    reservationId: z.number().int().positive(),
+    note: z.string(),
+})
 
 
 export const reservationValidator = {
@@ -134,7 +141,10 @@ export const reservationValidator = {
     requestForPrepaymentForm,
     returnPrepayment,
     updateReservationTime,
-    makeReservationNotExist
+    makeReservationNotExist,
+    updateReservationAssignedPersonal,
+    updateReservationNote,
+    
 }
 
 namespace TReservationValidator {
@@ -162,6 +172,9 @@ namespace TReservationValidator {
     export type returnPrepayment = z.infer<typeof returnPrepayment>
     export type updateReservationTime = z.infer<typeof updateReservationTime>
     export type makeReservationNotExist = z.infer<typeof makeReservationNotExist>
+    export type updateReservationAssignedPersonal = z.infer<typeof updateReservationAssignedPersonal>
+    export type updateReservationNote = z.infer<typeof updateReservationNote>
+    
 }
 
 export default TReservationValidator

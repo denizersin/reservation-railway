@@ -1,7 +1,7 @@
 import { languagesData } from "@/server/data"
 import { EnumGender, EnumLanguage, EnumVipLevel } from "@/shared/enums/predefined-enums"
 import TRestaurantTagValidator from "@/shared/validators/restaurant-tag"
-import { TGuestInsert } from "../schema"
+import { TGuestInsert, TPersonelInsert } from "../schema"
 import { TCountryInsert, TLanguageInsert } from "../schema/predefined"
 import { TRestaurantInsert } from "../schema/restaurant"
 
@@ -53,21 +53,23 @@ export const restaurant = [
 
 ] as TRestaurantInsert[]
 
-export const guests =
-    new Array(5).fill(0).map((_, index) => ({
-        name: `guest${index}`,
-        surname: `guest${index}`,
-        countryId: 1,
-        birthDate: new Date(),
-        email: `guest${index}@gmail.comz`,
-        languageId: 1,
-        phone: '123',
-        gender: EnumGender.male,
-        restaurantId: 2,
-        tagIds: [],
-        vipLevel: EnumVipLevel.goodSpender
+export const getGuests = (restaurantId: number) => new Array(40).fill(0).map((_, index) => ({
+    name: `guest${index}`,
+    surname: `guest${index}`,
+    countryId: 1,
+    birthDate: new Date(),
+    email: `guest${index}@gmail.comz`,
+    languageId: 1,
+    phone: '123',
+    gender: EnumGender.male,
+    restaurantId,
+})) as TGuestInsert[]
 
-    }) as TGuestInsert)
+
+export const getPersonels = (restaurantId: number) => new Array(8).fill(0).map((_, index) => ({
+    fullName: `personel${index}`,
+    restaurantId,
+})) as TPersonelInsert[]
 
 export const reservationTags = [
     {
@@ -131,7 +133,8 @@ export const seedDatas = {
     countries,
     languages,
     restaurant,
-    guests,
+    getGuests,
     hours,
-    reservationTags
+    reservationTags,
+    getPersonels
 }

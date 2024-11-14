@@ -35,6 +35,9 @@ export const guestRouter = createTRPCRouter({
     getAllGuests: ownerProcedure.input(guestValidator.getAllGuestsValidatorSchema).query(async ({ input }) => {
         return await guestEntities.getAllGuests(input)
     }),
+    getGuestsPagination: ownerProcedure.input(guestValidator.guestsPaginationValidatorSchema).query(async ({ input }) => {
+        return await guestEntities.guestsPagination(input)
+    }),
 
     getGuestCompanies: ownerProcedure.query(async ({ ctx }) => {
         const { session: { user: { restaurantId } } } = ctx

@@ -57,6 +57,16 @@ export const TableStatues = ({
         staleTime: 0
     })
 
+    const { data: avaliableTablesData2 } = api.reservation.getTableStatues.useQuery({
+        date: queryDate,
+        mealId: selectedMeal.mealId,
+    }, {
+        enabled: [date, selectedMeal, selectedRoom].every(Boolean),
+        staleTime: 0
+    })
+
+    console.log(avaliableTablesData2, 'avaliableTablesData2')
+
 
 
     const tableStatues = avaliableTablesData?.tableStatues

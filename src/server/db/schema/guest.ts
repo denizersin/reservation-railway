@@ -60,7 +60,7 @@ export const tblGuestRelations = relations(tblGuest, ({ one, many }) => ({
     language: one(tblLanguage, { fields: [tblGuest.languageId], references: [tblLanguage.id] }),
     country: one(tblCountry, { fields: [tblGuest.countryId], references: [tblCountry.id] }),
     reservation:one(tblReservation, { fields: [tblGuest.id], references: [tblReservation.guestId] }),
-    tags: many(tblGuestTags),
+    tags: many(tblGuestTag),
 }));
 
 
@@ -79,15 +79,18 @@ export const tblGusetCompany = mysqlTable('guest_company', {
 export type TGusetCompanyInsert = typeof tblGusetCompany.$inferInsert;
 export type TGusetCompany = typeof tblGusetCompany.$inferSelect;
 
-export const tblGuestTags = mysqlTable('guest_tags', {
+export const tblGuestTag = mysqlTable('guest_tag', {
     id: int('id').autoincrement().primaryKey(),
     guestId: int('guest_id').notNull(),
     tagId: int('tag_id').notNull(),
 });
 
-export const tblGuestTagsRelations = relations(tblGuestTags, ({ one }) => ({
-    guest: one(tblGuest, { fields: [tblGuestTags.guestId], references: [tblGuest.id] }),
-    tag: one(tblRestaurantTag, { fields: [tblGuestTags.tagId], references: [tblRestaurantTag.id] }),
+export type TGuestTagInsert = typeof tblGuestTag.$inferInsert;
+export type TGuestTag = typeof tblGuestTag.$inferSelect;
+
+export const tblGuestTagRelations = relations(tblGuestTag, ({ one }) => ({
+    guest: one(tblGuest, { fields: [tblGuestTag.guestId], references: [tblGuest.id] }),
+    tag: one(tblRestaurantTag, { fields: [tblGuestTag.tagId], references: [tblRestaurantTag.id] }),
 }));
 
 
@@ -95,7 +98,7 @@ type Guest = typeof tblGuest.$inferSelect;
 type GuestInsert = typeof tblGuest.$inferInsert;
 
 
-type GuestTag = typeof tblGuestTags.$inferSelect;
+type GuestTag = typeof tblGuestTag.$inferSelect;
 
 
 

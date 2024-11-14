@@ -63,6 +63,7 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
     const hasBill = reservation.billPaymentId !== null
     const isCreatedByOwner = Boolean(reservation.createdOwnerId)
     const isConfirmed = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmed
+    const isCanceled = reservation.reservationStatusId === EnumReservationStatusNumeric.cancel
     const canRequestForConfirmation = isCreatedByOwner && !hasPrepayment && !hasBill && !isConfirmed
     const canConfirmReservation = !isConfirmed
     const canRequestForPrepayment = !hasPrepayment && !hasBill && !isConfirmed
@@ -132,6 +133,15 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
         })
     }
 
+    const handleCancelReservation = async () => {
+        ConfirmModalGlobal.show({
+            type: "delete",
+            title: "Cancel Reservation",
+            onConfirm: async () => {
+                await cancelReservation({ reservationId: reservation.id })
+            }
+        })
+    }
 
     const [isOpenCreatePrepaymentModal, setIsOpenCreatePrepaymentModal] = useState(false)
 
@@ -175,6 +185,12 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
             {
                 canRequestForConfirmation && (
                     <Button onClick={handleRequestForConfirmation}>Request for Confirmation</Button>
+                )
+            }
+
+            {
+                !isCanceled && (
+                    <Button variant={'destructive'} onClick={handleCancelReservation}>Cancel Reservation</Button>
                 )
             }
 

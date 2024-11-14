@@ -47,4 +47,22 @@ export const useRoomSelectData = () => {
 }
 
 
+export const usePersonalSelectData = () => {
+    const { data, isLoading } = api.restaurant.getPersonels.useQuery()
+    const selectData = useMemo(() => data?.map((personal) => ({
+        label: personal.fullName,
+        value: String(personal.id)
+    })) || [], [data])
+
+    const withNoneOption = useMemo(() => [
+        {
+            label: 'None',
+            value: "none" 
+        },
+        ...selectData
+    ], [selectData])
+
+    return { selectData: withNoneOption, isLoading }
+}
+
 

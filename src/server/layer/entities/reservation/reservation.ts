@@ -162,7 +162,7 @@ export const getReservationDetail = async ({
             notifications: true,
             prepayment: true,
             meal: true,
-            personal: true,
+            assignedPersonal: true,
             tags: true,
             waitingSession: {
                 with: {
