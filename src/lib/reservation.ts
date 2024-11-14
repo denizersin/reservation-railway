@@ -9,6 +9,9 @@ export type TReservationDetail = RouterOutputs['reservation']['getReservationDet
 
 export type GroupedTables = TStatusTableRows[]
 
+
+export type TTableStatuesRow = RouterOutputs['reservation']['getTableStatues'][0]['tables'][0]
+
 export const groupTableStatues = (tables: TStatusTableRows): TStatusTableRow[][] => {
     // const reservatedTables = tables.filter((table) => table.reservation)
     const reservatedTables = tables

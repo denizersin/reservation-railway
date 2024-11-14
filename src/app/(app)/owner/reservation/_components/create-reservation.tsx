@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { useMutationCallback } from '@/hooks/useMutationCallback';
 import RoomTabs from '@/components/room-tabs';
 import MealTabs from '@/components/meal-tabs';
+import { TableStatues2 } from './v2/table-statues2';
 
 type Props = {}
 
@@ -199,7 +200,7 @@ export const CreateReservation = (props: Props) => {
 
             {
 
-                <TableStatues
+                <TableStatues2
                     selectedTableId={selectedTableId}
                     setSelectedTableId={setSelectedTableId}
                     date={date}
