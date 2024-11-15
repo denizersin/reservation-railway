@@ -187,17 +187,17 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           const diff = currentTime.getTime() - new Date(enteredAt).getTime()
           const diffInMinutes = Math.round(diff / 1000 / 60)
 
-          if (diffInMinutes >= 1) {
+          if (diffInMinutes >= 10) {
             setIsSurpassedTime(true)
           }
 
           setCountOptions({
             initialCount: diffInMinutes,
-            interval: 60000,
+            interval: 1000,
             onComplete: () => {
               setIsSurpassedTime(true)
             },
-            targetCount: 1
+            targetCount: 10
           })
         }
 
@@ -205,9 +205,12 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           setCountOptions(undefined)
         }
 
-        if (reservation.enteredMainTableAt && !isCheckedout) {
+        if (isInRestaurant) {
           setmainTableCountOptions({
-            interval: 60000,
+            interval: 1000,
+            initialCount: elapsedTimeOnMainTable,
+            targetCount: 50000
+
           })
         }
 
@@ -219,7 +222,14 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
       }, [reservation])
 
       const elapsedTimeOnMainTable = useMemo(() => {
-        return reservation.enteredMainTableAt ? Math.round((new Date().getTime() - reservation.enteredMainTableAt.getTime()) / 1000 / 60) : 0
+        const enteredMainTableAt = reservation.enteredMainTableAt
+        const checkedoutAt = reservation.checkedoutAt
+
+        if (!enteredMainTableAt || !checkedoutAt) {
+          return 0
+        }
+
+        return Math.round((checkedoutAt.getTime() - enteredMainTableAt.getTime()) / 1000 / 60)
       }, [reservation])
 
       const {
@@ -244,7 +254,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
 
       useShowLoadingModal([isTakeReservationInPending, isMakeReservationNotExistPending])
 
-
+      console.log(mainTableCountOptions, 'mainTableCountOptions')
 
       return <div
         className={cn('p-2', {

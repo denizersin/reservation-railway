@@ -1,4 +1,3 @@
-import { Button } from '@/components/custom/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -15,6 +14,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Calendar } from "@/components/ui/calendar"
 import { TPersonel } from '@/server/db/schema/guest'
+import { Button } from '@/components/custom/button'
 
 type Props = {
     open: boolean,
@@ -47,10 +47,15 @@ const PersonelCrudModal = ({
         })
     }
 
-    const { mutate: createPersonel } = api.restaurant.createPersonel.useMutation({
+    const {
+        mutate: createPersonel,
+        isPending: isCreatingPersonel
+    } = api.restaurant.createPersonel.useMutation({
         onSuccess: onSuccessCrud
     })
-    const { mutate: updatePersonel } = api.restaurant.updatePersonel.useMutation({
+    const { mutate: updatePersonel,
+        isPending: isUpdatingPersonel
+    } = api.restaurant.updatePersonel.useMutation({
         onSuccess: onSuccessCrud
     })
 
@@ -71,7 +76,8 @@ const PersonelCrudModal = ({
         }
     }, [personelData])
 
-    const isDisabled = form.formState.isSubmitting
+    const isLoading = isCreatingPersonel || isUpdatingPersonel
+    const isDisabled = isLoading || form.formState.isSubmitting
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -149,7 +155,7 @@ const PersonelCrudModal = ({
                         <Button
                             disabled={isDisabled}
                             type="submit"
-                            loading={form.formState.isSubmitting}
+                            loading={isLoading}
                         >
                             {personelData ? 'Update Personel' : 'Create Personel'}
                         </Button>

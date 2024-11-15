@@ -58,14 +58,20 @@ const GuestCrudModal = ({
     const onSuccsessCrud = () => {
         setOpen(false)
         queryClient.invalidateQueries({
-            queryKey: getQueryKey(api.guest.getAllGuests)
+            queryKey: getQueryKey(api.guest.getGuestsPagination)
         })
     }
 
-    const { mutate: createGuest } = api.guest.createGuest.useMutation({
+    const {
+        mutate: createGuest,
+        isPending: isCreatingGuest
+    } = api.guest.createGuest.useMutation({
         onSuccess: onSuccsessCrud
     })
-    const { mutate: updateGuest } = api.guest.updateGuest.useMutation({
+    const {
+        mutate: updateGuest,
+        isPending: isUpdatingGuest
+    } = api.guest.updateGuest.useMutation({
         onSuccess: onSuccsessCrud
     })
 
@@ -122,7 +128,7 @@ const GuestCrudModal = ({
     const isUpdate = !!guestId || !!guestData
 
 
-    const isLoading = isLoadingRestaurantTags || isLoadingCountries || isLoadingLanguages || isLoadingGuestCompanies
+    const isLoading = isLoadingRestaurantTags || isLoadingCountries || isLoadingLanguages || isLoadingGuestCompanies || isCreatingGuest || isUpdatingGuest
     const isDisabled = isLoading || form.formState.isSubmitting
 
     return (
@@ -404,7 +410,7 @@ const GuestCrudModal = ({
                                     <FormLabel>Claim Provision</FormLabel>
                                     <Checkbox
                                         checked={field.value}
-                                    onCheckedChange={field.onChange}
+                                        onCheckedChange={field.onChange}
                                     />
                                 </div>
                                 <FormMessage />
@@ -417,7 +423,7 @@ const GuestCrudModal = ({
                                     <FormLabel>Send Review Notifications</FormLabel>
                                     <Checkbox
                                         checked={field.value}
-                                    onCheckedChange={field.onChange}
+                                        onCheckedChange={field.onChange}
                                     />
                                 </div>
                                 <FormMessage />
@@ -445,7 +451,7 @@ const GuestCrudModal = ({
                                         <FormLabel>Contact Assistant</FormLabel>
                                         <Checkbox
                                             checked={field.value}
-                                        onCheckedChange={field.onChange}
+                                            onCheckedChange={field.onChange}
                                         />
                                     </div>
                                     <FormMessage />

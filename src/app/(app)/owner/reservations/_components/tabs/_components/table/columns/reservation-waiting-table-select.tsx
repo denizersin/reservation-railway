@@ -152,12 +152,13 @@ export const ReservationWaitingTableSelect = ({
     console.log(otherTableStatues, 'otherTableStatues')
     console.log(currentReservationTable, 'currentReservationTable')
     return (
-        <div className='max-w-full overflow-auto'>
+        <div className='max-w-full overflow-auto f'>
 
             <Button
+                className='my-1'
                 onClick={onUpdate}
             >
-                Update
+                Update Waiting Tables
             </Button>
 
             <div className='text-lg font-bold'>{reservation.hour}</div>

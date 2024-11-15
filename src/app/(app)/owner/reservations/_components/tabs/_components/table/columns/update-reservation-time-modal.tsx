@@ -12,10 +12,10 @@ import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TRestaurantMeal, TRoomWithTranslations } from '@/server/db/schema';
-import { TableStatues } from '@/app/(app)/owner/reservation/_components/table-statues';
 import RoomTabs from '@/components/room-tabs';
 import MealTabs from '@/components/meal-tabs';
 import { useToast } from '@/hooks/use-toast';
+import { TableStatues2 } from '@/app/(app)/owner/reservation/_components/v2/table-statues2';
 
 type Props = {
     isOpen: boolean
@@ -149,7 +149,7 @@ export const UpdateReservationTmeModal = ({
                     />
 
                     {/* Hour Selection */}
-                    {selectedMeal && selectedRoom && <TableStatues
+                    {selectedMeal && selectedRoom && <TableStatues2
                         selectedTableId={selectedTableId}
                         setSelectedTableId={setSelectedTableId}
                         date={date}

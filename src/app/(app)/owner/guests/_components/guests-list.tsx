@@ -40,6 +40,7 @@ import { GuestsFilterModal } from './guests-filter-modal';
 import { CustomPagination } from "@/components/custom-pagination";
 import { DEFAULT_ROWS_PER_PAGE } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 type Props = {}
 
 const GuestsList = (props: Props) => {
@@ -55,9 +56,12 @@ const GuestsList = (props: Props) => {
 
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
 
-    const [queryInput, setQueryInput] = useState<TGuestValidator.GuestsPaginationValidatorSchema>({
-        page: 1,
-        limit: DEFAULT_ROWS_PER_PAGE,
+    const [queryInput, setQueryInput] = useState<TGuestValidator.GuestsPaginationSchema>({
+        pagination: {
+            page: 1,
+            limit: DEFAULT_ROWS_PER_PAGE,
+        },
+        filters: {}
     })
 
     const {
@@ -71,7 +75,7 @@ const GuestsList = (props: Props) => {
 
     const { mutate: deleteGuestMutation, isPending: deleteGuestIsPending } = api.guest.deleteGuest.useMutation({
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getQueryKey(api.guest.getAllGuests) })
+            queryClient.invalidateQueries({ queryKey: getQueryKey(api.guest.getGuestsPagination) })
             setIsDeleteModalOpen(false)
         }
     })
@@ -97,27 +101,33 @@ const GuestsList = (props: Props) => {
 
     function removeFilters() {
         setQueryInput({
-            page: 1,
-            limit: DEFAULT_ROWS_PER_PAGE
+            pagination: {
+                page: 1,
+                limit: DEFAULT_ROWS_PER_PAGE
+            },
+            filters: {}
         })
     }
 
     console.log(queryInput, 'queryInput')
 
+    const router = useRouter();
+
 
     return (
         <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between gap-2 ">
+            <CardHeader className="flex flex-row items-center  gap-2 ">
                 <CardTitle className="">Guests</CardTitle>
-                <div className="mb-2 flex flex-col items-start justify-start gap-2">
+                <Button variant="outline" onClick={() => router.push('/owner/guests/companies')}>Guest Companies</Button>
+                <div className="mb-2 flex flex-col items-start justify-start gap-2 ml-auto">
                     <Button className="ml-auto" onClick={handleAddNewGuest}>Add New Guest</Button>
                     <div className="flex gap-2">
 
                         <Button onClick={handleFilterModal}>Advanced Filter</Button>
                         <Input className="w-[300px]" placeholder="Search name phone or email"
-                            value={queryInput.search??''}
+                            value={queryInput.global_search ?? ''}
                             onChange={(e) => {
-                                setQueryInput((prev) => ({ ...prev, search: e.target.value, page: 1 }))
+                                setQueryInput((prev) => ({ ...prev, global_search: e.target.value, pagination: { ...prev.pagination, page: 1 } }))
                             }} />
                         <Button variant="outline" onClick={removeFilters}>Remove Filters</Button>
                     </div>
@@ -177,8 +187,8 @@ const GuestsList = (props: Props) => {
                 {guestsPaginationData?.pagination
                     && <CustomPagination
                         paginationData={guestsPaginationData.pagination}
-                        pagination={queryInput}
-                        setPagination={(pagination) => setQueryInput(pagination)}
+                        pagination={queryInput.pagination}
+                        setPagination={(pagination) => setQueryInput(prev => ({ ...prev, pagination }))}
                     />}
             </CardContent>
             {isCreateModalOpen && (
@@ -208,12 +218,12 @@ const GuestsList = (props: Props) => {
                 />
             )}
 
-            <GuestsFilterModal
+            {isFilterModalOpen && <GuestsFilterModal
                 open={isFilterModalOpen}
                 setOpen={setIsFilterModalOpen}
                 queryInput={queryInput}
                 setQueryInput={setQueryInput}
-            />
+            />}
         </Card>
     )
 }

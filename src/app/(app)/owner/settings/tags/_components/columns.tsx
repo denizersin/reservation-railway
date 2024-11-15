@@ -44,7 +44,9 @@ export const columns: ColumnDef<TRestaurantTagWithTranslations>[] = [
 
             return (
                 <>
-                    <DropdownMenu>
+                    <DropdownMenu
+                        modal={false}
+                    >
                         <DropdownMenuTrigger>
                             <Button variant={'secondary'} size="sm">
                                 <IconDotsVertical stroke={2} />

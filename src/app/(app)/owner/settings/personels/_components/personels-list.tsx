@@ -88,7 +88,9 @@ const PersonelsList = (props: Props) => {
                                 <TableCell>{personel.birthDate ? new Date(personel.birthDate).toLocaleDateString() : '-'}</TableCell>
                                 <TableCell>{personel.specialId}</TableCell>
                                 <TableCell className="text-right">
-                                    <DropdownMenu>
+                                    <DropdownMenu
+                                    modal={false}
+                                    >
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="icon">
                                                 <MoreVertical className="h-4 w-4" />

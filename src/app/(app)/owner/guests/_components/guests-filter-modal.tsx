@@ -20,21 +20,23 @@ export function GuestsFilterModal({
 }: {
     open: boolean
     setOpen: (open: boolean) => void
-    queryInput: TGuestValidator.GuestsPaginationValidatorSchema
-    setQueryInput: (queryInput: TGuestValidator.GuestsPaginationValidatorSchema) => void
+    queryInput: TGuestValidator.GuestsPaginationSchema
+    setQueryInput: (queryInput: TGuestValidator.GuestsPaginationSchema) => void
 }) {
 
-    const form = useForm<TGuestValidator.GuestsPaginationValidatorSchema>({
-        resolver: zodResolver(guestValidator.guestsPaginationValidatorSchema),
+        const form = useForm<TGuestValidator.GuestsPaginationSchema>({
+        resolver: zodResolver(guestValidator.guestsPaginationSchema),
         defaultValues: queryInput
     })
 
-    const onSubmit = (data: TGuestValidator.GuestsPaginationValidatorSchema) => {
+    const onSubmit = (data: TGuestValidator.GuestsPaginationSchema) => {
         setQueryInput({
             ...data,
-            page: 1,
-            limit: DEFAULT_ROWS_PER_PAGE,
-            search: undefined
+            pagination: {
+                ...data.pagination,
+                page: 1
+            },
+            global_search: undefined
         })
         setOpen(false)
     }
@@ -52,28 +54,28 @@ export function GuestsFilterModal({
                 <DialogDescription>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <FormField control={form.control} name="name" render={({ field }) => (
+                            <FormField control={form.control} name="filters.name" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <Input {...field} placeholder="Enter name" />
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="surname" render={({ field }) => (
+                            <FormField control={form.control} name="filters.surname" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Surname</FormLabel>
                                     <Input {...field} placeholder="Enter surname" />
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="email" render={({ field }) => (
+                            <FormField control={form.control} name="filters.email" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <Input {...field} placeholder="Enter email" />
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="phone" render={({ field }) => (
+                            <FormField control={form.control} name="filters.phone" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Phone</FormLabel>
                                     <Input {...field} placeholder="Enter phone" />
@@ -81,7 +83,7 @@ export function GuestsFilterModal({
                                 </FormItem>
                             )} />
 
-                            <FormField control={form.control} name="companyId" render={({ field }) => (
+                            <FormField control={form.control} name="filters.companyId" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Company</FormLabel>
                                     <CustomSelect
@@ -92,7 +94,7 @@ export function GuestsFilterModal({
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="countryId" render={({ field }) => (
+                            <FormField control={form.control} name="filters.countryId" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Country</FormLabel>
                                     <CustomSelect
@@ -103,7 +105,7 @@ export function GuestsFilterModal({
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="languageId" render={({ field }) => (
+                            <FormField control={form.control} name="filters.languageId" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Language</FormLabel>
                                     <CustomSelect
@@ -114,7 +116,7 @@ export function GuestsFilterModal({
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="isVip" render={({ field }) => (
+                            <FormField control={form.control} name="filters.isVip" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Is VIP</FormLabel>
                                     <Checkbox
@@ -124,7 +126,7 @@ export function GuestsFilterModal({
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="vipLevel" render={({ field }) => (
+                            <FormField control={form.control} name="filters.vipLevel" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>VIP Level</FormLabel>
                                     <CustomSelect
@@ -135,7 +137,7 @@ export function GuestsFilterModal({
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="isContactAssistant" render={({ field }) => (
+                            <FormField control={form.control} name="filters.isContactAssistant" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Contact Assistant</FormLabel>
                                     <Checkbox

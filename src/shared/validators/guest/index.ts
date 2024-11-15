@@ -1,7 +1,7 @@
 import { getEnumValues } from "@/server/utils/server-utils";
 import { EnumGender, EnumVipLevel } from "@/shared/enums/predefined-enums";
 import { z } from "zod";
-import { basePaginationSchema } from "..";
+import { basePaginationQuerySchema, basePaginationSchema } from "..";
 
 export const createGuestSchema = z.object({
     languageId: z.number().int().positive(),
@@ -98,37 +98,61 @@ export const updateGuestSchema = z.object({
     data: createGuestSchema.partial(),
 });
 
-export const getAllGuestsValidatorSchema = z.object({
+export const getAllGuestsSchema = z.object({
     page: z.number().int().positive(),
     limit: z.number().int().positive(),
     name: z.string().optional().nullable(),
     email: z.string().optional().nullable(),
 })
 
-export const guestsPaginationValidatorSchema =
-    basePaginationSchema
+export const guestsPaginationSchema =
+    basePaginationQuerySchema
         .extend({
-            search: z.string().optional(),
-            name: z.string().optional(),
-            surname: z.string().optional(),
-            email: z.string().optional(),
-            phone: z.string().optional(),
-            companyId: z.number().int().optional(),
-            countryId: z.number().int().optional(),
-            languageId: z.number().int().optional(),
-            vipLevel: z.enum(getEnumValues(EnumVipLevel)).optional(),
-            isVip: z.boolean().optional(),
-            isContactAssistant: z.boolean().optional(),
+            filters: z.object({
+                name: z.string().optional(),
+                surname: z.string().optional(),
+                email: z.string().optional(),
+                phone: z.string().optional(),
+                companyId: z.number().int().optional(),
+                countryId: z.number().int().optional(),
+                languageId: z.number().int().optional(),
+                vipLevel: z.enum(getEnumValues(EnumVipLevel)).optional(),
+                isVip: z.boolean().optional(),
+                isContactAssistant: z.boolean().optional(),
+            })
         })
 
+
+export const guestCompanyPaginationSchema = basePaginationQuerySchema
+
+
+export const createGuestCompanySchema = z.object({
+    companyName: z.string().max(256),
+    phone: z.string().max(256).optional(),
+    email: z.string().email().max(256).optional(),
+})
+
+export const updateGuestCompanySchema = z.object({
+    id: z.number().int().positive(),
+    data: createGuestCompanySchema.partial(),
+})
+
+export const deleteGuestCompanySchema = z.object({
+    guestCompanyId: z.number().int().positive(),
+})
 
 
 export const guestValidator = {
     createGuestSchema,
     updateGuestSchema,
-    getAllGuestsValidatorSchema,
+    getAllGuestsSchema,
     createGuestSchemaForm,
-    guestsPaginationValidatorSchema
+    guestsPaginationSchema,
+    guestCompanyPaginationSchema,
+    createGuestCompanySchema,
+    updateGuestCompanySchema,
+    deleteGuestCompanySchema
+    
 }
 
 
@@ -138,9 +162,13 @@ export const guestValidator = {
 namespace TGuestValidator {
     export type CreateGuest = z.infer<typeof createGuestSchema>;
     export type UpdateGuest = z.infer<typeof updateGuestSchema>;
-    export type getAllGuestsValidatorSchema = z.infer<typeof getAllGuestsValidatorSchema>;
+    export type getAllGuestsSchema = z.infer<typeof getAllGuestsSchema>;
     export type CreateGuestForm = z.infer<typeof createGuestSchemaForm>;
-    export type GuestsPaginationValidatorSchema = z.infer<typeof guestsPaginationValidatorSchema>;
+    export type GuestsPaginationSchema = z.infer<typeof guestsPaginationSchema>;
+    export type GuestCompanyPaginationSchema = z.infer<typeof guestCompanyPaginationSchema>;
+    export type CreateGuestCompanySchema = z.infer<typeof createGuestCompanySchema>;
+    export type UpdateGuestCompanySchema = z.infer<typeof updateGuestCompanySchema>;
+    export type DeleteGuestCompanySchema = z.infer<typeof deleteGuestCompanySchema>;
 }
 
 export default TGuestValidator;

@@ -32,26 +32,40 @@ export const guestRouter = createTRPCRouter({
         });
     }),
 
-    getAllGuests: ownerProcedure.input(guestValidator.getAllGuestsValidatorSchema).query(async ({ input }) => {
-        return await guestEntities.getAllGuests(input)
-    }),
-    getGuestsPagination: ownerProcedure.input(guestValidator.guestsPaginationValidatorSchema).query(async ({ input }) => {
-        return await guestEntities.guestsPagination(input)
+    getGuestsPagination: ownerProcedure.input(guestValidator.guestsPaginationSchema).query(async ({ input, ctx }) => {
+        const { session: { user: { restaurantId } } } = ctx
+        return await guestEntities.guestsPagination({ restaurantId, paginationQuery: input })
     }),
 
-    getGuestCompanies: ownerProcedure.query(async ({ ctx }) => {
-        const { session: { user: { restaurantId } } } = ctx
-        return await guestEntities.getGuestCompanies({ restaurantId })
-    }),
-    createGuestCompanyWithName: ownerProcedure.input(z.object({
-        companyName: z.string()
-    })).mutation(async ({ input, ctx }) => {
+    getGuestCompaniesPagination: ownerProcedure
+        .input(guestValidator.guestCompanyPaginationSchema)
+        .query(async ({ ctx, input }) => {
+            const { session: { user: { restaurantId } } } = ctx
+            return await guestEntities.getGuestCompaniesPagination({ restaurantId, paginationQuery: input })
+        }),
+    createGuestCompanyWithName: ownerProcedure.input(guestValidator.createGuestCompanySchema).mutation(async ({ input, ctx }) => {
         const { session: { user: { restaurantId } } } = ctx
         await guestEntities.createGuestCompany({
-            companyName: input.companyName,
-            restaurantId
+            data: {
+                ...input,
+                restaurantId
+            }
         });
     }),
+
+    updateGuestCompany: ownerProcedure.input(guestValidator.updateGuestCompanySchema).mutation(async ({ input }) => {
+        await guestEntities.updateGuestCompany({
+            id: input.id,
+            data: input.data
+        });
+    }),
+
+    deleteGuestCompany: ownerProcedure.input(z.object({
+        guestCompanyId: z.number().int().positive()
+    })).mutation(async ({ input }) => {
+        await guestEntities.deleteGuestCompany({ id: input.guestCompanyId })
+    }),
+
 
     getGuestDetail: ownerProcedure.input(z.object({
         guestId: z.number().int().positive()

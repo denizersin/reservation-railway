@@ -76,8 +76,8 @@ export const tblGusetCompany = mysqlTable('guest_company', {
     updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
 });
 
-export type TGusetCompanyInsert = typeof tblGusetCompany.$inferInsert;
-export type TGusetCompany = typeof tblGusetCompany.$inferSelect;
+export type TGuestCompanyInsert = typeof tblGusetCompany.$inferInsert;
+export type TGuestCompany = typeof tblGusetCompany.$inferSelect;
 
 export const tblGuestTag = mysqlTable('guest_tag', {
     id: int('id').autoincrement().primaryKey(),
@@ -111,7 +111,7 @@ export type TGuest = Guest & {
     tags: GuestTag[]
     country: TCountry
     language: TLanguage
-    company: TGusetCompany | null
+    company: TGuestCompany | null
 };
 
 

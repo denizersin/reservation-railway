@@ -5,5 +5,19 @@ export const basePaginationSchema = z.object({
     limit: z.number().int().positive()
 })
 
+export const baseSortSchema = z.object({
+    sortBy: z.enum(['asc', 'desc']).optional(),
+    sortField: z.string().optional()
+})
+
+export const basePaginationQuerySchema = z.object({
+    pagination: basePaginationSchema,
+    sort: baseSortSchema.optional(),
+    global_search: z.string().optional(),
+})
+
+
 
 export type TBasePaginationSchema = z.infer<typeof basePaginationSchema>
+export type TBaseSortSchema = z.infer<typeof baseSortSchema>
+export type TBasePaginationQuerySchema = z.infer<typeof basePaginationQuerySchema>

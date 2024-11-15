@@ -9,7 +9,7 @@ export type CounterOptions = {
 
 const useRealTimeCounter = ({
   initialCount = 0,
-  interval = 1000,
+  interval = 100,
   onComplete,
   targetCount,
 }: CounterOptions) => {

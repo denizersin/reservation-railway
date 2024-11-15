@@ -230,9 +230,11 @@ export const ReservationGridStatusModal = ({
                         }
 
                     </div>
+                    <div className='mt-3'>
 
-                    <ReservationPersonel reservation={reservation} />
-                    <ReservationNote reservation={reservation} />
+                        <ReservationPersonel reservation={reservation} />
+                        <ReservationNote reservation={reservation} />
+                    </div>
 
                     <div className="flex my-1 flex-1 items-end ">
                         {!isWaitinfRoom && <Button
