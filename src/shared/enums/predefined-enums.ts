@@ -182,6 +182,9 @@ export enum EnumNotificationMessageType {
     NotifiedForPrepayment = "Notified For Prepayment",
     AskedForPrepayment = "Asked For Prepayment",
     ReservationCreated = "Reservation Created",
+    ReservationDateChange = "Reservation Date Change",
+    ReservationTimeChange = "Reservation Time Change",
+    ReservationGuestCountChange = "Reservation Guest Count Change",
 }
 
 export enum EnumPrepaymentStatus {

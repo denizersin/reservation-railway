@@ -1,8 +1,11 @@
-import { TReservation, TReservationNotificationInsert } from "@/server/db/schema"
-import { NotificationEntities } from "../../entities/notification/reservation-notification"
+import { TCtx } from "@/server/api/trpc"
+import { TReservationNotificationInsert } from "@/server/db/schema"
 import { EnumNotificationMessageType, EnumNotificationStatus, EnumNotificationType } from "@/shared/enums/predefined-enums"
+import { NotificationEntities, TReservationMessageInstance } from "../../entities/notification/reservation-notification"
+import { ReservationEntities } from "../../entities/reservation"
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log"
-import { guestEntities } from "../../entities/guest"
+
+
 
 export const sendSms = async ({ }: {
     // number: string,
@@ -19,33 +22,102 @@ export const sendEmail = async ({ }: {
 }
 
 export const handlePrePayment = async ({
-    reservation
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
 }: {
-    reservation: TReservation
+    reservationId: number
+    withSms: boolean
+    withEmail: boolean,
+    ctx: TCtx
 }) => {
-    const message = await NotificationEntities.generatePrePaymentNotification({
-        reservation
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
     })
 
-    const guest = await guestEntities.getGuestById({ guestId: reservation.guestId })
+    const emailMessage = withEmail ? await NotificationEntities.generatePrePaymentNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generatePrePaymentNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    const guest = reservationWithGuest.guest
+    const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
+    const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
+
+
+    if (withSms && !phone) {
+        // toastOptions.setToast('Phone not set')
+    }
+
+    if (withEmail && !email) {
+        // toastOptions.setToast('Email not set')
+    }
+
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.AskedForPrepayment,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'prepayment notification',
+        ctx
+    })
+}
+
+export const handlePrepaymentCancelled = async ({
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams) => {
+
+}
+
+const handleNotificationSending = async ({
+    reservation,
+    notificationType,
+    emailMessage,
+    smsMessage,
+    shouldSendEmail,
+    shouldSendSms,
+    logPrefix,
+    ctx
+}: {
+    reservation: TReservationMessageInstance
+    notificationType: EnumNotificationMessageType
+    shouldSendEmail: boolean
+    shouldSendSms: boolean
+    logPrefix: string,
+    emailMessage: string,
+    smsMessage: string,
+    ctx: TCtx
+}) => {
+    const guest = reservation.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
     const notification: TReservationNotificationInsert = {
         reservationId: reservation.id,
         type: EnumNotificationType.SMS,
-        notificationMessageType: EnumNotificationMessageType.AskedForPrepayment,
+        notificationMessageType: notificationType,
         status: EnumNotificationStatus.SENT,
-        message,
+        message: emailMessage,
     }
 
-    if (reservation.isSendEmail) {
+    if (shouldSendEmail && email) {
         try {
             await sendEmail({});
             notification.type = EnumNotificationType.EMAIL
             await NotificationEntities.createReservationNotification(notification);
             await ReservationLogEntities.createLog({
-                message: `sent email prepayment notification`,
+                message: `sent email ${logPrefix}`,
                 reservationId: reservation.id,
                 owner: 'system'
             });
@@ -53,20 +125,21 @@ export const handlePrePayment = async ({
             notification.status = EnumNotificationStatus.FAILED
             await NotificationEntities.createReservationNotification(notification);
             await ReservationLogEntities.createLog({
-                message: `failed to send email prepayment notification`,
+                message: `failed to send email ${logPrefix}`,
                 reservationId: reservation.id,
                 owner: 'system'
             });
         }
     }
 
-    if (reservation.isSendSms) {
+    if (shouldSendSms && phone) {
+        notification.message = smsMessage
         try {
             await sendSms({});
             notification.type = EnumNotificationType.SMS
             await NotificationEntities.createReservationNotification(notification);
             await ReservationLogEntities.createLog({
-                message: `sent sms prepayment notification`,
+                message: `sent sms ${logPrefix}`,
                 reservationId: reservation.id,
                 owner: 'system'
             });
@@ -74,336 +147,336 @@ export const handlePrePayment = async ({
             notification.status = EnumNotificationStatus.FAILED
             await NotificationEntities.createReservationNotification(notification);
             await ReservationLogEntities.createLog({
-                message: `failed to send sms prepayment notification`,
+                message: `failed to send sms ${logPrefix}`,
                 reservationId: reservation.id,
                 owner: 'system'
             });
         }
     }
+}
+
+type NotificationHandlerParams = {
+    reservationId: number
+    withSms: boolean
+    withEmail: boolean
+    ctx: TCtx
 }
 
 export const handleReservationCreated = async ({
-    reservation
-}: {
-    reservation: TReservation
-}) => {
-    const message = await NotificationEntities.generateReservationCreatedNotification({
-        reservation
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams) => {
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
     })
 
-    const guest = await guestEntities.getGuestById({ guestId: reservation.guestId })
+    const guest = reservationWithGuest.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
-    const notification: TReservationNotificationInsert = {
-        reservationId: reservation.id,
-        type: EnumNotificationType.SMS,
-        notificationMessageType: EnumNotificationMessageType.ReservationCreated,
-        status: EnumNotificationStatus.SENT,
-        message,
+    if (withSms && !phone) {
+        // toastOptions.setToast('Phone not set')
     }
 
-    if (reservation.isSendEmail) {
-        try {
-            await sendEmail({});
-            notification.type = EnumNotificationType.EMAIL
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent email reservation created notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send email reservation created notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
+    if (withEmail && !email) {
+        // toastOptions.setToast('Email not set')
     }
 
-    if (reservation.isSendSms) {
-        try {
-            await sendSms({});
-            notification.type = EnumNotificationType.SMS
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent sms reservation created notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send sms reservation created notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
-    }
+    const emailMessage = withEmail ? await NotificationEntities.generateReservationCreatedNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateReservationCreatedNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.ReservationCreated,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'reservation created notification',
+        ctx
+    })
 }
 
 export const handleReservationCancelled = async ({
-    reservation
-}: {
-    reservation: TReservation
-}) => {
-    const message = await NotificationEntities.generateReservationCancelledNotification({
-        reservation
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams) => {
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
     })
 
-    const guest = await guestEntities.getGuestById({ guestId: reservation.guestId })
+    const guest = reservationWithGuest.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
-    const notification: TReservationNotificationInsert = {
-        reservationId: reservation.id,
-        type: EnumNotificationType.SMS,
-        notificationMessageType: EnumNotificationMessageType.ReservationCancellation,
-        status: EnumNotificationStatus.SENT,
-        message,
+    if (withSms && !phone) {
+        // toastOptions.setToast('Phone not set')
     }
 
-    if (reservation.isSendEmail) {
-        try {
-            await sendEmail({});
-            notification.type = EnumNotificationType.EMAIL
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent email reservation cancelled notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send email reservation cancelled notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
+    if (withEmail && !email) {
+        // toastOptions.setToast('Email not set')
     }
 
-    if (reservation.isSendSms) {
-        try {
-            await sendSms({});
-            notification.type = EnumNotificationType.SMS
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent sms reservation cancelled notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send sms reservation cancelled notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
-    }
+    const emailMessage = withEmail ? await NotificationEntities.generateReservationCancelledNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateReservationCancelledNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.ReservationCancellation,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'reservation cancelled notification',
+        ctx
+    })
 }
 
 export const handleReservationConfirmed = async ({
-    reservation
-}: {
-    reservation: TReservation
-}) => {
-    const message = await NotificationEntities.generateReservationConfirmedNotification({
-        reservation
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams) => {
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
     })
 
-    const guest = await guestEntities.getGuestById({ guestId: reservation.guestId })
+    const guest = reservationWithGuest.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
-    const notification: TReservationNotificationInsert = {
-        reservationId: reservation.id,
-        type: EnumNotificationType.SMS,
-        notificationMessageType: EnumNotificationMessageType.ReservationConfirmed,
-        status: EnumNotificationStatus.SENT,
-        message,
+    if (withSms && !phone) {
+        // toastOptions.setToast('Phone not set')
     }
 
-    if (reservation.isSendEmail) {
-        try {
-            await sendEmail({});
-            notification.type = EnumNotificationType.EMAIL
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent email reservation confirmed notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send email reservation confirmed notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
+    if (withEmail && !email) {
+        // toastOptions.setToast('Email not set')
     }
 
-    if (reservation.isSendSms) {
-        try {
-            await sendSms({});
-            notification.type = EnumNotificationType.SMS
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent sms reservation confirmed notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send sms reservation confirmed notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
-    }
+    const emailMessage = withEmail ? await NotificationEntities.generateReservationConfirmedNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateReservationConfirmedNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.ReservationConfirmed,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'reservation confirmed notification',
+        ctx
+    })
 }
 
 export const handleConfirmationRequest = async ({
-    reservation
-}: {
-    reservation: TReservation
-}) => {
-    const message = await NotificationEntities.generateConfirmationNotification({
-        reservation
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams) => {
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
     })
 
-    const guest = await guestEntities.getGuestById({ guestId: reservation.guestId })
+    const guest = reservationWithGuest.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
-    const notification: TReservationNotificationInsert = {
-        reservationId: reservation.id,
-        type: EnumNotificationType.SMS,
-        notificationMessageType: EnumNotificationMessageType.ReservationConfirmationRequest,
-        status: EnumNotificationStatus.SENT,
-        message,
+    if (withSms && !phone) {
+        // toastOptions.setToast('Phone not set')
     }
 
-    if (reservation.isSendEmail) {
-        try {
-            await sendEmail({});
-            notification.type = EnumNotificationType.EMAIL
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent email confirmation request notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send email confirmation request notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
+    if (withEmail && !email) {
+        // toastOptions.setToast('Email not set')
     }
 
-    if (reservation.isSendSms) {
-        try {
-            await sendSms({});
-            notification.type = EnumNotificationType.SMS
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent sms confirmation request notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send sms confirmation request notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
-    }
+    const emailMessage = withEmail ? await NotificationEntities.generateConfirmationNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateConfirmationNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.ReservationConfirmationRequest,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'confirmation request notification',
+        ctx
+    })
 }
+
+export const handleConfirmationRequestCancelled = async ({
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams) => {
+
+}
+
 
 export const handleNotifyPrepayment = async ({
-    reservation
-}: {
-    reservation: TReservation
-}) => {
-    const message = await NotificationEntities.generateNotifyPrePaymentNotification({
-        reservation
+    reservationId,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams) => {
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
     })
 
-    const guest = await guestEntities.getGuestById({ guestId: reservation.guestId })
+    const guest = reservationWithGuest.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
-    const notification: TReservationNotificationInsert = {
-        reservationId: reservation.id,
-        type: EnumNotificationType.SMS,
-        notificationMessageType: EnumNotificationMessageType.NotifiedForPrepayment,
-        status: EnumNotificationStatus.SENT,
-        message,
+    if (withSms && !phone) {
+        // toastOptions.setToast('Phone not set')
     }
 
-    if (reservation.isSendEmail) {
-        try {
-            await sendEmail({});
-            notification.type = EnumNotificationType.EMAIL
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent email notify prepayment notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send email notify prepayment notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
+    if (withEmail && !email) {
+        // toastOptions.setToast('Email not set')
     }
 
-    if (reservation.isSendSms) {
-        try {
-            await sendSms({});
-            notification.type = EnumNotificationType.SMS
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `sent sms notify prepayment notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        } catch (e) {
-            notification.status = EnumNotificationStatus.FAILED
-            await NotificationEntities.createReservationNotification(notification);
-            await ReservationLogEntities.createLog({
-                message: `failed to send sms notify prepayment notification`,
-                reservationId: reservation.id,
-                owner: 'system'
-            });
-        }
-    }
+    const emailMessage = withEmail ? await NotificationEntities.generateNotifyPrePaymentNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
 
+    const smsMessage = withSms ? await NotificationEntities.generateNotifyPrePaymentNotification({
+        reservation: reservationWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
 
-
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.NotifiedForPrepayment,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'notify prepayment notification',
+        ctx
+    })
 }
+
+export const handleReservationGuestCountChange = async ({
+    reservationId,
+    oldValue,
+    newValue,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams & {
+    oldValue: string,
+    newValue: string
+}) => {
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
+    })
+
+    const emailMessage = withEmail ? await NotificationEntities.generateReservationGuestCountChange({
+        reservation: reservationWithGuest,
+        oldGuestCount: oldValue,
+        newGuestCount: newValue,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateReservationGuestCountChange({
+        reservation: reservationWithGuest,
+        oldGuestCount: oldValue,
+        newGuestCount: newValue,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.ReservationGuestCountChange,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'reservation guest count change notification',
+        ctx
+    })
+}
+
+export const handleReservationTimeChange = async ({
+    reservationId,
+    oldValue,
+    newValue,
+    withSms,
+    withEmail,
+    ctx
+}: NotificationHandlerParams & { oldValue: string, newValue: string }) => {
+
+    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+        reservationId
+    })
+
+    const emailMessage = withEmail ? await NotificationEntities.generateReservationTimeChange({
+        reservation: reservationWithGuest,
+        oldTime: oldValue,
+        newTime: newValue,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateReservationTimeChange({
+        reservation: reservationWithGuest,
+        oldTime: oldValue,
+        newTime: newValue,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleNotificationSending({
+        reservation: reservationWithGuest,
+        notificationType: EnumNotificationMessageType.ReservationTimeChange,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'reservation time change notification',
+        ctx
+    })
+}
+
+
+
+
+
 
 export const notificationUseCases = {
     handlePrePayment,
@@ -411,5 +484,9 @@ export const notificationUseCases = {
     handleReservationCancelled,
     handleReservationConfirmed,
     handleConfirmationRequest,
-    handleNotifyPrepayment
+    handleConfirmationRequestCancelled,
+    handleNotifyPrepayment,
+    handleReservationGuestCountChange,
+    handleReservationTimeChange,
+    handlePrepaymentCancelled
 }

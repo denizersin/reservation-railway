@@ -12,6 +12,8 @@ import { limitationValidator } from "@/shared/validators/reservation-limitation/
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
+import { TOAST_MESSAGE_HEADER_KEY } from "@/shared/constants";
+import { NextResponse } from "next/server";
 
 
 
@@ -83,6 +85,15 @@ export const reservationRouter = createTRPCRouter({
         .input(reservationValidator.createReservation)
         .mutation(async ({ input, ctx }) => {
             await reservationUseCases.createReservation({ ctx, input })
+            ctx.headers.set(TOAST_MESSAGE_HEADER_KEY, 'Reservation created successfully')
+            const response = NextResponse.next();
+            response.headers.set(TOAST_MESSAGE_HEADER_KEY, 'Reservation created successfully')
+
+            console.log('3131---1 next response', response.headers.get(TOAST_MESSAGE_HEADER_KEY))
+
+            console.log('3131---2 ctx', ctx.headers.get(TOAST_MESSAGE_HEADER_KEY))
+
+            return true
         }),
 
 
@@ -265,6 +276,11 @@ export const reservationRouter = createTRPCRouter({
         .mutation(async (opts) => {
             await reservationUseCases.requestForConfirmation(opts)
         }),
+    cancelConfirmationRequest: ownerProcedure
+        .input(reservationValidator.cancelConfirmationRequest)
+        .mutation(async (opts) => {
+            await reservationUseCases.cancelConfirmationRequest(opts)
+        }),
 
     confirmReservation: ownerProcedure
         .input(reservationValidator.confirmReservation)
@@ -340,5 +356,7 @@ export const reservationRouter = createTRPCRouter({
         .mutation(async (opts) => {
             await reservationUseCases.updateReservationNote(opts)
         }),
+
+
 
 });

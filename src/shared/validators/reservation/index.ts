@@ -2,6 +2,7 @@ import { getEnumValues } from "@/server/utils/server-utils";
 import { EnumReservationExistanceStatus, EnumReservationPrepaymentType, EnumReservationStatus } from "@/shared/enums/predefined-enums";
 import { date } from "drizzle-orm/pg-core";
 import { z } from "zod";
+import { baseNotificationOptionsSchema } from "..";
 
 
 const getTableStatues = z.object({
@@ -69,24 +70,23 @@ const makeReservationNotExist = reservationIdSchema
 const getReservationLogs = reservationIdSchema
 const getReservationNotifications = reservationIdSchema
 
-const confirmReservation = reservationIdSchema
-const cancelReservation = reservationIdSchema
-const requestForConfirmation = reservationIdSchema
-const notifyPrepayment = reservationIdSchema
-const cancelPrepayment = reservationIdSchema
-const requestForBill = reservationIdSchema
 
-const getReservationDetail = reservationIdSchema
 
-const repeatReservation = reservationIdSchema
+// reservation status actions
+const baseReservationStatusAction = z.object({
+    reservationId: z.number().int().positive(),
+    notificationOptions: baseNotificationOptionsSchema
+})
 
-const askForBill = reservationIdSchema
-
-const deleteReservation = reservationIdSchema
-
-const returnPrepayment = reservationIdSchema
-
-const checkOutAndCompleteReservation = reservationIdSchema
+const confirmReservation = baseReservationStatusAction
+const cancelReservation = baseReservationStatusAction
+const requestForConfirmation = baseReservationStatusAction
+const cancelConfirmationRequest = baseReservationStatusAction
+const notifyPrepayment = baseReservationStatusAction
+const cancelPrepayment = baseReservationStatusAction
+const requestForBill = baseReservationStatusAction
+const askForBill = baseReservationStatusAction
+const returnPrepayment = baseReservationStatusAction
 
 const requestForPrepaymentForm = z.object({
     customPrepaymentAmount: z.number().int().positive().optional(),
@@ -94,8 +94,20 @@ const requestForPrepaymentForm = z.object({
 
 const requestForPrepayment = z.object({
     reservationId: z.number().int().positive(),
-    data: requestForPrepaymentForm
+    data: requestForPrepaymentForm,
+    notificationOptions: baseNotificationOptionsSchema
 })
+
+
+const getReservationDetail = reservationIdSchema
+const deleteReservation = reservationIdSchema
+const repeatReservation = reservationIdSchema
+
+
+
+const checkOutAndCompleteReservation = reservationIdSchema
+
+
 
 const updateReservationTime = z.object({
     reservationId: z.number().int().positive(),
@@ -105,7 +117,8 @@ const updateReservationTime = z.object({
         tableId: z.number().int().positive(),
         roomId: z.number().int().positive(),
         guestCount: z.number().int().positive(),
-    })
+    }),
+    notificationOptions: baseNotificationOptionsSchema
 })
 
 const updateReservationAssignedPersonal = z.object({
@@ -147,6 +160,7 @@ export const reservationValidator = {
     updateReservationAssignedPersonal,
     updateReservationNote,
     checkOutAndCompleteReservation,
+    cancelConfirmationRequest,
 
 }
 
@@ -178,6 +192,7 @@ namespace TReservationValidator {
     export type updateReservationAssignedPersonal = z.infer<typeof updateReservationAssignedPersonal>
     export type updateReservationNote = z.infer<typeof updateReservationNote>
     export type checkOutAndCompleteReservation = z.infer<typeof checkOutAndCompleteReservation>
+    export type cancelConfirmationRequest = z.infer<typeof cancelConfirmationRequest>
 }
 
 export default TReservationValidator

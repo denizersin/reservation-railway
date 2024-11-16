@@ -16,6 +16,10 @@ export const basePaginationQuerySchema = z.object({
     global_search: z.string().optional(),
 })
 
+export const baseNotificationOptionsSchema = z.object({
+    withSms: z.boolean(),
+    withEmail: z.boolean(),
+})
 
 
 export type TBasePaginationSchema = z.infer<typeof basePaginationSchema>

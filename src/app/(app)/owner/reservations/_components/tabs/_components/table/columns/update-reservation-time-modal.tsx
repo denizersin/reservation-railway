@@ -16,6 +16,8 @@ import RoomTabs from '@/components/room-tabs';
 import MealTabs from '@/components/meal-tabs';
 import { useToast } from '@/hooks/use-toast';
 import { TableStatues2 } from '@/app/(app)/owner/reservation/_components/v2/table-statues2';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 type Props = {
     isOpen: boolean
@@ -35,6 +37,9 @@ export const UpdateReservationTmeModal = ({
     const [selectedTableId, setSelectedTableId] = useState<number | undefined>(reservation.tables[0]?.tableId)
     const [selectedMeal, setSelectedMeal] = useState<TRestaurantMeal | undefined>(undefined)
     const [selectedRoom, setSelectedRoom] = useState<TRoomWithTranslations | undefined>()
+
+    const [withEmail, setWithEmail] = useState(true)
+    const [withSms, setWithSms] = useState(true)
 
 
     const { onSuccessReservationUpdate } = useMutationCallback()
@@ -86,7 +91,8 @@ export const UpdateReservationTmeModal = ({
                 hour,
                 tableId: selectedTableId!,
                 roomId: selectedRoom!.id
-            }
+            },
+            notificationOptions: { withEmail, withSms }
         })
     }
 
@@ -160,6 +166,23 @@ export const UpdateReservationTmeModal = ({
                         guestCount={guestCount}
                         setGuestCount={setGuestCount}
                     />}
+
+                    <div className="my-2 flex flex-wrap gap-2">
+                        <div className='flex gap-2'>
+                            <Checkbox
+                                checked={withSms}
+                                onCheckedChange={(s) => setWithSms(s as boolean)}
+                            />
+                            <Label>Send SMS</Label>
+                        </div>
+                        <div className='flex gap-2'>
+                            <Checkbox
+                                checked={withEmail}
+                                onCheckedChange={(s) => setWithEmail(s as boolean)}
+                            />
+                            <Label>Send Email</Label>
+                        </div>
+                    </div>
 
                     {/* Guest Count and Submit */}
                     <div>

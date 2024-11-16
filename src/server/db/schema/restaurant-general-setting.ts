@@ -1,10 +1,10 @@
-import { relations } from 'drizzle-orm';
-import { boolean, int, mysqlEnum, mysqlTable, unique } from 'drizzle-orm/mysql-core';
-import { tblCountry, tblLanguage, tblMeal, TMeal } from './predefined';
-import { tblRestaurantLanguage, tblRestaurant } from './restaurant';
-import { EnumDays, EnumReservationExistanceStatusNumeric, EnumReservationStatusNumeric, EnumTableViewType } from '@/shared/enums/predefined-enums';
 import { getEnumValues } from '@/server/utils/server-utils';
+import { EnumReservationStatusNumeric, EnumTableViewType } from '@/shared/enums/predefined-enums';
+import { relations } from 'drizzle-orm';
+import { boolean, int, mysqlEnum, mysqlTable } from 'drizzle-orm/mysql-core';
+import { tblCountry } from './predefined';
 import { tblReserVationStatus } from './reservation/reservation-status';
+import { tblRestaurant, tblRestaurantLanguage } from './restaurant';
 
 
 

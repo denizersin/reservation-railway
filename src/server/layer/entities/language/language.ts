@@ -2,6 +2,8 @@ import { db } from "@/server/db"
 import { tblRestaurant } from "@/server/db/schema/restaurant"
 import { and, eq } from "drizzle-orm"
 import { tblPrepaymentMessage, tblProvisionMessage, tblReservationMessage, tblRestaurantTexts, tblWaitlistMessage, TPrepaymentMessageInsert, TProvisionMessageInsert, TReservationMessageInsert, TRestaurantTextsInsert, TWaitlistMessageInsert } from "@/server/db/schema/restaurant-texts"
+import { TRPCError } from "@trpc/server"
+import { DEFAULT_LANGUAGE } from "@/shared/data/predefined"
 
 export const getReservationMessagesByLang = async ({
     restaurantId,
@@ -17,6 +19,17 @@ export const getReservationMessagesByLang = async ({
             eq(tblReservationMessage.languageId, languageId)
         )
     })
+
+    if (!reservationMessage) {
+        const defaultReservationMessage = await await db.query.tblReservationMessage.findFirst({
+            where: and(
+                eq(tblReservationMessage.restaurantId, restaurantId),
+                eq(tblReservationMessage.languageId, languageId)
+            )
+        })
+        if (!defaultReservationMessage) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation message not found' })
+        return defaultReservationMessage
+    }
 
     return reservationMessage
 
@@ -75,6 +88,17 @@ export const getProvisionMessagesByLang = async ({
         )
     })
 
+    if (!provisionMessage) {
+        const defaultProvisionMessage = await db.query.tblProvisionMessage.findFirst({
+            where: and(
+                eq(tblProvisionMessage.restaurantId, restaurantId),
+                eq(tblProvisionMessage.languageId, DEFAULT_LANGUAGE.id)
+            )
+        })
+        if (!defaultProvisionMessage) throw new TRPCError({ code: 'NOT_FOUND', message: 'Provision message not found' })
+        return defaultProvisionMessage
+    }
+
     return provisionMessage
 }
 
@@ -128,6 +152,17 @@ export const getWaitlistMessagesByLang = async ({
         )
     })
 
+    if (!waitlistMessage) {
+        const defaultWaitlistMessage = await db.query.tblWaitlistMessage.findFirst({
+            where: and(
+                eq(tblWaitlistMessage.restaurantId, restaurantId),
+                eq(tblWaitlistMessage.languageId, DEFAULT_LANGUAGE.id)
+            )
+        })
+        if (!defaultWaitlistMessage) throw new TRPCError({ code: 'NOT_FOUND', message: 'Waitlist message not found' })
+        return defaultWaitlistMessage
+    }
+
     return waitlistMessage
 }
 
@@ -177,6 +212,17 @@ export const getPrepaymentMessagesByLang = async ({
             eq(tblPrepaymentMessage.languageId, languageId)
         )
     })
+
+    if (!prepaymentMessage) {
+        const defaultPrepaymentMessage = await db.query.tblPrepaymentMessage.findFirst({
+            where: and(
+                eq(tblPrepaymentMessage.restaurantId, restaurantId),
+                eq(tblPrepaymentMessage.languageId, DEFAULT_LANGUAGE.id)
+            )
+        })
+        if (!defaultPrepaymentMessage) throw new TRPCError({ code: 'NOT_FOUND', message: 'Prepayment message not found' })
+        return defaultPrepaymentMessage
+    }
 
     return prepaymentMessage
 }
@@ -228,6 +274,17 @@ export const getRestaurantTextsByLang = async ({
         )
     })
 
+    if (!restaurantTexts) {
+        const defaultRestaurantTexts = await db.query.tblRestaurantTexts.findFirst({
+            where: and(
+                eq(tblRestaurantTexts.restaurantId, restaurantId),
+                eq(tblRestaurantTexts.languageId, DEFAULT_LANGUAGE.id)
+            )
+        })
+        if (!defaultRestaurantTexts) throw new TRPCError({ code: 'NOT_FOUND', message: 'Restaurant texts not found' })
+        return defaultRestaurantTexts
+    }
+
     return restaurantTexts
 }
 
@@ -252,7 +309,7 @@ export const updateRestaurantTexts = async ({
     ...data
 }: TRestaurantTextsInsert) => {
 
-    console.log(data,'data')
+    console.log(data, 'data')
     console.log(restaurantId, languageId, 'restaurant_update')
     await db.update(tblRestaurantTexts).set({
         ...data,

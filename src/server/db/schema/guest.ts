@@ -94,7 +94,7 @@ export const tblGuestTagRelations = relations(tblGuestTag, ({ one }) => ({
 }));
 
 
-type Guest = typeof tblGuest.$inferSelect;
+export type TGuestSelect = typeof tblGuest.$inferSelect;
 type GuestInsert = typeof tblGuest.$inferInsert;
 
 
@@ -107,7 +107,7 @@ export type TGuestInsert = GuestInsert & {
 };
 
 
-export type TGuest = Guest & {
+export type TGuest = TGuestSelect & {
     tags: GuestTag[]
     country: TCountry
     language: TLanguage

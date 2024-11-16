@@ -7,8 +7,8 @@ import { cookies } from "next/headers";
 import { jwtBody } from "../../entities/jwt/jwt";
 import { EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
 import { TLanguage } from "@/server/db/schema/predefined";
-import { DEFAULT_LANGUAGE, languagesData } from "@/server/data";
 import { revalidatePath } from "next/cache";
+import { DEFAULT_LANGUAGE, languagesData } from "@/shared/data/predefined";
 
 
 export async function createUser({
@@ -130,7 +130,7 @@ export function getSessionUserData(
 }
 
 
-export const updateUserPreferences = async ({
+export const updateUserPreferences =  ({
     language,
     theme
 }: TUserValidator.updateUserPreferencesSchema) => {
@@ -141,7 +141,7 @@ export const updateUserPreferences = async ({
         } else {
             throw new TRPCError({
                 code: 'BAD_REQUEST',
-                message: 'Invalid language'
+                message: 'Invalid language',
             })
         }
     }

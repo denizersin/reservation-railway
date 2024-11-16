@@ -15,12 +15,16 @@ import { useMutationCallback } from "@/hooks/useMutationCallback"
 export const CreatePrepaymentModal = ({
     reservation,
     open,
-    setOpen
+    setOpen,
 }: {
     reservation: TReservationRow
     open: boolean
     setOpen: (open: boolean) => void
+
 }) => {
+
+    const [withSms, setWithSms] = useState(true)
+    const [withEmail, setWithEmail] = useState(true)
 
     const { onSuccessReservationUpdate } = useMutationCallback()
 
@@ -44,6 +48,10 @@ export const CreatePrepaymentModal = ({
             reservationId: reservation.id,
             data: {
                 customPrepaymentAmount: defaultAmount ? undefined : Number(data.customPrepaymentAmount)
+            },
+            notificationOptions: {
+                withEmail,
+                withSms
             }
         })
     })
@@ -69,6 +77,23 @@ export const CreatePrepaymentModal = ({
                         type="number"
                         {...register('customPrepaymentAmount')}
                     />}
+                </div>
+
+                <div className="my-2 flex flex-wrap gap-2">
+                    <div className='flex gap-2'>
+                        <Checkbox
+                            checked={withSms}
+                            onCheckedChange={(s) => setWithSms(s as boolean)}
+                        />
+                        <Label>Send SMS</Label>
+                    </div>
+                    <div className='flex gap-2'>
+                        <Checkbox
+                            checked={withEmail}
+                            onCheckedChange={(s) => setWithEmail(s as boolean)}
+                        />
+                        <Label>Send Email</Label>
+                    </div>
                 </div>
 
                 <Button

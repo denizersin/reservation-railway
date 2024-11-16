@@ -451,7 +451,7 @@ CREATE TABLE `reservation_notification` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`reservation_id` int NOT NULL,
 	`type` enum('SMS','EMAIL') NOT NULL,
-	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation Request','Reservation Confirmed','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created') NOT NULL,
+	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation Request','Reservation Confirmed','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created','Reservation Date Change','Reservation Time Change','Reservation Guest Count Change') NOT NULL,
 	`message` text NOT NULL,
 	`sent_at` timestamp,
 	`status` enum('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',

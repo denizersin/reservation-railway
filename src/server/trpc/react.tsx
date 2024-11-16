@@ -10,15 +10,16 @@ import SuperJSON from "superjson";
 import { type AppRouter } from "@/server/api/root";
 import { createQueryClient } from "./query-client";
 import { headers } from "next/headers";
+import {  TToast, useToast } from "@/hooks/use-toast";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
-const getQueryClient = () => {
+const getQueryClient = (toast: TToast) => {
   if (typeof window === "undefined") {
     // Server: always make a new query client
-    return createQueryClient();
+    return createQueryClient({});
   }
   // Browser: use singleton pattern to keep the same query client
-  return (clientQueryClientSingleton ??= createQueryClient());
+  return (clientQueryClientSingleton ??= createQueryClient({toast}));
 };
 
 export const api = createTRPCReact<AppRouter>();
@@ -38,7 +39,10 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
+
+
+  const { toast } = useToast()
+  const queryClient = getQueryClient(toast);
 
   const [trpcClient] = useState(() =>
     api.createClient({
@@ -65,7 +69,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           headers: () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
-            headers.set("Authorization", `Bearer ${localStorage.getItem("token")}`);
+            // headers.set("Authorization", `Bearer ${localStorage.getItem("token")}`);
             return headers;
           },
         })

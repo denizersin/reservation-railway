@@ -24,3 +24,7 @@ export type TPagination<T> = {
 
     }
 }
+
+
+
+

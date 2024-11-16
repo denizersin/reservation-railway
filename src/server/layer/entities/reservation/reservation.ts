@@ -226,3 +226,29 @@ export const resetReservationTablesAndLinks = async ({
 
 }
 
+export const geTReservationMessageInstance = async ({
+    reservationId
+}: {
+    reservationId: number
+}) => {
+    const reservation = await db.query.tblReservation.findFirst({
+        where: eq(tblReservation.id, reservationId),
+        with: {
+            guest: true,
+            restaurant: true
+        }
+    })
+    if (!reservation) throw new Error('Reservation not found')
+    return reservation
+}
+
+
+export const deleteReservationConfirmationRequests = async ({
+    reservationId,
+    trx = db
+}: {
+    reservationId: number,
+    trx?: TTransaction
+}) => {
+    await trx?.delete(tblConfirmationRequest).where(eq(tblConfirmationRequest.reservationId, reservationId))
+}

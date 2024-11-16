@@ -11,7 +11,7 @@ import { tblCountry, tblLanguage, tblMeal } from "../schema/predefined";
 import { tblUser } from "../schema/user";
 import { seedDatas } from "./seedData";
 import { RoomEntities } from "@/server/layer/entities/room";
-import { languagesData } from "@/server/data";
+import { languagesData } from "@/shared/data/predefined";
 import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { restaurantTagEntities } from "@/server/layer/entities/restaurant-tag";
 const connection = await mysql.createConnection({
@@ -274,28 +274,28 @@ const seedFunctions = [
         await db.insert(schema.tblPrepaymentMessage).values({
             languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
             restaurantId: 1,
-            prepaymentMessage: 'Prepayment message',
-            prepaymentCancellationMessage: 'Prepayment cancellation message',
-            prepaymentReminderMessage: 'Prepayment reminder message',
-            prepaymentRefundMessage: 'Prepayment refund message',
-            prepaymentReceivedMessage: 'Prepayment received message',
-            accountPaymentRequestMessage: 'Account payment request message',
-            accountPaymentSuccessMessage: 'Account payment success message',
+            prepaymentMessage: 'Prepayment message @Client @Date @Link @Restaurant',
+            prepaymentCancellationMessage: 'Prepayment cancellation message @Client @Date @Link @Restaurant',
+            prepaymentReminderMessage: 'Prepayment reminder message @Client @Date @Link @Restaurant',
+            prepaymentRefundMessage: 'Prepayment refund message @Client @Date @Link @Restaurant',
+            prepaymentReceivedMessage: 'Prepayment received message @Client @Date @Link @Restaurant',
+            accountPaymentRequestMessage: 'Account payment request message @Client @Date @Link @Restaurant',
+            accountPaymentSuccessMessage: 'Account payment success message @Client @Date @Link @Restaurant',
         })
 
 
         await db.insert(schema.tblReservationMessage).values({
             languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
             restaurantId: 1,
-            newReservationMessage: 'New reservation message',
-            dateTimeChangeMessage: 'Date time change message',
-            guestCountChangeMessage: 'Guest count change message',
-            reservationCancellationMessage: 'Reservation cancellation message',
-            reservationConfirmationRequestMessage: 'Reservation confirmation request message',
-            reservationCancellationWithReasonMessage: 'Reservation cancellation with reason message',
-            reservationReminderMessage: 'Reservation reminder message',
-            reservationFeedbackRequestMessage: 'Reservation feedback request message',
-            reservationConfirmedMessage: 'Reservation confirmed message',
+            newReservationMessage: 'New reservation message @Client @Date @Link @Restaurant',
+            dateTimeChangeMessage: 'Date time change message @Client @Date @Link @Restaurant',
+            guestCountChangeMessage: 'Guest count change message @Client @Date @Link @Restaurant',
+            reservationCancellationMessage: 'Reservation cancellation message @Client @Date @Link @Restaurant',
+            reservationConfirmationRequestMessage: 'Reservation confirmation request message @Client @Date @Link @Restaurant',
+            reservationCancellationWithReasonMessage: 'Reservation cancellation with reason message @Client @Date @Link @Restaurant',
+            reservationReminderMessage: 'Reservation reminder message @Client @Date @Link @Restaurant',
+            reservationFeedbackRequestMessage: 'Reservation feedback request message @Client @Date @Link @Restaurant',
+            reservationConfirmedMessage: 'Reservation confirmed message @Client @Date @Link @Restaurant',
         })
 
         await db.insert(schema.tblRestaurantTexts).values({
@@ -309,9 +309,9 @@ const seedFunctions = [
         await db.insert(schema.tblWaitlistMessage).values({
             restaurantId: 1,
             languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
-            addedToWaitlistMessage: 'Added to waitlist message',
-            addedToWaitlistWalkinMessage: 'Added to waitlist walkin message',
-            calledFromWaitlistMessage: 'Called from waitlist message',
+            addedToWaitlistMessage: 'Added to waitlist message @Client @Date @Link @Restaurant ',
+            addedToWaitlistWalkinMessage: 'Added to waitlist walkin message @Client @Date @Link @Restaurant',
+            calledFromWaitlistMessage: 'Called from waitlist message @Client @Date @Link @Restaurant',
         })
 
 

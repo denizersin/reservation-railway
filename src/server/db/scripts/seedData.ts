@@ -1,9 +1,9 @@
-import { languagesData } from "@/server/data"
 import { EnumGender, EnumLanguage, EnumVipLevel } from "@/shared/enums/predefined-enums"
 import TRestaurantTagValidator from "@/shared/validators/restaurant-tag"
 import { TGuestInsert, TPersonelInsert } from "../schema"
 import { TCountryInsert, TLanguageInsert } from "../schema/predefined"
 import { TRestaurantInsert } from "../schema/restaurant"
+import { languagesData } from "@/shared/data/predefined"
 
 const countries = [
     {
@@ -59,7 +59,7 @@ export const getGuests = (restaurantId: number) => new Array(40).fill(0).map((_,
     countryId: 1,
     birthDate: new Date(),
     email: `guest${index}@gmail.comz`,
-    languageId: 1,
+    languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.en)!.id,
     phone: '123',
     gender: EnumGender.male,
     restaurantId,

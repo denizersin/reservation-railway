@@ -81,7 +81,7 @@ export const guestsPagination = async ({
     paginationQuery: TGuestValidator.GuestsPaginationSchema
 }): Promise<TPagination<TGuest>> => {
 
-    const { name, email, surname, phone, companyId, countryId, languageId, vipLevel, isVip, isContactAssistant } = paginationQuery.filters;
+    const { name, email, surname, phone, companyId, countryId, languageId, vipLevel, isVip, isContactAssistant,guestId } = paginationQuery.filters;
     const { page, limit } = paginationQuery.pagination;
     const { global_search } = paginationQuery;
 
@@ -117,6 +117,11 @@ export const guestsPagination = async ({
     if (isContactAssistant) {
         andConditions.push(eq(tblGuest.isContactAssistant, isContactAssistant))
     }
+
+    if (guestId) {
+        andConditions.push(eq(tblGuest.id, guestId))
+    }
+
     const orConditions: SQL<unknown>[] = []
     if (global_search) {
         orConditions.push(like(tblGuest.name, `%${global_search}%`))

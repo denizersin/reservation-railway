@@ -119,6 +119,7 @@ export const guestsPaginationSchema =
                 vipLevel: z.enum(getEnumValues(EnumVipLevel)).optional(),
                 isVip: z.boolean().optional(),
                 isContactAssistant: z.boolean().optional(),
+                guestId: z.number().int().optional(),
             })
         })
 

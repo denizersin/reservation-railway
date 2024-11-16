@@ -26,6 +26,7 @@ const getReservationDetailLink = ({
 
 
 
+
 export const reservationLinks = {
     confirmation: getConfirmationLink,
     prepayment: getPrepaymentLink,

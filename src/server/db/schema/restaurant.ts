@@ -83,7 +83,7 @@ export const tblRestaurantLanguageRelations = relations(tblRestaurantLanguage, (
 
 
 
-type TRestaurantWithoutTrns = typeof tblRestaurant.$inferSelect
+export type TRestaurantWithoutTrns = typeof tblRestaurant.$inferSelect
 type TRestaurantWithoutTrnsInsert = typeof tblRestaurant.$inferInsert
 
 type TRestaurantTranslations = typeof tblRestaurantTranslations.$inferSelect

@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from 'react';
 import GuestCrudModal from '../../guests/_components/guest-crud-modal';
 import { ReservationDateCalendar } from './reservation-date-calendar';
 import { TableStatues2 } from './v2/table-statues2';
+import { SearchableGuestSelect } from '@/components/custom/searchable-guest-select';
 
 type Props = {}
 
@@ -36,9 +37,12 @@ export const CreateReservation = (props: Props) => {
 
 
 
-    const { data } = api.guest.getAllGuests.useQuery({
-        page: 1,
-        limit: 100,
+    const { data } = api.guest.getGuestsPagination.useQuery({
+        pagination:{
+            page:1,
+            limit:100
+        },
+        filters:{},
     })
 
     const { data: tags } = api.restaurant.getTags.useQuery()
@@ -59,7 +63,7 @@ export const CreateReservation = (props: Props) => {
         })) ?? []
     }, [data])
 
-    const [selectedGuestId, setSelectedGuestId] = useState<number | null>(null)
+    const [selectedGuestId, setSelectedGuestId] = useState<number | null>(1)
 
 
 
@@ -173,11 +177,19 @@ export const CreateReservation = (props: Props) => {
     return (
         <div>
             <div className='flex'>
-                <CustomComboSelect
+                {/* <CustomComboSelect
                     isFormSelect={false}
                     data={guestToSelect}
                     value={selectedGuestId?.toString()}
                     onValueChange={(value) => setSelectedGuestId(Number(value))}
+                    
+                /> */}
+
+                <SearchableGuestSelect
+                    value={selectedGuestId?.toString()}
+                    onValueChange={(value) => setSelectedGuestId(Number(value))}
+                    isFormSelect={false}
+
                 />
                 <Button variant={'link'} onClick={() => setIsCreateGuestModalOpen(true)}>Create Guest</Button>
             </div>

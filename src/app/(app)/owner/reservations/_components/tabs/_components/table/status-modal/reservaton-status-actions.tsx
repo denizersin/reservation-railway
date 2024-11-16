@@ -19,11 +19,19 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
 
     const { onSuccessReservationUpdate } = useMutationCallback()
 
+    const [withSms, setWithSms] = useState(true)
+    const [withEmail, setWithEmail] = useState(true)
+
     const { mutateAsync: requestForPrepayment, isPending: isRequestForPrepaymentPending } = api.reservation.requestForPrepayment.useMutation({
-        onSuccess: () => onSuccessReservationUpdate(reservation.id)
+        onSuccess: (...props) => {
+            onSuccessReservationUpdate(reservation.id)
+            console.log(props, 'props')
+        }
     })
     const { mutateAsync: confirmReservation, isPending: isConfirmReservationPending } = api.reservation.confirmReservation.useMutation({
-        onSuccess: () => onSuccessReservationUpdate(reservation.id)
+        onSuccess: () => {
+            onSuccessReservationUpdate(reservation.id)
+        }
     })
     const { mutateAsync: cancelReservation, isPending: isCancelReservationPending } = api.reservation.cancelReservation.useMutation({
         onSuccess: () => onSuccessReservationUpdate(reservation.id)
@@ -43,6 +51,12 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
     const { mutateAsync: repeatReservation, isPending: isRepeatReservationPending } = api.reservation.repeatReservation.useMutation({
         onSuccess: () => onSuccessReservationUpdate(reservation.id)
     })
+
+    const { mutateAsync: cancelConfirmationRequest, isPending: isCancelConfirmationRequestPending } = api.reservation.cancelConfirmationRequest.useMutation({
+        onSuccess: () => onSuccessReservationUpdate(reservation.id)
+    })
+
+
 
     const {
         mutateAsync: requestForConfirmation,
@@ -64,9 +78,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
     const isCreatedByOwner = Boolean(reservation.createdOwnerId)
     const isConfirmed = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmed
     const isCanceled = reservation.reservationStatusId === EnumReservationStatusNumeric.cancel
+    const isWaitingForConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
     const canRequestForConfirmation = isCreatedByOwner && !hasPrepayment && !hasBill && !isConfirmed
     const canConfirmReservation = !isConfirmed
     const canRequestForPrepayment = !hasPrepayment && !hasBill && !isConfirmed
+
     const { toast } = useToast()
 
 
@@ -86,7 +102,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
             title: "Notify Prepayment",
             onConfirm: async () => {
                 await notifyPrepayment({
-                    reservationId: reservation.id
+                    reservationId: reservation.id,
+                    notificationOptions: {
+                        withEmail,
+                        withSms
+                    }
                 })
             }
         })
@@ -98,7 +118,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
             title: "Ask for Bill",
             onConfirm: async () => {
                 await askForBill({
-                    reservationId: reservation.id
+                    reservationId: reservation.id,
+                    notificationOptions: {
+                        withEmail,
+                        withSms
+                    }
                 })
             }
         })
@@ -109,7 +133,13 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
             type: "confirm",
             title: "Confirm Reservation",
             onConfirm: async () => {
-                await confirmReservation({ reservationId: reservation.id })
+                await confirmReservation({
+                    reservationId: reservation.id,
+                    notificationOptions: {
+                        withEmail,
+                        withSms
+                    }
+                })
             }
         })
     }
@@ -121,7 +151,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
             title: "Cancel Prepayment",
             onConfirm: async () => {
                 await cancelPrepayment({
-                    reservationId: reservation.id
+                    reservationId: reservation.id,
+                    notificationOptions: {
+                        withEmail,
+                        withSms
+                    }
                 })
             }
         })
@@ -129,7 +163,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
 
     const handleRequestForConfirmation = async () => {
         await requestForConfirmation({
-            reservationId: reservation.id
+            reservationId: reservation.id,
+            notificationOptions: {
+                withEmail,
+                withSms
+            }
         })
     }
 
@@ -138,7 +176,26 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
             type: "delete",
             title: "Cancel Reservation",
             onConfirm: async () => {
-                await cancelReservation({ reservationId: reservation.id })
+                await cancelReservation({
+                    reservationId: reservation.id,
+                    notificationOptions: {
+                        withEmail,
+                        withSms
+                    }
+                })
+            }
+        })
+    }
+
+    const handleCancelConfirmationRequest = async () => {
+        ConfirmModalGlobal.show({
+            type: "delete",
+            title: "Cancel Confirmation Request",
+            onConfirm: async () => {
+                await cancelConfirmationRequest({
+                    reservationId: reservation.id,
+                    notificationOptions: { withEmail, withSms }
+                })
             }
         })
     }
@@ -149,52 +206,78 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
     useShowLoadingModal([isRequestForConfirmationPending])
 
     return (
-        <div className='flex flex-wrap gap-3 py-2'>
+        <div>
+            <div className='flex flex-wrap gap-3 py-2 mt-4 mb-2'>
 
-            {hasPrepayment ? (
-                <Button onClick={handleCancelPrepayment} variant={'destructive'}>Cancel Prepayment</Button>
-            ) : (
-                <Button onClick={handleRequestForPrepayment}>Request for Prepayment</Button>
-            )}
+                {hasPrepayment ? (
+                    <Button onClick={handleCancelPrepayment} variant={'destructive'}>Cancel Prepayment</Button>
+                ) : (
+                    <Button onClick={handleRequestForPrepayment}>Request for Prepayment</Button>
+                )}
 
-            {
-                hasPrepayment && (
+                {
+                    hasPrepayment && (
+                        <Button
+                            onClick={handleNotifyPrepayment}
+                            variant={'outline'}
+                        >Notify Prepayment</Button>
+                    )
+                }
+
+                {canConfirmReservation && (
                     <Button
-                        onClick={handleNotifyPrepayment}
-                        variant={'outline'}
-                    >Notify Prepayment</Button>
-                )
-            }
+                        className='bg-green-500 hover:bg-green-600'
+                        onClick={handleConfirmReservation}>Confirm Reservation</Button>
+                )}
+                
 
-            {canConfirmReservation && (
-                <Button
-                    className='bg-green-500 hover:bg-green-600'
-                    onClick={handleConfirmReservation}>Confirm Reservation</Button>
-            )}
+                {
+                    isOpenCreatePrepaymentModal && (
+                        <CreatePrepaymentModal
+                            reservation={reservation}
+                            open={isOpenCreatePrepaymentModal}
+                            setOpen={setIsOpenCreatePrepaymentModal}
+           
+                        />
+                    )
+                }
 
-            {
-                isOpenCreatePrepaymentModal && (
-                    <CreatePrepaymentModal
-                        reservation={reservation}
-                        open={isOpenCreatePrepaymentModal}
-                        setOpen={setIsOpenCreatePrepaymentModal}
+                {
+                    canRequestForConfirmation && (
+                        <Button onClick={handleRequestForConfirmation}>Request for Confirmation</Button>
+                    )
+                }
+                {
+                    isWaitingForConfirmation && (
+                        <Button onClick={handleCancelConfirmationRequest}>Cancel Confirmation Request</Button>
+                    )
+                }
+
+                {
+                    !isCanceled && (
+                        <Button variant={'destructive'} onClick={handleCancelReservation}>Cancel Reservation</Button>
+                    )
+                }
+
+
+            </div>
+            <div className="my-2 flex flex-wrap gap-2">
+                <div className='flex gap-2'>
+                    <Checkbox
+                        checked={withSms}
+                        onCheckedChange={(s) => setWithSms(s as boolean)}
                     />
-                )
-            }
-
-            {
-                canRequestForConfirmation && (
-                    <Button onClick={handleRequestForConfirmation}>Request for Confirmation</Button>
-                )
-            }
-
-            {
-                !isCanceled && (
-                    <Button variant={'destructive'} onClick={handleCancelReservation}>Cancel Reservation</Button>
-                )
-            }
-
-
+                    <Label>Send SMS</Label>
+                </div>
+                <div className='flex gap-2'>
+                    <Checkbox
+                        checked={withEmail}
+                        onCheckedChange={(s) => setWithEmail(s as boolean)}
+                    />
+                    <Label>Send Email</Label>
+                </div>
+            </div>
         </div>
+
     )
 }

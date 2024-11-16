@@ -1,5 +1,5 @@
-import { DEFAULT_LANGUAGE } from '@/server/data';
 import { api } from '@/server/trpc/react';
+import { DEFAULT_LANGUAGE } from '@/shared/data/predefined';
 import { useEffect } from 'react';
 
 

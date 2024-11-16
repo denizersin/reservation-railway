@@ -14,9 +14,9 @@ import { jwtEntities } from "../layer/entities/jwt";
 import { cookies } from "next/headers";
 import { EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
 import { TUserPreferences } from "../layer/use-cases/user/user";
-import { DEFAULT_LANGUAGE, languagesData } from "../data";
 import { db } from "../db";
 import { userUseCases } from "../layer/use-cases/user";
+import { DEFAULT_LANGUAGE, languagesData } from "@/shared/data/predefined";
 
 /**
  * 1. CONTEXT
@@ -49,6 +49,16 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   } else {
     userUseCases.updateUserPreferences({ language: DEFAULT_LANGUAGE.languageCode })
   }
+
+  // const toast = {
+  //   message: ''
+  // }
+  // const toastOptions = {
+  //   toast,
+  //   setToast: (message: string) => {
+  //     toast.message = message
+  //   }
+  // }
 
 
 

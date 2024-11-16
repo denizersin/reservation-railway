@@ -1,12 +1,10 @@
-import { Button } from "@/components/ui/button"
-import { TReservationRow } from "@/lib/reservation"
-import { useRouter } from "next/navigation"
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { Search, Trash } from "lucide-react"
-import { useMutationCallback } from "@/hooks/useMutationCallback"
-import { api } from "@/server/trpc/react"
 import { ConfirmModalGlobal } from "@/components/modal/confirm-modal"
+import { Button } from "@/components/ui/button"
+import { useMutationCallback } from "@/hooks/useMutationCallback"
+import { TReservationRow } from "@/lib/reservation"
+import { api } from "@/server/trpc/react"
+import { Search, Trash } from "lucide-react"
+import { useRouter } from "next/navigation"
 type Props = {
     reservation: TReservationRow
 }
@@ -38,16 +36,6 @@ export const ReservationStatusFooter = ({ reservation }: Props) => {
 
     return (
         <div className="mt-auto flex-1 justify-end flex flex-col">
-            <div className="flex gap-x-4">
-                <div className="flex items-center space-x-2">
-                    <Checkbox disabled checked={reservation.isSendEmail} id="checkbox1" />
-                    <Label htmlFor="checkbox1">Send Email</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Checkbox disabled checked={reservation.isSendSms} id="checkbox2" />
-                    <Label htmlFor="checkbox2">Send SMS</Label>
-                </div>
-            </div>
             <div className="flex gap-3 flex-wrap mt-3 justify-end">
                 <Button
                     onClick={onClickDetaul}
