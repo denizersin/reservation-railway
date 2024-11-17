@@ -1,6 +1,6 @@
 
 import { db } from "@/server/db";
-import { tblReservationTable, TReservationInsert } from "@/server/db/schema";
+import { tblPrepayment, tblReservationTable, TReservationInsert } from "@/server/db/schema";
 import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblConfirmationRequest, TConfirmationRequestInsert } from "@/server/db/schema/reservation/confirmation-request";
 import { createTransaction, TTransaction } from "@/server/utils/db-utils";
@@ -251,4 +251,14 @@ export const deleteReservationConfirmationRequests = async ({
     trx?: TTransaction
 }) => {
     await trx?.delete(tblConfirmationRequest).where(eq(tblConfirmationRequest.reservationId, reservationId))
+}
+
+export const deletePrepayment = async ({
+    reservationId,
+    trx = db
+}: {
+    reservationId: number,
+    trx?: TTransaction
+}) => {
+    await trx?.delete(tblPrepayment).where(eq(tblPrepayment.reservationId, reservationId))
 }

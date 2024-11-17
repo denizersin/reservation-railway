@@ -66,7 +66,10 @@ export const requestForPrepayment = async ({
 
     const newPrepaymentId = result?.id
 
-    if (!newPrepaymentId) throw new Error('Failed to create prepayment')
+    if (!newPrepaymentId) throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Failed to create prepayment',
+    })
 
     await ReservationEntities.updateReservation({
         reservationId,
@@ -93,7 +96,6 @@ export const requestForPrepayment = async ({
 
 }
 
-
 export const cancelPrepayment = async ({
     input,
     ctx
@@ -102,12 +104,17 @@ export const cancelPrepayment = async ({
         notificationOptions: { withEmail, withSms }
     } = input
 
-    const reservation = await ReservationEntities.getReservationById({ reservationId })
 
-    if (!reservation.prepaymentId) throw new Error('Reservation has no prepayment')
     const prepayment = await ReservationEntities.getPrepaymentByReservationId({ reservationId })
+    if (!prepayment) throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Reservation has no prepayment',
+    })
 
-    if (prepayment.status === EnumPrepaymentStatus.success) throw new Error('Prepayment already paid')
+    if (prepayment.status === EnumPrepaymentStatus.success) throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Prepayment already paid',
+    })
 
     createTransaction(async (trx) => {
         await trx.delete(tblPrepayment).where(
@@ -124,7 +131,7 @@ export const cancelPrepayment = async ({
         })
     })
 
-    await notificationUseCases.handleReservationCancelled({
+    await notificationUseCases.handlePrepaymentCancelled({
         reservationId,
         withEmail,
         withSms,
@@ -132,7 +139,6 @@ export const cancelPrepayment = async ({
     })
 
 }
-
 
 export const requestForConfirmation = async ({
     input,
@@ -244,36 +250,7 @@ export const confirmReservation = async ({
 
 }
 
-export const cancelReservation = async ({
-    input,
-    ctx
-}: TUseCaseOwnerLayer<TReservationValidator.cancelReservation>) => {
-    const { reservationId,
-        notificationOptions: { withEmail, withSms }
-    } = input
 
-    const reservation = await ReservationEntities.getReservationById({ reservationId })
-
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            reservationStatusId: EnumReservationStatusNumeric.cancel,
-        },
-    })
-
-    await ReservationLogEntities.createLog({
-        message: 'Reservation canceled',
-        reservationId,
-        owner: ctx.session.user.userId.toString()
-    })
-
-    await notificationUseCases.handleReservationCancelled({
-        reservationId,
-        withEmail,
-        withSms,
-        ctx
-    })
-}
 
 export const notifyPrepayment = async ({
     input,
@@ -291,6 +268,71 @@ export const notifyPrepayment = async ({
         withSms,
         ctx
     })
+
+}
+export const cancelReservation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.cancelReservation>) => {
+    const { reservationId,
+        notificationOptions: { withEmail, withSms }
+    } = input
+
+    const prepayment = await ReservationEntities.getPrepaymentByReservationId({ reservationId })
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+
+    const isStatusPrepayment = prepayment && reservation.reservationStatusId === EnumReservationStatusNumeric.prepayment
+    const isPrepaymentPaid = isStatusPrepayment && prepayment.status === EnumPrepaymentStatus.success
+    const isPrepaymentNotPaid = isStatusPrepayment && prepayment.status !== EnumPrepaymentStatus.success
+
+    const isStatusConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
+
+
+    createTransaction(async (trx) => {
+
+        if (isPrepaymentPaid) {
+            // await ReservationEntities.deletePrepayment({ reservationId, trx })
+        }
+
+        if (isPrepaymentNotPaid) {
+            await ReservationEntities.deletePrepayment({ reservationId, trx })
+        }
+
+        if (isStatusConfirmation) {
+            await ReservationEntities.deleteReservationConfirmationRequests({ reservationId, trx })
+        }
+
+        await ReservationEntities.updateReservation({
+            reservationId,
+            data: {
+                reservationStatusId: EnumReservationStatusNumeric.cancel,
+            },
+            trx
+        })
+
+    })
+
+    await ReservationLogEntities.createLog({
+        message: 'Reservation canceled',
+        reservationId,
+        owner: ctx.session.user.userId.toString()
+    })
+
+    await notificationUseCases.handleReservationCancelled({
+        reservationId,
+        withEmail,
+        withSms,
+        ctx
+    })
+}
+
+export const turnCanceledToReservation = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.turnCanceledToReservation>) => {
+    const { reservationId } = input
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
 
 }
 

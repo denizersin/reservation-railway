@@ -1,5 +1,5 @@
 "use client"
-
+import { useDebouncedCallback } from 'use-debounce';
 import { Button } from "@/components/ui/button"
 import {
     Command,
@@ -117,12 +117,18 @@ export function SearchableGuestSelect({
 
 
 
-
-    const handleSearch = (serachValue: string) => {
+    const debounced = useDebouncedCallback((bounceValue) => {
         setQueryInput((prev) => ({
             ...prev,
-            global_search: serachValue
+            global_search: bounceValue
         }))
+    }, 500)
+
+
+    const handleSearch = (serachValue: string) => {
+
+        debounced(serachValue)
+
         setSearch(serachValue);
     }
 

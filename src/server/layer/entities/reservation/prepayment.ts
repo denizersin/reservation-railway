@@ -41,10 +41,6 @@ export const getPrepaymentByReservationId = async ({
         where: eq(tblPrepayment.reservationId, reservationId)
     })
 
-    if (!prepayment) {
-        throw new Error('Prepayment not found')
-    }
-
     return prepayment
 }
 

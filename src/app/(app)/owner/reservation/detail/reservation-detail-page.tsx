@@ -7,14 +7,14 @@ import {
     TableBody,
     TableCell,
     TableHead,
-    TableHeader,    
+    TableHeader,
     TableRow,
 } from "@/components/ui/table";
 import { usePathname } from 'next/navigation';
 type Props = {}
 
 export const ReservationDetailPage = (props: Props) => {
-    
+
 
     const pathname = usePathname()
     const reservationId = Number(pathname.split('/').pop())
@@ -67,6 +67,7 @@ export const ReservationDetailPage = (props: Props) => {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Notification</TableHead>
+                                    <TableHead>Message</TableHead>
                                     <TableHead>Date</TableHead>
                                     <TableHead>Channel</TableHead>
                                 </TableRow>
@@ -76,6 +77,8 @@ export const ReservationDetailPage = (props: Props) => {
                                     reservationDetailData?.notifications.map((notification) => (
                                         <TableRow key={notification.id}>
                                             <TableCell>{notification.notificationMessageType}</TableCell>
+                                            <TableCell>{notification.message}</TableCell>
+
                                             <TableCell>{notification.createdAt.toLocaleString()}</TableCell>
                                             <TableCell>{notification.type}</TableCell>
                                         </TableRow>

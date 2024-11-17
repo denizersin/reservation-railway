@@ -87,6 +87,8 @@ const cancelPrepayment = baseReservationStatusAction
 const requestForBill = baseReservationStatusAction
 const askForBill = baseReservationStatusAction
 const returnPrepayment = baseReservationStatusAction
+const cancelAndReturnPrepayment = baseReservationStatusAction
+const turnCanceledToReservation = baseReservationStatusAction
 
 const requestForPrepaymentForm = z.object({
     customPrepaymentAmount: z.number().int().positive().optional(),
@@ -161,7 +163,8 @@ export const reservationValidator = {
     updateReservationNote,
     checkOutAndCompleteReservation,
     cancelConfirmationRequest,
-
+    cancelAndReturnPrepayment,
+    turnCanceledToReservation
 }
 
 namespace TReservationValidator {
@@ -193,6 +196,8 @@ namespace TReservationValidator {
     export type updateReservationNote = z.infer<typeof updateReservationNote>
     export type checkOutAndCompleteReservation = z.infer<typeof checkOutAndCompleteReservation>
     export type cancelConfirmationRequest = z.infer<typeof cancelConfirmationRequest>
+    export type cancelAndReturnPrepayment = z.infer<typeof cancelAndReturnPrepayment>
+    export type turnCanceledToReservation = z.infer<typeof turnCanceledToReservation>
 }
 
 export default TReservationValidator
