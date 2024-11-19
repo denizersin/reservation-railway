@@ -4,7 +4,7 @@ import { WaitlistFormValues } from "@/app/(app)/reservation/waitlist/join/page"
 type ReservationState = {
     date: Date
     guestCount: number
-    area: string,
+    areaId: number,
     time: string
 }
 

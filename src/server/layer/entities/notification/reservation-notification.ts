@@ -5,7 +5,7 @@ import { reservationLinks } from "@/server/utils/front-link";
 import { EnumLanguage, EnumNotificationType } from "@/shared/enums/predefined-enums";
 import { and, eq } from "drizzle-orm";
 import { LanguageEntity } from "../language";
-import { DEFAULT_LANGUAGE } from "@/shared/data/predefined";
+import { DEFAULT_LANGUAGE, languagesData } from "@/shared/data/predefined";
 import { TRPCError } from "@trpc/server";
 
 
@@ -58,7 +58,7 @@ export const generateReservationCreatedNotification = async ({
 
     const reservationMessage = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
-        languageId: reservation.guest.languageId
+        languageId: languagesData.find(a => a.languageCode === EnumLanguage.en)!.id
     })
 
     const message = reservationMessage.newReservationMessage

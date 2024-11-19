@@ -1,19 +1,18 @@
+import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
-import { boolean, index, int, mysqlEnum, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
-import { tblRestaurant } from '../restaurant';
-import { tblRoom, tblTable } from '../room';
+import { boolean, index, int, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
+import { tblUser } from '..';
 import { tblGuest, tblPersonel } from '../guest';
 import { tblMeal, tblReservationExistanceStatus } from '../predefined';
-import { tblPrepayment, tblBillPayment } from './prepayment';
-import { getEnumValues } from '@/server/utils/server-utils';
-import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentType, EnumReservationStatus, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums';
+import { tblRestaurant } from '../restaurant';
+import { tblRoom, tblTable } from '../room';
+import { tblConfirmationRequest } from './confirmation-request';
 import { tblReservationNotification } from './notification';
+import { tblBillPayment, tblPrepayment } from './prepayment';
 import { tblReservationLog } from './reservation-log';
 import { tblReservationNote } from './reservation-note';
-import { tblReservationTag } from './tag';
 import { tblReserVationStatus } from './reservation-status';
-import { tblUser } from '..';
-import { tblConfirmationRequest } from './confirmation-request';
+import { tblReservationTag } from './tag';
 
 
 export const tblReservation = mysqlTable('reservation', {
@@ -78,6 +77,7 @@ export const tblReservationTable = mysqlTable('reservation_tables', {
     deletedAt: timestamp('deleted_at'),
 }, (table) => ({
     reservationTableLookupIdx: index('idx_reservation_table_lookup').on(table.tableId,table.reservationId, ),
+    reservationTableUniqueIdx: unique('idx_reservation_table_unique').on(table.reservationId, table.tableId),
 }));
 export const tblReservationTableRelations = relations(tblReservationTable, ({ one }) => ({
     reservation: one(tblReservation, { fields: [tblReservationTable.reservationId], references: [tblReservation.id] }),

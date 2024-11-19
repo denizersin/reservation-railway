@@ -201,7 +201,7 @@ const seedFunctions = [
 
 
         await RoomEntities.createTables({
-            tables: new Array(10).fill(undefined).map((_, i) => ({
+            tables: new Array(2).fill(undefined).map((_, i) => ({
                 capacity: 2,
                 maxCapacity: 2,
                 minCapacity: 2,

@@ -9,6 +9,7 @@ import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran
 import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
 import { restaurantSettingEntities } from '../restaurant-setting';
+import { tblRoom, tblRoomTranslation } from '@/server/db/schema';
 
 export const createRestaurant = async ({
     restaurant,
@@ -122,11 +123,11 @@ export const setDefaultsToRestaurant = async ({
         const days = getEnumValues(EnumDays);
 
         await db.insert(tblRestaurantMealDays).values(
-            days.map(day => ({
+            days.map((day, index) => ({
                 mealId: dinner.id,
                 restaurantId: restaurantId,
                 day: day,
-                isOpen: true
+                isOpen: [0, 1].includes(index) ? true : false
             }))
         )
 
@@ -296,6 +297,18 @@ export const getRestaurantMealDays = async ({
 
     return restaurantMealDays
 }
+export const getRestaurantMealDaysByMealId = async ({
+    restaurantId,
+    mealId
+}: { restaurantId: number, mealId: number }) => {
+    const restaurantMealDays = await db.query.tblRestaurantMealDays.findMany({
+        where: and(
+            eq(tblRestaurantMealDays.restaurantId, restaurantId),
+            eq(tblRestaurantMealDays.mealId, mealId)
+        )
+    })
+    return restaurantMealDays
+}
 
 export const createMealHours = async ({
     restaurantId,
@@ -400,4 +413,21 @@ export const updateMealHour = async ({
 
 
 
+export const getRestaurantRoomsWithTranslations = async ({
+    restaurantId,
+    languageId
+}: {
+    restaurantId: number,
+    languageId: number
+}) => {
+    const rooms = await db.query.tblRoom.findMany({
+        where: eq(tblRoom.restaurantId, restaurantId),
+        with: {
+            translations: {
+                where: eq(tblRoomTranslation.languageId, languageId)
+            }
+        }
+    })
 
+    return rooms
+}

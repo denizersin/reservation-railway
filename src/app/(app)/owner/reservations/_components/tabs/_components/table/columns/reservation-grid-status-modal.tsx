@@ -56,7 +56,6 @@ export const ReservationGridStatusModal = ({
 
     const { deSelectedRows, selectedRows } = selectionRowState
 
-    console.log(selectedRows, deSelectedRows, 'selectedRows, deSelectedRows')
 
     const { onSuccessReservationUpdate } = useMutationCallback()
 

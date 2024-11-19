@@ -90,6 +90,15 @@ export enum EnumDays {
     saturday = 'saturday',
     sunday = 'sunday',
 }
+export enum EnumDaysNumeric{
+    monday = 0,
+    tuesday = 1,
+    wednesday = 2,
+    thursday = 3,
+    friday = 4,
+    saturday = 5,
+    sunday = 6,
+}
 
 export const DaysToSelect = getEnumValues(EnumDays).map(day => ({
     label: day as string,
@@ -221,4 +230,5 @@ export enum EnumHistoryActionType{
 
 export enum EnumHeader{
     RESTAURANT_ID = 'restaurant_id',
+    LANGUAGE = 'language',
 }

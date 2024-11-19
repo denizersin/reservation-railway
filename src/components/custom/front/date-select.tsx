@@ -1,13 +1,11 @@
-import React, { useState } from 'react'
 import {
     Sheet,
-    SheetClose,
     SheetContent,
     SheetDescription,
-    SheetHeader,
     SheetTitle,
-    SheetTrigger,
+    SheetTrigger
 } from "@/components/ui/sheet"
+import React, { useState } from 'react'
 
 import {
     Popover,
@@ -18,9 +16,9 @@ import {
 
 
 
-import { IconArrowLeft, IconArrowRight, IconCalendar, IconGuests } from '@/components/svgs'
+import { MonthAvailabilityContext } from '@/app/(app)/page'
+import { IconArrowLeft, IconArrowRight, IconCalendar } from '@/components/svgs'
 import { Button } from '@/components/ui/button'
-import { PopoverClose } from '@radix-ui/react-popover'
 import { cn } from '@/lib/utils'
 import { CustomCalendar } from '../custom-calendar'
 
@@ -44,10 +42,16 @@ export const DateSelect = ({
 
     const [popOverOpen, setPopOverOpen] = useState(false)
 
-    console.log(onClickAddWaitList, 'onClickAddWaitList')
 
+    const { isLoadingMonthAvailability, guestCount,setSelectedAreaId,setSelectedTime } = React.useContext(MonthAvailabilityContext)
 
-    const TriggerElement = <div className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>
+    
+
+    const isDisabled = isLoadingMonthAvailability || isWaitlistSelect
+
+    const TriggerElement = <div
+
+        className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>
         <div className="c ">
             <IconArrowLeft className="w-3 h-5" />
         </div>
@@ -57,7 +61,7 @@ export const DateSelect = ({
                 {isWaitlistSelect && <Button
                     variant={'default'}
                     size={'sm'}
-                    className={cn("hidden md:inline-flex bg-front-primary  hover:bg-front-primary/40  px-[6px] py-[2px] !h-max rounded-full ")}>
+                    className={cn("inline-flex bg-front-primary  hover:bg-front-primary/40  px-[6px] py-[2px] !h-max rounded-full ")}>
                     <span className="text-[9px]">Waitlisted</span>
                 </Button>}
             </div>
@@ -72,17 +76,25 @@ export const DateSelect = ({
     </div>
 
 
-    React.useEffect(() => {
+
+
+    const onDateSelect = (date: Date) => {
         setSheetOpen(false)
-    }, [date])
+        setPopOverOpen(false)
+        setDate(date)
+        setSelectedTime(undefined)
+        setSelectedAreaId(undefined)
+    }
+
+
 
     return (
         <div className='w-full '>
             <div className="w-full md:hidden">
                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                     {
-                        isWaitlistSelect ? TriggerElement :
-                            <SheetTrigger asChild>
+                        isDisabled ? TriggerElement :
+                            <SheetTrigger asChild className='w-full'>
                                 {TriggerElement}
                             </SheetTrigger>
                     }
@@ -91,8 +103,8 @@ export const DateSelect = ({
                         <SheetDescription>
                             <CustomCalendar
                                 date={date}
-                                setDate={setDate}
                                 mode='single'
+                                onDateSelect={onDateSelect}
                                 onClickAddWaitList={onClickAddWaitList}
                             />
                         </SheetDescription>
@@ -104,22 +116,20 @@ export const DateSelect = ({
 
 
             <div className="w-full hidden md:block ">
-                <Popover>
+                <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
                     {
-                        isWaitlistSelect ? TriggerElement :
+                        isDisabled ? TriggerElement :
                             <PopoverTrigger asChild className='w-full'>
                                 {TriggerElement}
                             </PopoverTrigger>
                     }
                     <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] flex flex-col p-0">
-                        <PopoverClose>
-                            <CustomCalendar
-                                date={date}
-                                setDate={setDate}
-                                mode='single'
-                                onClickAddWaitList={onClickAddWaitList}
-                            />
-                        </PopoverClose>
+                        <CustomCalendar
+                            date={date}
+                            mode='single'
+                            onDateSelect={onDateSelect}
+                            onClickAddWaitList={onClickAddWaitList}
+                        />
 
                     </PopoverContent>
                 </Popover>

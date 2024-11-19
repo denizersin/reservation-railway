@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import {
     Sheet,
     SheetClose,
@@ -34,11 +34,13 @@ import { Button } from '@/components/ui/button'
 import { PopoverClose } from '@radix-ui/react-popover'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { MonthAvailabilityContext } from '@/app/(app)/page'
+import { format } from 'date-fns'
 
 
 type Props = {
-    area: string | undefined
-    setArea: (area: string) => void
+    areaId: number | undefined
+        setAreaId: (areaId: number) => void
 }
 
 type Item = {
@@ -47,8 +49,8 @@ type Item = {
 }
 
 export const AreaSelect = ({
-    area,
-    setArea
+    areaId,
+    setAreaId
 }: Props) => {
 
 
@@ -78,12 +80,42 @@ export const AreaSelect = ({
     ]
 
 
+    const { selectedDate, monthAvailabilityData, guestCount, selectedTime } = useContext(MonthAvailabilityContext)
+
+
+    const avaliableRooms = useMemo(() => {
+        if (!(selectedDate && monthAvailabilityData && guestCount && selectedTime)) return []
+
+
+        const row = monthAvailabilityData?.find(r => format(r.date, 'dd-mm-yy') === format(selectedDate, 'dd-mm-yy'))
+
+        const avaliableRooms = row?.roomStatus.map(roomRecord => {
+            const isRoomAvaliable = roomRecord.hourStatus.some(hourRecord => {
+                const isAvaliable = hourRecord.avaliableMinCapacity > 0 &&
+                    guestCount >= hourRecord.avaliableMinCapacity && guestCount <= hourRecord.avaliableMaxCapacity;
+
+                return isAvaliable && hourRecord.hour === selectedTime
+
+            })
+            return {
+                ...roomRecord,
+                isAvailableForTime: isRoomAvaliable
+            }
+        })
+        return avaliableRooms || []
+    }, [monthAvailabilityData, guestCount, selectedTime])
+
+    const currentArea = useMemo(() => {
+        return avaliableRooms.find(a => a.room.id === areaId)
+    }, [avaliableRooms, areaId])
+
+
     const TriggerElement = <div className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>
         <div className="c ">
             <IconArrowLeft className="w-3 h-5" />
         </div>
         <div className="c flex flex-col items-center">
-            <div className="text-front-primary font-semibold mb-1">{area}</div>
+            <div className="text-front-primary font-semibold mb-1">{currentArea?.room.name}</div>
             <div className="flex items-center gap-2 text-gray-500">
                 <div className=""><IconSittingArea className="size-4 " /></div>
                 <div className="text-sm">Sitting Area</div>
@@ -115,41 +147,41 @@ export const AreaSelect = ({
                     <SheetContent side={'bottom'} >
                         <SheetTitle className='mb-3'>Select number of guests</SheetTitle>
                         <SheetDescription>
-                        {
-                            areas.map((item) => {
+                            {
+                                areas.map((item) => {
 
-                                const isAvailable = item.isAvailable
-                                return <div
+                                    const isAvailable = item.isAvailable
+                                    return <div
 
-                                    key={item.id}
-                                    className={cn('flex items-center gap-2 py-3 border-b ', {
-                                        'bg-muted': area === item.name,
-                                        'cursor-pointer hover:bg-muted': isAvailable,
-                                        'opacity-50 cursor-not-allowed': !isAvailable
-                                    })}>
-                                    <div
-                                        onClick={() => {
-                                            handleShowImage(item.name)
-                                        }}
-                                        className="c flex flex-col items-center gap-y-2 p-1">
-                                        <IconImage className="size-4 text-front-primary" />
-                                        <div className="text-sm text-front-primary border-none underline">
-                                            see image
+                                        key={item.id}
+                                        className={cn('flex items-center gap-2 py-3 border-b ', {
+                                            'bg-muted': currentArea?.room.id === item.id,
+                                            'cursor-pointer hover:bg-muted': isAvailable,
+                                            'opacity-50 cursor-not-allowed': !isAvailable
+                                        })}>
+                                        <div
+                                            onClick={() => {
+                                                handleShowImage(item.name)
+                                            }}
+                                            className="c flex flex-col items-center gap-y-2 p-1">
+                                            <IconImage className="size-4 text-front-primary" />
+                                            <div className="text-sm text-front-primary border-none underline">
+                                                see image
+                                            </div>
                                         </div>
+                                        <SheetClose
+                                            onClick={() => {
+                                                if (isAvailable) {
+                                                    setAreaId(item.id)
+                                                }
+                                            }}
+                                            className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
+                                            <div className="">{item.name}</div>
+                                            <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
+                                        </SheetClose>
                                     </div>
-                                    <SheetClose
-                                        onClick={() => {
-                                            if (isAvailable) {
-                                                setArea(item.name)
-                                            }
-                                        }}
-                                        className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
-                                        <div className="">{item.name}</div>
-                                        <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
-                                    </SheetClose>
-                                </div>
-                            })
-                        }
+                                })
+                            }
                         </SheetDescription>
                     </SheetContent>
                 </Sheet>
@@ -163,20 +195,20 @@ export const AreaSelect = ({
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] flex flex-col p-4 ">
                         {
-                            areas.map((item) => {
+                            avaliableRooms.map((item) => {
 
-                                const isAvailable = item.isAvailable
+                                const isAvailable = item.isAvailableForTime
                                 return <div
 
-                                    key={item.id}
+                                    key={item.room.id}
                                     className={cn('flex items-center gap-2 py-3 border-b ', {
-                                        'bg-muted': area === item.name,
+                                        'bg-muted': currentArea?.room.id === item.room.id,
                                         'cursor-pointer hover:bg-muted': isAvailable,
                                         'opacity-50 cursor-not-allowed': !isAvailable
                                     })}>
                                     <div
                                         onClick={() => {
-                                            handleShowImage(item.name)
+                                            handleShowImage(item.room.name)
                                         }}
                                         className="c flex flex-col items-center gap-y-2 p-1">
                                         <IconImage className="size-4 text-front-primary" />
@@ -187,14 +219,14 @@ export const AreaSelect = ({
                                     <PopoverClose
                                         onClick={() => {
                                             if (isAvailable) {
-                                                setArea(item.name)
+                                                setAreaId(item.room.id)
                                             }
                                         }}
-                                        className={cn('flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center ',{
+                                        className={cn('flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center ', {
                                             'cursor-pointer hover:bg-muted': isAvailable,
                                             'opacity-50 cursor-not-allowed': !isAvailable
                                         })}>
-                                        <div className="">{item.name}</div>
+                                        <div className="">{item.room.name}</div>
                                         <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                     </PopoverClose>
                                 </div>

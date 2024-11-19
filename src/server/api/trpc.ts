@@ -156,12 +156,18 @@ export const publicProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
     throw new TRPCError({ code: "BAD_REQUEST", message: "Restaurant id header is required" });
   }
 
+  const language = ctx.headers.get(EnumHeader.LANGUAGE) || EnumLanguage.en;
+
+  const languageData = languagesData.find(l => l.languageCode === language)!
+
+
   console.log(parseInt(restaurantId), 'Number(restaurantId)')
 
   return next({
     ctx: {
       ...ctx,
       restaurantId: Number(restaurantId),
+      language: languageData,
     }
   })
 });

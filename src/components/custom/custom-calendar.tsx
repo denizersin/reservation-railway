@@ -7,37 +7,48 @@ import { ActiveModifiers, DayPicker, DayPickerSingleProps, DayProps } from "reac
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
+import { MonthAvailabilityContext, TMonthAvailabilityRow } from "@/app/(app)/page"
+import { format } from "date-fns"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
     date: Date
-    setDate: (date: Date) => void
     onClickAddWaitList?: (date: Date) => void
+    onDateSelect: (date: Date) => void
 }
 
-const today = new Date()
-const mockFullDates = [
-    new Date(today.getFullYear(), today.getMonth(), 1),  // 1st
-    new Date(today.getFullYear(), today.getMonth(), 2),  // 2nd
-    new Date(today.getFullYear(), today.getMonth(), 3),  // 3rd
-    new Date(today.getFullYear(), today.getMonth(), 4),   // 4th
-    new Date(today.getFullYear(), today.getMonth(), 5),   // 5th
-    new Date(today.getFullYear(), today.getMonth(), 6),   // 6th
-].filter(date => date.getDay() !== 0 && date.getDay() !== 6); // Exclude weekends (0 = Sunday, 6 = Saturday)
-
-
-
+type DateMapWithGuestCount = {
+    [key: string]: TMonthAvailabilityRow & {
+        isGuestCountAvailable: boolean
+    }
+}
 function CustomCalendar({
     className,
     classNames,
     showOutsideDays = true,
     date,
-    setDate,
     onClickAddWaitList,
-
+    onDateSelect,
     ...props
 }: CalendarProps) {
 
 
+    const { monthAvailabilityData, guestCount } = React.useContext(MonthAvailabilityContext)
+
+    const dateMap = React.useMemo(() => {
+        const newMap: DateMapWithGuestCount = {};
+        monthAvailabilityData?.forEach((record) => {
+            const date = record.date
+            newMap[format(date, 'dd-mm-yy')] = {
+                ...record,
+                isGuestCountAvailable: record.roomStatus.some(roomRecord => {
+                    return roomRecord.hourStatus.some(hourRecord => {
+                        return hourRecord.avaliableMinCapacity >= guestCount && hourRecord.avaliableMaxCapacity >= guestCount
+                    })
+                })
+            }
+        })
+        return newMap
+    }, [monthAvailabilityData,guestCount])
 
     const [month, setMonth] = React.useState(date)
 
@@ -46,6 +57,8 @@ function CustomCalendar({
             setMonth(date)
         }
     }, [date])
+
+    console.log(dateMap)
 
 
     return (
@@ -126,28 +139,42 @@ function CustomCalendar({
 
                 Day: (props: DayProps) => {
 
-                    const isFullDate = mockFullDates.some(d => d.toLocaleDateString() === props.date.toLocaleDateString())
+                    const dateData = dateMap[format(props.date, 'dd-mm-yy')]
 
-                    const isWeekend = props.date.getDay() === 0 || props.date.getDay() === 6
+                    const isInActiveDate = !Boolean(dateData)
+
+                    const isActiveDate = Boolean(dateData)
+
+
+                    const hasNotAvalibleTable = isActiveDate && !(dateData?.hasAvailableTable)
+
+                    let isFullyDate = hasNotAvalibleTable
 
                     const isBelongToMonth = props.date.getMonth() == month.getMonth()
+
                     const isSelected = date?.toLocaleDateString() === props.date.toLocaleDateString()
+
+                    const isDisabled = isInActiveDate || isFullyDate || !isBelongToMonth
+
+
+
                     // const isFull
                     return isBelongToMonth ? <Button
                         // disabled={!isBelongToMonth}
                         onClick={() => {
-
-                            setDate(props.date)
+                            if (!isDisabled) {
+                                onDateSelect(props.date)
+                            }
                         }}
                         variant="default" className={cn('test w-[44px] md:w-[79px] h-[44px]  p-0 font-normal bg-front-primary bg-white shadow-none hover:text-white text-front-primary', {
                             'bg-front-primary text-front-primary-foreground': isSelected,
-                            'bg-gray-100 text-gray-500 hover:bg-gray-100 hover:text-gray-500': !isBelongToMonth || isFullDate || isWeekend,
-                            "line-through": isFullDate,
+                            'bg-gray-100 text-gray-500 hover:bg-gray-100 hover:text-gray-500': !isBelongToMonth || isFullyDate || isInActiveDate,
+                            "line-through": isFullyDate,
                             // "hover:bg-primary hover:text-primary-foreground": !isSelected
                         })}>
                         {props.date.getDate()}
                         {
-                            isFullDate && <Button
+                            isFullyDate && <Button
                                 variant={'default'}
                                 size={'sm'}
                                 onClick={() => {

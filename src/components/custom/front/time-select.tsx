@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import {
     Sheet,
     SheetClose,
@@ -23,6 +23,8 @@ import { Button } from '@/components/ui/button'
 import { PopoverClose } from '@radix-ui/react-popover'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/useMediaQueries'
+import { MonthAvailabilityContext } from '@/app/(app)/page'
+import { format } from 'date-fns'
 
 
 type Props = {
@@ -42,40 +44,47 @@ export const TimeSelect = ({
 
     const isMobile = useIsMobile();
 
-    
 
 
-    const times = [
-        { id: 1, time: '18:00', isAvailable: false },
-        { id: 2, time: '18:30', isAvailable: false },
-        { id: 3, time: '19:00', isAvailable: false },
-        { id: 4, time: '19:30', isAvailable: false },
-        { id: 5, time: '20:00', isAvailable: true },
-        { id: 6, time: '20:30', isAvailable: true },
-        { id: 7, time: '21:00', isAvailable: true },
-        { id: 8, time: '21:30', isAvailable: true },
-        { id: 9, time: '22:00', isAvailable: true },
-    ]
 
-    const otherTreeDayAvailableTimes = ([
-        [
-            { id: 1, time: '18:00', isAvailable: true },
-            { id: 2, time: '18:30', isAvailable: true },
-            { id: 3, time: '19:00', isAvailable: true },
-            { id: 4, time: '19:30', isAvailable: true },
-        ],
-        [
-            { id: 3, time: '19:00', isAvailable: true },
-            { id: 4, time: '19:30', isAvailable: true },
-        ],
-        [
-            { id: 5, time: '20:00', isAvailable: true },
-            { id: 6, time: '20:30', isAvailable: true },
-            { id: 7, time: '21:00', isAvailable: true },
-            { id: 8, time: '21:30', isAvailable: true },
-            { id: 9, time: '22:00', isAvailable: true },
-        ]
-    ])
+
+
+    const { selectedDate, monthAvailabilityData, guestCount } = useContext(MonthAvailabilityContext)
+
+
+    const avaliableHours = useMemo(() => {
+        if (!(selectedDate && monthAvailabilityData && guestCount)) return []
+
+        const allHours: string[] = []
+
+        const row = monthAvailabilityData?.find(r => format(r.date, 'dd-mm-yy') === format(selectedDate, 'dd-mm-yy'))
+        const avaliables = row?.roomStatus.map(roomRecord => {
+            return roomRecord.hourStatus.map(hourRecord => {
+                allHours.push(hourRecord.hour)
+                const isAvaliable = hourRecord.avaliableMinCapacity > 0 &&
+                    guestCount >= hourRecord.avaliableMinCapacity && guestCount <= hourRecord.avaliableMaxCapacity;
+                return isAvaliable ? hourRecord.hour : undefined
+
+            }).filter(Boolean)
+        })
+
+        const r = avaliables?.flat().filter(Boolean) as string[]
+
+        const uniqueAllHours = [...new Set(allHours)]
+
+
+        //remove duplicate
+        return uniqueAllHours.map(hour => ({
+            time: hour,
+            isAvailable: r.includes(hour)
+        }))
+    }, [monthAvailabilityData, guestCount])
+
+
+
+
+
+
 
 
     const TriggerElement = <div className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>
@@ -94,7 +103,7 @@ export const TimeSelect = ({
         </div>
     </div>
 
-    console.log(isMobile,'ismobile')
+    console.log(isMobile, 'ismobile')
 
     const CONTENT = (
         <div className="flex flex-col">
@@ -103,7 +112,7 @@ export const TimeSelect = ({
             </div>
             <div className="flex gap-3 flex-wrap py-4 border-b ">
                 {
-                    times.map((item) => {
+                    avaliableHours.map((item) => {
 
                         const isAvailable = item.isAvailable
 
@@ -115,7 +124,7 @@ export const TimeSelect = ({
                                     'opacity-50 cursor-not-allowed': !isAvailable,
                                     "hover:bg-muted": isAvailable
                                 })}
-                                key={item.id}>{item.time}</div>
+                                key={item.time}>{item.time}</div>
                         )
 
                         const CloseComponent = isMobile ? SheetClose : PopoverClose
@@ -129,39 +138,6 @@ export const TimeSelect = ({
                 We have tables available on other days too
             </div>
 
-            {
-                otherTreeDayAvailableTimes.map((item, index) => {
-                    return <div>
-                        <div className="text-sm font-semibold ">
-                            {new Date(new Date().setDate(new Date().getDate() + index)).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                        </div>
-                        <div className="flex gap-3 flex-wrap py-2  ">
-                            {
-                                item.map((item) => {
-
-                                    const isAvailable = item.isAvailable
-
-                                    const CloseComponent = isMobile ? SheetClose : PopoverClose
-
-                                    const content = (
-                                        <div
-                                            onClick={() => setTime(item.time)}
-                                            className={cn(' px-4 py-2 cursor-pointer border rounded-full text-sm text-front-primary hover:bg-muted ', {
-                                                'bg-muted': time === item.time
-                                            })}
-                                            key={item.id}>{item.time}</div>
-                                    )
-
-                                    return isAvailable ? <CloseComponent>
-                                        {content}
-                                    </CloseComponent> : content
-                                })
-                            }
-                        </div>
-                    </div>
-
-                })
-            }
 
         </div>
     )

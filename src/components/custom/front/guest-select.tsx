@@ -26,7 +26,8 @@ import { cn } from '@/lib/utils'
 
 type Props = {
   guestCount: number
-  setGuestCount: (count: number) => void
+  setGuestCount: (count: number) => void,
+  disabled?: boolean
 }
 
 type Item = {
@@ -36,9 +37,13 @@ type Item = {
 
 export const GuestSelect = ({
   guestCount,
-  setGuestCount
+  setGuestCount,
+  disabled = false
 }: Props) => {
 
+
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isPopOverOpen, setIsPopOverOpen] = useState(false)
 
   const items: Item[] = new Array(5).fill(0).map((_, i) => ({ id: i + 1, count: i + 1 }))
 
@@ -65,9 +70,14 @@ export const GuestSelect = ({
   return (
     <div className='w-full '>
       <div className="w-full md:hidden">
-        <Sheet >
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
-            {TriggerElement}
+            {
+              disabled ? TriggerElement :
+                <SheetTrigger asChild className='w-full'>
+                  {TriggerElement}
+                </SheetTrigger>
+            }
           </SheetTrigger>
           <SheetContent side={'bottom'} >
             <SheetTitle className='mb-3'>Select number of guests</SheetTitle>
@@ -91,10 +101,14 @@ export const GuestSelect = ({
 
 
       <div className="w-full hidden md:block ">
-        <Popover>
-          <PopoverTrigger asChild className='w-full'>
-            {TriggerElement}
-          </PopoverTrigger>
+        <Popover open={isPopOverOpen} onOpenChange={setIsPopOverOpen}>
+
+          {
+            disabled ? TriggerElement :
+              <PopoverTrigger asChild className='w-full'>
+                {TriggerElement}
+              </PopoverTrigger>
+          }
           <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] flex flex-col p-0">
             {
               items.map((item) => {

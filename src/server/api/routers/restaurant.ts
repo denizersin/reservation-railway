@@ -9,6 +9,7 @@ import { restaurantAssetsValidator } from "@/shared/validators/restaurant/restau
 import { personelValidator } from "@/shared/validators/user/personel";
 import { z } from "zod";
 import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
+import { EnumDaysNumeric } from "@/shared/enums/predefined-enums";
 
 export const restaurantRouter = createTRPCRouter({
     updateRestaurantGeneralSettings: ownerProcedure
@@ -170,6 +171,10 @@ export const restaurantRouter = createTRPCRouter({
     getPersonels: ownerProcedure.query(async (opt) => {
         return await restaurantUseCases.getPersonel(opt)
     }),
-
+    getMealDaysByMealId: publicProcedure.input(z.object({ mealId: z.number() })).query(async ({ input, ctx }) => {
+        const { restaurantId } = ctx
+        const daysData = await restaurantEntities.getRestaurantMealDaysByMealId({ restaurantId: restaurantId, mealId: input.mealId })
+        return daysData.map((r) => EnumDaysNumeric[r.day] as number)
+    }),
 
 });

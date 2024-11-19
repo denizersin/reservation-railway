@@ -24,7 +24,7 @@ export default function ReservationWaitlistPage() {
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper className="mt-10">
-            <GuestSelect guestCount={guestCount} setGuestCount={setGuestCount} />
+            <GuestSelect disabled={true} guestCount={guestCount} setGuestCount={setGuestCount} />
             <DateSelect date={date!} setDate={setDate} isWaitlistSelect={true} />
 
             <div className="px-2 md:px-0">

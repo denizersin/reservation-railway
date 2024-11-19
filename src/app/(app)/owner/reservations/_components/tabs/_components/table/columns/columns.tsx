@@ -254,7 +254,6 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
 
       useShowLoadingModal([isTakeReservationInPending, isMakeReservationNotExistPending])
 
-      console.log(mainTableCountOptions, 'mainTableCountOptions')
 
       return <div
         className={cn('p-2', {

@@ -2,14 +2,15 @@ import { db } from "@/server/db";
 import { tblReservation, tblReservationTable } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
-import { tblRoom, tblTable } from "@/server/db/schema/room";
+import { tblRoom, tblTable, TRoomWithTranslations } from "@/server/db/schema/room";
 import { TUseCasePublicLayer } from "@/server/types/types";
-import { getLocalTime, getMonthDays, getStartAndEndOfDay } from "@/server/utils/server-utils";
-import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
+import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
+import { EnumDaysNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TClientQueryValidator from "@/shared/validators/front/reservation";
 import { and, between, eq, ne, sql } from "drizzle-orm";
 import { restaurantEntities } from "../../entities/restaurant";
 import { groupByWithKeyFn } from "@/lib/utils";
+import { RoomEntities } from "../../entities/room";
 
 
 
@@ -22,31 +23,46 @@ export const getMonthAvailability = async ({
 }: TUseCasePublicLayer<TClientQueryValidator.TMonthAvailabilityQuery>) => {
 
     const { month, mealId } = input
-    const { restaurantId } = ctx
+    const { restaurantId, language } = ctx
 
-    const inputDate = new Date(new Date().getFullYear(), month, 1)
-    inputDate.setHours(0, 0, 0, 0)
+    const today = new Date();
 
-    const { start, end } = getStartAndEndOfDay({
-        date:
-            getLocalTime(inputDate)
-    })
+    const firstDate = new Date()
+    firstDate.setUTCDate(today.getUTCDate())
+    firstDate.setUTCHours(0, 0, 0, 0)
+    firstDate.setUTCMonth(month)
+    firstDate.setUTCFullYear(today.getUTCFullYear())
 
-    const endOfMonthDay = new Date(start.getFullYear(), start.getMonth() + 1, 0)
 
-    const monthDays = getMonthDays(start, endOfMonthDay)
+
+
+
+    const endOfMonthDay = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0)
+
+    const daysData = await restaurantEntities.getRestaurantMealDaysByMealId({ restaurantId: restaurantId, mealId: input.mealId })
+    const inActiveMealDays = daysData
+        .filter((r) => !r.isOpen)
+        .map((r) => EnumDaysNumeric[r.day] as number)
+
+
+
+    const monthDays = getMonthDays(firstDate, endOfMonthDay)
+        .filter((day) => !inActiveMealDays.includes(getLocalTime(day).getUTCDay()))
+
+
+
+
+
     const promises = monthDays.map(async (day) => {
         const tableStatuses = await getStatusWithLimitation({ date: day, mealId, restaurantId })
         return tableStatuses
     })
 
-    const s1=performance.now();
     const result = await Promise.all(promises)
-    const s2 = performance.now()
-    console.log(`getMonthAvailability took ${s2 - s1}ms`)   
-
 
     type HourStatus = Awaited<ReturnType<typeof getStatusWithLimitation>>[0]
+
+    const rooms = await restaurantEntities.getRestaurantRoomsWithTranslations({ restaurantId, languageId: language.id })
 
     result.forEach((dayStatuses, index) => {
         dayStatuses.forEach((r) => {
@@ -58,7 +74,7 @@ export const getMonthAvailability = async ({
             if (r.limitationId) {
                 const { avaliableGuest, avaliableMinCapacity, avaliableMaxCapacity } = r
                 r.avaliableMinCapacity = avaliableGuest >= avaliableMinCapacity ? avaliableMinCapacity : 0
-                r.avaliableMaxCapacity = Math.max(avaliableGuest, avaliableMaxCapacity)
+                r.avaliableMaxCapacity = avaliableGuest >= avaliableMaxCapacity ? avaliableMaxCapacity : avaliableGuest
 
                 if (r.avaliableTable < 0) {
                     r.avaliableMinCapacity = 0;
@@ -71,11 +87,15 @@ export const getMonthAvailability = async ({
     type TReservationQueryResult = {
         date: Date,
         roomStatus: {
-            roomId: number,
+            room: {
+                id: number,
+                name: string
+            },
             hourStatus: HourStatus[]
             hasAvailableTable: boolean
         }[],
-        hasAvailableTable: boolean
+        hasAvailableTable: boolean,
+        
     }
 
     const newResult: TReservationQueryResult[] = []
@@ -85,7 +105,10 @@ export const getMonthAvailability = async ({
         const day = monthDays[index]
         const grouped = groupByWithKeyFn(dayStatuses, (dayStatus) => dayStatus.room)
         const roomStatuses = Object.entries(grouped).map(([roomId, hourStatuses]) => ({
-            roomId: Number(roomId),
+            room: {
+                id: Number(roomId),
+                name: rooms.find(a => a.id === Number(roomId))!.translations[0]?.name!
+            },
             hourStatus: hourStatuses,
             hasAvailableTable: hourStatuses.some(a => a.avaliableMinCapacity > 0)
         }))
@@ -95,6 +118,23 @@ export const getMonthAvailability = async ({
             hasAvailableTable: roomStatuses.some(a => a.hasAvailableTable)
         })
     })
+
+
+
+
+    newResult.forEach((r) => {
+        r.roomStatus.forEach((r) => {
+            r.hourStatus.forEach((r) => {
+                r.hour = utcHourToLocalHour(r.hour)
+            })
+        })
+    })
+
+
+
+
+
+    //get permanen limitation??
 
 
     return newResult
@@ -131,6 +171,8 @@ function getStatusWithLimitation({ date, mealId, restaurantId }: { date: Date, m
     const { start, end } = getStartAndEndOfDay({
         date: getLocalTime(date)
     })
+
+    console.log(start, end, 'start, end')
 
     // All reserved tables for non-limited hours
     const reservedTables = db

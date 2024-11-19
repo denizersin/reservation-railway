@@ -52,6 +52,7 @@ export function ReservationDataTable({
   const { queryDate } = useReservationsContext()
 
 
+
   const { data } = api.reservation.getReservations.useQuery({
     date: queryDate
   },{
@@ -142,7 +143,7 @@ export function ReservationDataTable({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      {/* <DataTablePagination table={table} /> */}
     </div>
   )
 }

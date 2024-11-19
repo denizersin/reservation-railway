@@ -5,7 +5,7 @@ type Props = {}
 
 const ListView = (props: Props) => {
 
-
+    console.log('LISTT')
 
     return (<div className='mb-10'>
         <ListViewCards />
