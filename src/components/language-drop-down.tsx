@@ -18,7 +18,7 @@ import { IconLoader2 } from '@tabler/icons-react';
 
 
 const LanguageDropDown = () => {
-    const { data: languages } = api.predefiend.getLanguages.useQuery();
+    const { data: languages } = api.restaurant.getLanguages.useQuery();
     const { language: languageCode, isLoading } = useLanguage();
     const router = useRouter();
 

@@ -1,4 +1,4 @@
-import { boolean, int, mysqlEnum, mysqlTable, time, unique } from 'drizzle-orm/mysql-core';
+import { boolean, int, mysqlEnum, mysqlTable, time, unique, index } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { tblMeal, TMeal } from './predefined';
 import { tblRestaurant } from './restaurant';
@@ -38,6 +38,7 @@ export const tblMealHours = mysqlTable('meal_hours', {
     isOpen: boolean('is_open').notNull().$default(() => true),
 }, (t) => ({
     unq: unique('unique_meal_hours').on(t.mealId, t.hour),
+    mealHoursLookupIdx: index('idx_meal_hours_lookup').on(t.restaurantId, t.mealId, t.isOpen, t.hour),
 }));
 
 export const tblMealHoursRelations = relations(tblMealHours, ({ one }) => ({

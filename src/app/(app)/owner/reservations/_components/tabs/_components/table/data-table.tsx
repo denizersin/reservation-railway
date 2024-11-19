@@ -58,14 +58,6 @@ export function ReservationDataTable({
     staleTime:0
   })
 
-  const { data: tableStatues } = api.reservation.getTableStatues.useQuery({
-    date: queryDate,
-    mealId: 3,
-
-  },{
-    staleTime:0
-  })
-
 
 
 
@@ -79,6 +71,7 @@ export function ReservationDataTable({
       columnFilters,
     },
     enableRowSelection: true,
+
 
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -149,7 +142,7 @@ export function ReservationDataTable({
           </TableBody>
         </Table>
       </div>
-      {/* <DataTablePagination table={table} /> */}
+      <DataTablePagination table={table} />
     </div>
   )
 }

@@ -72,22 +72,34 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
         }
     })
 
-
-    const hasPrepayment = reservation.prePaymentTypeId !== EnumReservationPrepaymentNumeric.none
-    const hasBill = reservation.billPaymentId !== null
-    const isCreatedByOwner = Boolean(reservation.createdOwnerId)
+    //is prepayment
+    const hasCurrentPrepayment = reservation.currentPrepaymentId !== null
     const isConfirmed = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmed
     const isCanceled = reservation.reservationStatusId === EnumReservationStatusNumeric.cancel
+    const isCompleted = reservation.reservationStatusId === EnumReservationStatusNumeric.completed
     const isWaitingForConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
-    const canRequestForConfirmation = isCreatedByOwner && !hasPrepayment && !hasBill && !isConfirmed
-    const canConfirmReservation = !isConfirmed
-    const canRequestForPrepayment = !hasPrepayment && !hasBill && !isConfirmed
+
+    const isConfirmedOrCompleted = isConfirmed || isCompleted
+
+    //is completed
+
+
+    const isCreatedByOwner = Boolean(reservation.createdOwnerId)
+    const canRequestForConfirmation = !isConfirmedOrCompleted && isCreatedByOwner && !hasCurrentPrepayment
+
+    const canConfirmReservation = !isConfirmedOrCompleted
+
+    const canRequestForPrepayment = !isConfirmedOrCompleted && !hasCurrentPrepayment && !isWaitingForConfirmation 
+
+    const hasBill = reservation.billPaymentId !== null
+
+    console.log(reservation.currentPrepaymentId, 'currentPrepaymentId')
 
     const { toast } = useToast()
 
 
     console.log(reservation, 'reservation')
-    console.log(hasPrepayment, 'hasPrepayment')
+    console.log(hasCurrentPrepayment, 'hasCurrentPrepayment')
 
 
     const handleRequestForPrepayment = async () => {
@@ -209,14 +221,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
         <div>
             <div className='flex flex-wrap gap-3 py-2 mt-4 mb-2'>
 
-                {hasPrepayment ? (
-                    <Button onClick={handleCancelPrepayment} variant={'destructive'}>Cancel Prepayment</Button>
-                ) : (
-                    <Button onClick={handleRequestForPrepayment}>Request for Prepayment</Button>
-                )}
+                {hasCurrentPrepayment && (<Button onClick={handleCancelPrepayment} variant={'destructive'}>Cancel Prepayment</Button>)}
+                {canRequestForPrepayment && (<Button onClick={handleRequestForPrepayment}>Request for Prepayment</Button>)}
 
                 {
-                    hasPrepayment && (
+                    hasCurrentPrepayment && (
                         <Button
                             onClick={handleNotifyPrepayment}
                             variant={'outline'}
@@ -229,7 +238,7 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
                         className='bg-green-500 hover:bg-green-600'
                         onClick={handleConfirmReservation}>Confirm Reservation</Button>
                 )}
-                
+
 
                 {
                     isOpenCreatePrepaymentModal && (
@@ -237,7 +246,7 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
                             reservation={reservation}
                             open={isOpenCreatePrepaymentModal}
                             setOpen={setIsOpenCreatePrepaymentModal}
-           
+
                         />
                     )
                 }

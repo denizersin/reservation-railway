@@ -11,7 +11,7 @@ export const useCountriesSelectData = () => {
 }
 
 export const useLanguagesSelectData = () => {
-    const { data, isLoading } = api.predefiend.getLanguages.useQuery()
+    const { data, isLoading } = api.restaurant.getLanguages.useQuery()
     const selectData = useMemo(() => data?.map((language) => ({
         label: language.name,
         value: String(language.id)
@@ -20,8 +20,13 @@ export const useLanguagesSelectData = () => {
 }
 
 export const useGuestCompanySelectData = () => {
-    const { data, isLoading } = api.guest.getGuestCompanies.useQuery()
-    const selectData = useMemo(() => data?.map((company) => ({
+    const { data, isLoading } = api.guest.getGuestCompaniesPagination.useQuery({
+        pagination: {
+            page: 1,
+            limit: 100
+        }
+    })
+    const selectData = useMemo(() => data?.data?.map((company) => ({
         label: company.companyName,
         value: String(company.id)
     })) || [], [data])

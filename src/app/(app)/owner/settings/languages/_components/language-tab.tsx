@@ -11,7 +11,7 @@ export const LanguageTab = ({
     currentLanguageId,
     setCurrentLanguageId
 }: Props) => {
-    const { data: restaurantLanguages } = api.restaurant.getLanguages.useQuery();
+    const { data: restaurantLanguages } = api.restaurant.getRestaurantLanguages.useQuery();
 
     return (
         <Tabs

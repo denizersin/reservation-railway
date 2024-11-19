@@ -15,13 +15,13 @@ const RestaurantLanguagesMultiSelect = (props: Props) => {
 
     const restauranLanguageMutation = api.restaurant.updateRestaurantLanguages.useMutation({
         onSuccess: () => {
-            queryCLient.invalidateQueries({ queryKey: getQueryKey(api.restaurant.getLanguages) })
+            queryCLient.invalidateQueries({ queryKey: getQueryKey(api.restaurant.getRestaurantLanguages) })
         }
     })
 
     const {
         data: languages
-    } = api.predefiend.getLanguages.useQuery()
+    } = api.restaurant.getLanguages.useQuery()
 
     
 
@@ -36,7 +36,7 @@ const RestaurantLanguagesMultiSelect = (props: Props) => {
 
     const {
         data: restaurantLanguages
-    } = api.restaurant.getLanguages.useQuery()
+    } = api.restaurant.getRestaurantLanguages.useQuery()
 
     console.log(restaurantLanguages, 'restaurantLanguages')
 

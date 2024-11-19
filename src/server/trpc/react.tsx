@@ -11,6 +11,7 @@ import { type AppRouter } from "@/server/api/root";
 import { createQueryClient } from "./query-client";
 import { headers } from "next/headers";
 import {  TToast, useToast } from "@/hooks/use-toast";
+import { EnumHeader } from "@/shared/enums/predefined-enums";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = (toast: TToast) => {
@@ -69,6 +70,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           headers: () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
+            headers.set(EnumHeader.RESTAURANT_ID, localStorage.getItem(EnumHeader.RESTAURANT_ID) ?? '')
             // headers.set("Authorization", `Bearer ${localStorage.getItem("token")}`);
             return headers;
           },

@@ -1,27 +1,24 @@
 import { ColumnDef } from '@tanstack/react-table'
 
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '../data-table-column-header'
 import { DataTableRowActions } from '../data-table-row-actions'
 
-import { labels, priorities, statuses } from '../data'
-import { TReservationRow } from '@/lib/reservation'
-import { ReservationGridStatusModal } from './reservation-grid-status-modal'
-import { useEffect, useMemo, useState } from 'react'
-import { UpdateReservationTmeModal } from './update-reservation-time-modal'
-import { ReservationStatusModal } from '../status-modal/reservation-status-modal'
-import useRealTimeCounter, { CounterOptions } from '@/hooks/useTimeCounter'
-import { ExistenceCounter } from './_components/existence-counter'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/custom/button'
-import { api } from '@/server/trpc/react'
-import { getQueryKey } from '@trpc/react-query'
-import { useQueryClient } from '@tanstack/react-query'
-import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { useMutationCallback } from '@/hooks/useMutationCallback'
+import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { CounterOptions } from '@/hooks/useTimeCounter'
+import { TReservationRow } from '@/lib/reservation'
+import { cn } from '@/lib/utils'
+import { api } from '@/server/trpc/react'
 import { EnumReservationExistanceStatus } from '@/shared/enums/predefined-enums'
-import { ArrowRightFromLine, RotateCcw, Undo2 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { ArrowRightFromLine, Undo2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { statuses } from '../data'
+import { ReservationStatusModal } from '../status-modal/reservation-status-modal'
+import { ExistenceCounter } from './_components/existence-counter'
+import { ReservationGridStatusModal } from './reservation-grid-status-modal'
+import { UpdateReservationTmeModal } from './update-reservation-time-modal'
 
 
 // data
@@ -67,6 +64,9 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
         return null
       }
 
+
+      const renderIcon = status.renderIcon()
+
       return (
         <div className=''
         >
@@ -75,9 +75,9 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
             className='flex w-[100px] items-center cursor-pointer'
           >
 
-            {status.icon && (
-              <status.icon className='mr-2 h-4 w-4 text-muted-foreground' />
-            )}
+            {
+              renderIcon && <div className='p-1'>{renderIcon}</div>
+            }
             <span>{status.label}</span>
           </div>
 
@@ -97,7 +97,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
     id: "area",
     accessorKey: 'area',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='area' />
+      <DataTableColumnHeader column={column} title='Area' />
     ),
     cell: ({ row, table, }) => {
 
@@ -155,7 +155,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
   {
     id: 'exsitence',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Mevcudiyet' />
+      <DataTableColumnHeader column={column} title='Existence' />
     ),
     cell: ({ row }) => {
 
@@ -321,7 +321,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
   {
     accessorKey: 'time',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Saat' />
+      <DataTableColumnHeader column={column} title='Hour' />
     ),
     cell: ({ row }) => {
 
@@ -347,7 +347,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
   {
     accessorKey: 'guests',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Misafir' />
+      <DataTableColumnHeader column={column} title='Guest' />
     ),
     cell: ({ row }) => {
 

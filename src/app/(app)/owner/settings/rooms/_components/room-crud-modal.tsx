@@ -28,7 +28,7 @@ export function RoomCrudModal({
     const isUpdate = !!room
     const queryClient = useQueryClient()
 
-    const { data: restaurantLanguages } = api.restaurant.getLanguages.useQuery()
+    const { data: restaurantLanguages } = api.restaurant.getRestaurantLanguages.useQuery()
 
     const form = useForm<FormValues>({
         resolver: zodResolver(createRoomSchema),

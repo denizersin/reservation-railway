@@ -365,7 +365,7 @@ CREATE TABLE `reservation` (
 	`reservation_status_id` int NOT NULL,
 	`reservation_existence_status_id` int NOT NULL DEFAULT 1,
 	`assigned_personal_id` int,
-	`prepayment_id` int,
+	`current_prepayment_id` int,
 	`bill_payment_id` int,
 	`linked_reservation_id` int,
 	`waiting_session_id` int NOT NULL,
@@ -443,8 +443,7 @@ CREATE TABLE `prepayment` (
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
-	CONSTRAINT `prepayment_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_reservation_id` UNIQUE(`reservation_id`)
+	CONSTRAINT `prepayment_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `reservation_notification` (
@@ -531,4 +530,11 @@ ALTER TABLE `reservation_tables` ADD CONSTRAINT `reservation_tables_reservation_
 ALTER TABLE `waiting_session_tables` ADD CONSTRAINT `waiting_session_tables_table_id_table_id_fk` FOREIGN KEY (`table_id`) REFERENCES `table`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `waiting_table_session` ADD CONSTRAINT `waiting_table_session_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `prepayment` ADD CONSTRAINT `prepayment_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `confirmation_request` ADD CONSTRAINT `confirmation_request_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `confirmation_request` ADD CONSTRAINT `confirmation_request_reservation_id_reservation_id_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX `idx_guest_lookup` ON `guest` (`restaurant_id`,`email`,`phone`);--> statement-breakpoint
+CREATE INDEX `idx_meal_hours_lookup` ON `meal_hours` (`restaurant_id`,`meal_id`,`is_open`,`hour`);--> statement-breakpoint
+CREATE INDEX `idx_room_status` ON `room` (`restaurant_id`,`is_active`,`is_waiting_room`);--> statement-breakpoint
+CREATE INDEX `idx_table_status` ON `table` (`room_id`,`is_active`);--> statement-breakpoint
+CREATE INDEX `idx_limitation_lookup` ON `reservation_limitation` (`hour`,`room_id`,`is_active`,`restaurant_id`,`meal_id`);--> statement-breakpoint
+CREATE INDEX `idx_reservation_lookup` ON `reservation` (`reservation_date`,`reservation_status_id`,`restaurant_id`,`restaurant_meal_id`);--> statement-breakpoint
+CREATE INDEX `idx_reservation_table_lookup` ON `reservation_tables` (`table_id`,`reservation_id`);

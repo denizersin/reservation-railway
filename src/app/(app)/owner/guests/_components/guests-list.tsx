@@ -41,6 +41,7 @@ import { CustomPagination } from "@/components/custom-pagination";
 import { DEFAULT_ROWS_PER_PAGE } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 type Props = {}
 
 const GuestsList = (props: Props) => {
@@ -61,7 +62,8 @@ const GuestsList = (props: Props) => {
             page: 1,
             limit: DEFAULT_ROWS_PER_PAGE,
         },
-        filters: {}
+        filters: {},
+        global_search: ''
     })
 
     const {
@@ -109,13 +111,22 @@ const GuestsList = (props: Props) => {
         })
     }
 
-    console.log(queryInput, 'queryInput')
-
     const router = useRouter();
+
+    const [searchText, setSearchText] = useState('')
+
+    const debounced = useDebouncedCallback((searchVal) => {
+        setQueryInput((prev) => ({ ...prev, global_search: searchVal, pagination: { ...prev.pagination, page: 1 } }))
+    }, 500)
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchText(e.target.value)
+        debounced(e.target.value)
+    }
 
 
     return (
-        <Card className="w-full">
+        <Card className="w-full my-5">
             <CardHeader className="flex flex-row items-center  gap-2 ">
                 <CardTitle className="">Guests</CardTitle>
                 <Button variant="outline" onClick={() => router.push('/owner/guests/companies')}>Guest Companies</Button>
@@ -125,10 +136,9 @@ const GuestsList = (props: Props) => {
 
                         <Button onClick={handleFilterModal}>Advanced Filter</Button>
                         <Input className="w-[300px]" placeholder="Search name phone or email"
-                            value={queryInput.global_search ?? ''}
-                            onChange={(e) => {
-                                setQueryInput((prev) => ({ ...prev, global_search: e.target.value, pagination: { ...prev.pagination, page: 1 } }))
-                            }} />
+                            value={searchText}
+                            onChange={handleSearch}
+                        />
                         <Button variant="outline" onClick={removeFilters}>Remove Filters</Button>
                     </div>
 

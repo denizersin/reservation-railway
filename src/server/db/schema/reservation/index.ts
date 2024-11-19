@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, int, mysqlEnum, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
+import { boolean, index, int, mysqlEnum, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 import { tblRestaurant } from '../restaurant';
 import { tblRoom, tblTable } from '../room';
 import { tblGuest, tblPersonel } from '../guest';
@@ -26,7 +26,7 @@ export const tblReservation = mysqlTable('reservation', {
     reservationExistenceStatusId: int('reservation_existence_status_id')
         .notNull().default(EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist]),
     assignedPersonalId: int('assigned_personal_id'),
-    prepaymentId: int('prepayment_id'),
+    currentPrepaymentId: int('current_prepayment_id'),
     billPaymentId: int('bill_payment_id'),
     linkedReservationId: int('linked_reservation_id'),
     waitingSessionId: int('waiting_session_id').notNull(),
@@ -60,8 +60,13 @@ export const tblReservation = mysqlTable('reservation', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),
-}, (t) => ({
-
+}, (table) => ({
+    reservationLookupIdx: index('idx_reservation_lookup').on(
+        table.reservationDate,     // en önemli filtreleme kriteri
+        table.reservationStatusId, // sık kullanılan durum kontrolü
+        table.restaurantId,        // sabit değer (en sona)
+        table.mealId              // sabit değer (en sona)
+    ),
 }));
 
 export const tblReservationTable = mysqlTable('reservation_tables', {
@@ -71,7 +76,9 @@ export const tblReservationTable = mysqlTable('reservation_tables', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),
-});
+}, (table) => ({
+    reservationTableLookupIdx: index('idx_reservation_table_lookup').on(table.tableId,table.reservationId, ),
+}));
 export const tblReservationTableRelations = relations(tblReservationTable, ({ one }) => ({
     reservation: one(tblReservation, { fields: [tblReservationTable.reservationId], references: [tblReservation.id] }),
     table: one(tblTable, { fields: [tblReservationTable.tableId], references: [tblTable.id] }),
@@ -83,7 +90,7 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
     logs: many(tblReservationLog),
     reservationNotes: many(tblReservationNote),
     tags: many(tblReservationTag),
-
+    prepayments:many(tblPrepayment),
     waitingSession: one(tblWaitingTableSession, { fields: [tblReservation.waitingSessionId], references: [tblWaitingTableSession.id] }),
     confirmationRequests: many(tblConfirmationRequest),
     createdOwner: one(tblUser, { fields: [tblReservation.createdOwnerId], references: [tblUser.id] }),
@@ -97,7 +104,7 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
     guest: one(tblGuest, { fields: [tblReservation.guestId], references: [tblGuest.id] }),
 
     //nullable relations
-    prepayment: one(tblPrepayment, { fields: [tblReservation.prepaymentId], references: [tblPrepayment.id] }),
+    currentPrepayment: one(tblPrepayment, { fields: [tblReservation.currentPrepaymentId], references: [tblPrepayment.id] }),
     billPayment: one(tblBillPayment, { fields: [tblReservation.billPaymentId], references: [tblBillPayment.id] }),
 
 }));

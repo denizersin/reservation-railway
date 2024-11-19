@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "57b3acdd-3295-410e-ba9c-d0eddd1a9499",
+  "id": "db9075ca-93d1-4d46-94e4-3b07b9706751",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -213,7 +213,17 @@
           "default": "(now())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_guest_lookup": {
+          "name": "idx_guest_lookup",
+          "columns": [
+            "restaurant_id",
+            "email",
+            "phone"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "guest_id": {
@@ -1217,7 +1227,18 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_meal_hours_lookup": {
+          "name": "idx_meal_hours_lookup",
+          "columns": [
+            "restaurant_id",
+            "meal_id",
+            "is_open",
+            "hour"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "meal_hours_id": {
@@ -1841,7 +1862,17 @@
           "default": 120
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_room_status": {
+          "name": "idx_room_status",
+          "columns": [
+            "restaurant_id",
+            "is_active",
+            "is_waiting_room"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "room_id": {
@@ -2030,7 +2061,16 @@
           "default": 1
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_table_status": {
+          "name": "idx_table_status",
+          "columns": [
+            "room_id",
+            "is_active"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "table_id": {
@@ -2207,7 +2247,19 @@
           "default": "(now())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_limitation_lookup": {
+          "name": "idx_limitation_lookup",
+          "columns": [
+            "hour",
+            "room_id",
+            "is_active",
+            "restaurant_id",
+            "meal_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "reservation_limitation_id": {
@@ -2279,8 +2331,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "prepayment_id": {
-          "name": "prepayment_id",
+        "current_prepayment_id": {
+          "name": "current_prepayment_id",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
@@ -2431,7 +2483,18 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_reservation_lookup": {
+          "name": "idx_reservation_lookup",
+          "columns": [
+            "reservation_date",
+            "reservation_status_id",
+            "restaurant_id",
+            "restaurant_meal_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "reservation_id": {
@@ -2492,7 +2555,16 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_reservation_table_lookup": {
+          "name": "idx_reservation_table_lookup",
+          "columns": [
+            "table_id",
+            "reservation_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "reservation_tables_reservation_id_reservation_id_fk": {
           "name": "reservation_tables_reservation_id_reservation_id_fk",
@@ -2855,14 +2927,7 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "unique_reservation_id": {
-          "name": "unique_reservation_id",
-          "columns": [
-            "reservation_id"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "reservation_notification": {
       "name": "reservation_notification",

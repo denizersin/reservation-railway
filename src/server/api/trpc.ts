@@ -12,7 +12,7 @@ import { ZodError } from "zod";
 
 import { jwtEntities } from "../layer/entities/jwt";
 import { cookies } from "next/headers";
-import { EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
+import { EnumHeader, EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
 import { TUserPreferences } from "../layer/use-cases/user/user";
 import { db } from "../db";
 import { userUseCases } from "../layer/use-cases/user";
@@ -148,7 +148,24 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure.use(timingMiddleware);
+export const publicProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+
+  const restaurantId = ctx.headers.get(EnumHeader.RESTAURANT_ID);
+  console.log(restaurantId, 'restaurantId 3131')
+  if (!restaurantId) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Restaurant id header is required" });
+  }
+
+  console.log(parseInt(restaurantId), 'Number(restaurantId)')
+
+  return next({
+    ctx: {
+      ...ctx,
+      restaurantId: Number(restaurantId),
+    }
+  })
+});
+
 
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
@@ -202,4 +219,10 @@ export const ownerProcedure = t.procedure
     });
   });
 
+
+
+export type TPublicProcedureCtx = Parameters<Parameters<(typeof publicProcedure)['query']>[0]>[0]['ctx']
+export type TProtectedProcedureCtx = Parameters<Parameters<(typeof protectedProcedure)['query']>[0]>[0]['ctx']
+export type TAdminProcedureCtx = Parameters<Parameters<(typeof adminProcedure)['query']>[0]>[0]['ctx']
+export type TOwnerProcedureCtx = Parameters<Parameters<(typeof ownerProcedure)['query']>[0]>[0]['ctx']
 

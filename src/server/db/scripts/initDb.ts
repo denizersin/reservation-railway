@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
 import { getEnumValues, localHourToUtcHour } from "@/server/utils/server-utils";
-import { EnumLanguage, EnumMeals, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationPrepaymentType, EnumReservationStatus, EnumReservationStatusNumeric, EnumUserRole } from "@/shared/enums/predefined-enums";
+import { EnumLanguage, EnumMealNumeric, EnumMeals, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationPrepaymentType, EnumReservationStatus, EnumReservationStatusNumeric, EnumUserRole } from "@/shared/enums/predefined-enums";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
@@ -30,6 +30,7 @@ const seedFunctions = [
             Object.values(EnumMeals).map(async (meal) => {
                 await db.insert(tblMeal).values({
                     name: meal,
+                    id: EnumMealNumeric[meal]
                 })
             })
         )
@@ -186,7 +187,7 @@ const seedFunctions = [
 
 
         await RoomEntities.createTables({
-            tables: new Array(10).fill(undefined).map((_, i) => ({
+            tables: new Array(20).fill(undefined).map((_, i) => ({
                 capacity: 2,
                 maxCapacity: 2,
                 minCapacity: 2,
@@ -266,6 +267,9 @@ const seedFunctions = [
             await db.insert(schema.tblPersonel).values(personel)
         }
 
+        for (const guestCompany of seedDatas.getGuestCompanies(1)) {
+            await db.insert(schema.tblGusetCompany).values(guestCompany)
+        }
   
 
 

@@ -1,3 +1,4 @@
+'use client'
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
@@ -68,6 +69,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             )
         }
 
+        const tooltipRef = React.useRef<HTMLDivElement>(null)
+        const buttonRef = React.useRef<HTMLButtonElement>(null)
+
+        React.useImperativeHandle(ref, () => buttonRef.current as HTMLButtonElement)
+
         const {
             loading = false,
             leftSection,
@@ -81,8 +87,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             <button
                 className={cn(buttonVariants({ variant, size, className }), 'relative group')}
                 disabled={loading || disabled}
-                ref={ref}
+                ref={buttonRef}
                 {...otherProps}
+
+                onMouseEnter={() => {
+                    if (tooltipRef.current) {
+                        tooltipRef.current.style.display = 'block'
+                    }
+                }}
+                onMouseLeave={() => {
+                    if (tooltipRef.current) {
+                        tooltipRef.current.style.display = 'none'
+                    }
+                }}
             >
                 {((leftSection && loading) ||
                     (!leftSection && !rightSection && loading)) && (
@@ -97,9 +114,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
                 {props.tooltip &&
                     !disabled && (
-                        <div className={cn('absolute -top-8 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity',{
-                            'left-0 translate-x-0': props.tooltipPosition === 'right',
-                        })}>
+                        <div 
+                            ref={tooltipRef}
+                            className={cn('absolute -top-8 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-md shadow-sm hidden  transition-opacity', {
+                                'left-0 translate-x-0': props.tooltipPosition === 'right',
+                            })}>
                             {props.tooltip}
                         </div>
                     )

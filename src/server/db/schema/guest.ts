@@ -1,7 +1,7 @@
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumGender, EnumVipLevel } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
-import { int, mysqlEnum, mysqlTable, uniqueIndex, varchar, serial, timestamp, unique, boolean, date } from 'drizzle-orm/mysql-core';
+import { int, mysqlEnum, mysqlTable, uniqueIndex, varchar, serial, timestamp, unique, boolean, date, index } from 'drizzle-orm/mysql-core';
 import { tblRestaurantTag } from './restaurant-tags';
 import { tblRestaurant } from './restaurant';
 import { tblCountry, tblLanguage, TCountry, TLanguage } from './predefined';
@@ -52,7 +52,9 @@ export const tblGuest = mysqlTable('guest', {
 
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
-});
+}, (table) => ({
+    guestLookupIdx: index('idx_guest_lookup').on(table.restaurantId, table.email, table.phone),
+}));
 
 export const tblGuestRelations = relations(tblGuest, ({ one, many }) => ({
     company: one(tblGusetCompany, { fields: [tblGuest.companyId], references: [tblGusetCompany.id] }),

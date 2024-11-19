@@ -10,9 +10,11 @@ import { TimeSelect } from "@/components/custom/front/time-select";
 import useAuth from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { localStorageStates } from "@/data/local-storage-states";
-import { EnumUserRole } from "@/shared/enums/predefined-enums";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { api } from "@/server/trpc/react";
+import { EnumHeader, EnumMealNumeric, EnumUserRole } from "@/shared/enums/predefined-enums";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 
 export default function Home() {
@@ -43,6 +45,7 @@ export default function Home() {
   }, [session.isAuthenticated, session.isLoading])
 
   const [date, setDate] = React.useState<Date | undefined>(new Date())
+  const [month, setMonth] = React.useState<number>(new Date().getMonth())
   const [guestCount, setGuestCount] = React.useState<number>(1)
   const [time, setTime] = React.useState<string | undefined>(undefined)
   const [area, setArea] = React.useState<string | undefined>(undefined)
@@ -59,6 +62,7 @@ export default function Home() {
   }
 
 
+
   function onClickAddWaitList() {
     router.push('/reservation/waitlist')
   }
@@ -72,7 +76,48 @@ export default function Home() {
       setArea(reservationState.area)
     }
 
+
+
   }, [])
+
+  const [restaurantId, setRestaurantId] = useLocalStorage({
+    key: EnumHeader.RESTAURANT_ID,
+    defaultValue: 1,
+  })
+
+
+
+  const { data: monthAvailabilityData } = api.reservation.getMonthAvailability.useQuery({
+    month: month,
+    mealId: EnumMealNumeric.dinner
+  })
+
+
+  const [avaliableDates, setAvaliableDates] = useState<Record<string, boolean>>({})
+
+
+  const handleGuestCountChange = (guestCount: number) => {
+
+    monthAvailabilityData?.forEach((day) => {
+      const date = day.date
+      const avaliableTables = day.roomStatus.map((room) => room.hourStatus.filter((hour) => (hour.avaliableGuest >= guestCount)))
+      setAvaliableDates((prev) => ({
+        ...prev,
+        [date.toISOString()]: avaliableTables.length > 0
+      }))
+    })
+
+
+    setGuestCount(guestCount)
+  }
+
+
+
+
+
+
+
+
 
 
   return (

@@ -24,6 +24,14 @@ export enum EnumMeals {
     dinner = "dinner",
     bar = "bar",
 }
+
+export enum EnumMealNumeric {
+    breakfast = 1,
+    lunch = 2,
+    dinner = 3,
+    bar = 4,
+}
+
 export enum EnumReservationStatus {
     draft = 'draft',
     reservation = 'reservation',
@@ -211,4 +219,6 @@ export enum EnumHistoryActionType{
 }
 
 
-
+export enum EnumHeader{
+    RESTAURANT_ID = 'restaurant_id',
+}

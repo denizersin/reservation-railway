@@ -15,7 +15,7 @@ export const TagsPage = ({
         data: restaurantLanguagesData,
         isLoading: restaurantLanguagesIsLoading,
         error: restaurantLanguagesError,
-    } = api.restaurant.getLanguages.useQuery()
+    } = api.restaurant.getRestaurantLanguages.useQuery()
 
     const [isOpenCreateTagModal, setIsOpenCreateTagModal] = useState(false)
     const [languageId, setLanguageId] = useState(restaurantLanguagesData?.[0]?.language.id || 0)

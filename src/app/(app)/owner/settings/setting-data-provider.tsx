@@ -41,7 +41,7 @@ export const SettingDataProvider: React.FC<SettingDataProviderProps> = ({ childr
         initialData: meals
     })
 
-    api.restaurant.getLanguages.useQuery(void {}, {
+    api.restaurant.getRestaurantLanguages.useQuery(void {}, {
         initialData: restaurantLanguages
     })
 

@@ -4,7 +4,7 @@ import { tblPrepayment, tblReservationTable, TReservationInsert } from "@/server
 import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblConfirmationRequest, TConfirmationRequestInsert } from "@/server/db/schema/reservation/confirmation-request";
 import { createTransaction, TTransaction } from "@/server/utils/db-utils";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { RoomEntities } from "../room";
 
 
@@ -160,7 +160,10 @@ export const getReservationDetail = async ({
             reservationNotes: true,
             logs: true,
             notifications: true,
-            prepayment: true,
+            currentPrepayment: true,
+            prepayments: {
+                orderBy: [desc(tblPrepayment.createdAt)]
+            },
             meal: true,
             assignedPersonal: true,
             tags: true,

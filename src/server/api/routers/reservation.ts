@@ -14,6 +14,8 @@ import { z } from "zod";
 import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 import { TOAST_MESSAGE_HEADER_KEY } from "@/shared/constants";
 import { NextResponse } from "next/server";
+import { clientQueryValidator } from "@/shared/validators/front/reservation";
+import { getRandom } from "@/server/utils/server-utils";
 
 
 
@@ -85,14 +87,6 @@ export const reservationRouter = createTRPCRouter({
         .input(reservationValidator.createReservation)
         .mutation(async ({ input, ctx }) => {
             await reservationUseCases.createReservation({ ctx, input })
-            ctx.headers.set(TOAST_MESSAGE_HEADER_KEY, 'Reservation created successfully')
-            const response = NextResponse.next();
-            response.headers.set(TOAST_MESSAGE_HEADER_KEY, 'Reservation created successfully')
-
-            console.log('3131---1 next response', response.headers.get(TOAST_MESSAGE_HEADER_KEY))
-
-            console.log('3131---2 ctx', ctx.headers.get(TOAST_MESSAGE_HEADER_KEY))
-
             return true
         }),
 
@@ -160,10 +154,11 @@ export const reservationRouter = createTRPCRouter({
         .input(reservationValidator.updateReservation)
         .mutation(async (opts) => {
             const user = await userEntities.getUserById({ userId: opts.ctx.session.user.userId })
-            await reservationUseCases.updateReservation({
-                input: opts.input,
-                owner: user?.name || 'unknown'
-            })
+            // await reservationUseCases.updateReservation({
+            //     input: opts.input,
+            //     owner: user?.name || 'unknown',
+            //     ctx: opts.ctx
+            // })
         }),
 
     updateReservationTable: ownerProcedure
@@ -357,6 +352,12 @@ export const reservationRouter = createTRPCRouter({
             await reservationUseCases.updateReservationNote(opts)
         }),
 
+
+    getMonthAvailability: publicProcedure
+        .input(clientQueryValidator.monthAvailabilityQuerySchema)
+        .query(async (opts) => {
+            return await reservationUseCases.getMonthAvailability(opts)
+        }),
 
 
 });

@@ -95,6 +95,7 @@ export const CreateReservation = (props: Props) => {
 
     const {
         mutate: createReservation,
+        mutateAsync: createReservationAsync,
         isPending: createReservationPending,
     } = api.reservation.createMockReservation.useMutation({
         onSuccess: () => {

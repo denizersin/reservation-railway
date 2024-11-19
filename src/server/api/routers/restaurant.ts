@@ -80,9 +80,12 @@ export const restaurantRouter = createTRPCRouter({
     getMeals: publicProcedure.query(async () => {
         return await predefinedEntities.getMeals()
     }),
-    getLanguages: ownerProcedure.query(async ({ ctx }) => {
+    getRestaurantLanguages: ownerProcedure.query(async ({ ctx }) => {
         const { session: { user: { restaurantId } } } = ctx
         return await restaurantEntities.getRestaurantLanguages({ restaurantId })
+    }),
+    getLanguages: ownerProcedure.query(async () => {
+        return await predefinedEntities.getLanguages()
     }),
     updateRestaurantLanguages: ownerProcedure
         .input(z.object({ languages: z.array(z.number()) }))
@@ -167,5 +170,6 @@ export const restaurantRouter = createTRPCRouter({
     getPersonels: ownerProcedure.query(async (opt) => {
         return await restaurantUseCases.getPersonel(opt)
     }),
+
 
 });

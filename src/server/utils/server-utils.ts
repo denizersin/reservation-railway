@@ -79,3 +79,23 @@ export function localHourToUtcHour(localTime: string, utcOffset = DEFAULT_UTC_OF
     console.log(localTime,utcOffset,`${formattedHours}:${formattedMinutes}`)
     return `${formattedHours}:${formattedMinutes}`;
 }
+
+
+
+export function getMonthDays(startDate: Date, endDate: Date) {
+    const days: Date[] = [];
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        days.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return days;
+}
+
+
+//getRandom 
+export function getRandom(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}

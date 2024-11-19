@@ -15,7 +15,7 @@ export const tblPrepayment = mysqlTable('prepayment', {
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),
 }, (t) => ({
-    unique: unique('unique_reservation_id').on(t.reservationId),
+    // unique: unique('unique_reservation_id').on(t.reservationId),
 }));
 
 export const tblPrepaymentRelations = relations(tblPrepayment, ({ one }) => ({

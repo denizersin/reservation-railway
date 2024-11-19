@@ -32,16 +32,28 @@ export const updateReservationPrepayment = async ({
 
 }
 
-export const getPrepaymentByReservationId = async ({
+export const getCurrentPrepaymentById = async ({
+    id
+}: {
+    id: number
+}) => {
+    const prepayment = await db.query.tblPrepayment.findFirst({
+        where: eq(tblPrepayment.id, id)
+    })
+    
+
+    return prepayment
+}
+
+export const getPrepaymentsByReservationId = async ({
     reservationId
 }: {
     reservationId: number
 }) => {
-    const prepayment = await db.query.tblPrepayment.findFirst({
+    const prepayments = await db.query.tblPrepayment.findMany({
         where: eq(tblPrepayment.reservationId, reservationId)
     })
-
-    return prepayment
+    return prepayments
 }
 
 
@@ -54,3 +66,4 @@ export const deleteReservationPrepayment = async ({
         eq(tblPrepayment.id, id)
     )
 }
+

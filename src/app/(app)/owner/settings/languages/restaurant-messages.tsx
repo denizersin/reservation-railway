@@ -10,7 +10,7 @@ import { RestaurantTexts } from './_components/restaurant-texts';
 type Props = {}
 
 export const RestaurantMessages = (props: Props) => {
-    const { data: restaurantLanguages, isLoading } = api.restaurant.getLanguages.useQuery();
+    const { data: restaurantLanguages, isLoading } = api.restaurant.getRestaurantLanguages.useQuery();
 
     const [currentLanguageId, setcurrentLanguageId] = useState<number | undefined>(undefined)
     useEffect(() => {

@@ -1,17 +1,19 @@
-import { TCtx } from "../api/trpc"
+import { TCtx, TOwnerProcedureCtx, TPublicProcedureCtx } from "../api/trpc"
 import { TSession, TSessionWithRestaurat } from "../layer/use-cases/user/user"
 
 export type TCtxWithUser = TCtx & {
     session: TSessionWithRestaurat
+    restaurantId: string
 }
 
 export type TUseCaseOwnerLayer<T> = {
     input: T
-    ctx: TCtxWithUser
+    ctx: TOwnerProcedureCtx
 }
 
 export type TUseCasePublicLayer<T, C = {}> = {
     input: T
+    ctx: TPublicProcedureCtx
 } & C
 
 export type TPagination<T> = {

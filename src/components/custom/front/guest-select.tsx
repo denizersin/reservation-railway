@@ -77,7 +77,7 @@ export const GuestSelect = ({
                   return <SheetClose
                     onClick={() => setGuestCount(item.count)}
                     key={item.id}
-                    className={cn('w-full text-front-primary hover:bg-muted py-3 border-b', {
+                    className={cn('w-full text-front-primary hover:bg-muted py-3 border-b text-base', {
                       'bg-muted': guestCount === item.count
                     })}>
                     {item.count}
@@ -101,7 +101,7 @@ export const GuestSelect = ({
                 return <PopoverClose
                   onClick={() => setGuestCount(item.count)}
                   key={item.id}
-                  className={cn('w-full text-front-primary hover:bg-muted py-3 border-b', {
+                  className={cn('w-full text-front-primary hover:bg-muted py-3 border-b text-base', {
                     'bg-muted': guestCount === item.count
                   })}>
                   {item.count}

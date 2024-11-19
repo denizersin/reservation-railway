@@ -6,17 +6,18 @@ import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitati
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
 import { tblRoom, tblTable } from "@/server/db/schema/room";
 import { TUseCaseOwnerLayer } from "@/server/types/types";
-import { getLocalTime, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
+import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumReservationExistanceStatusNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
 import { and, between, count, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
 
-function getAvaliabels({ date, mealId, restaurantId }: { date: Date, mealId: number, restaurantId: number }) {
+export function getLimitationStatus({ date, mealId, restaurantId }: { date: Date, mealId: number, restaurantId: number }) {
 
     const { start, end } = getStartAndEndOfDay({
         date:
             getLocalTime(date)
     })
+
 
     return db
         .select({
@@ -39,12 +40,18 @@ function getAvaliabels({ date, mealId, restaurantId }: { date: Date, mealId: num
         .leftJoin(tblReservation,
             and(
                 eq(tblReservationLimitation.restaurantId, tblReservation.restaurantId),
+
+
                 eq(tblReservation.roomId, tblReservationLimitation.roomId),
                 eq(tblReservationLimitation.mealId, tblReservation.mealId),
+
                 ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
 
+                //equal
                 between(tblReservation.hour, tblReservationLimitation.minHour, tblReservationLimitation.maxHour),
+
                 between(tblReservation.reservationDate, start, end),
+
                 eq(tblReservation.hour, tblReservationLimitation.hour),
             )
         )
@@ -57,6 +64,7 @@ function getAvaliabels({ date, mealId, restaurantId }: { date: Date, mealId: num
         )
         .groupBy(tblReservationLimitation.id)
 }
+
 export const getAllAvailableReservations = async ({
     input,
     ctx
@@ -68,7 +76,7 @@ export const getAllAvailableReservations = async ({
             getLocalTime((new Date(input.date)))
     })
 
-    const limitationStatus = await getAvaliabels({
+    const limitationStatus = await getLimitationStatus({
         date: getLocalTime(new Date(input.date)),
         mealId: input.mealId,
         restaurantId
@@ -268,7 +276,7 @@ export const getAllAvailableReservations2 = async ({
             getLocalTime((new Date(input.date)))
     })
 
-    const limitationStatus = await getAvaliabels({
+    const limitationStatus = await getLimitationStatus({
         date: getLocalTime(new Date(input.date)),
         mealId: input.mealId,
         restaurantId
@@ -445,3 +453,10 @@ export const getReservations = async ({
     return reservations
 
 }
+
+
+
+
+
+
+

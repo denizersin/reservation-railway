@@ -41,7 +41,7 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
 
     const {
         data: restaurantLanguages
-    } = api.restaurant.getLanguages.useQuery()
+    } = api.restaurant.getRestaurantLanguages.useQuery()
 
 
     const form = useForm<TRestaurantTagValidator.createRestaurantTagFormSchema>({

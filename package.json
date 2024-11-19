@@ -14,7 +14,8 @@
     "start": "next start",
     "re-create-db": "bun run src/server/db/scripts/reCreateDb.ts && rm -rf src/server/db/migrations && drizzle-kit generate && drizzle-kit migrate",
     "init-db": "bun run src/server/db/scripts/initDb.ts",
-    "test-db": "bun run src/server/db/scripts/testDb.ts"
+    "test-db": "bun run src/server/db/scripts/testDb.ts",
+    "seed-db": "bun run src/server/db/scripts/seed/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

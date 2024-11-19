@@ -1,8 +1,12 @@
 import { env } from "@/env";
-import { isNotNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../schema/index";
+
+import { reservationUseCases } from "@/server/layer/use-cases/reservation";
+import { eq, isNotNull } from "drizzle-orm";
+
+
 const connection = await mysql.createConnection({
     uri: env.DATABASE_URL,
 });
@@ -21,11 +25,32 @@ async function deleteAllReservations() {
 
 
 
+function getMonthDays(startDate: Date, endDate: Date) {
+    const days: Date[] = [];
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        days.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return days;
+}
+
+
 
 
 async function initDb() {
     try {
-        await deleteAllReservations();
+
+
+        const result = await db.query.tblReservation.findMany({
+            where: eq(schema.tblReservation.restaurantId, 1)
+        })
+
+        console.log(result.length)
+
+
     } catch (error) {
         console.error('Error initializing database:', error)
     }

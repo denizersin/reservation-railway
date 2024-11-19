@@ -1,7 +1,7 @@
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumDays, EnumMeals } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
-import { boolean, int, mysqlEnum, mysqlTable, text, time, timestamp, unique } from 'drizzle-orm/mysql-core';
+import { boolean, index, int, mysqlEnum, mysqlTable, text, time, timestamp, unique } from 'drizzle-orm/mysql-core';
 import { tblRestaurant } from './restaurant';
 import { tblMeal } from './predefined';
 import { tblRoom } from './room';
@@ -24,7 +24,7 @@ export const tblReservationLimitation = mysqlTable('reservation_limitation', {
 
 
 }, (t) => ({
-
+    limitationLookupIdx: index('idx_limitation_lookup').on( t.hour, t.roomId, t.isActive,t.restaurantId, t.mealId,),
 }));
 export const tblReservationLimitationRelations = relations(tblReservationLimitation, ({ one }) => ({
     restaurant: one(tblRestaurant, { fields: [tblReservationLimitation.restaurantId], references: [tblRestaurant.id] }),

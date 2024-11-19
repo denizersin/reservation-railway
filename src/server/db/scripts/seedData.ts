@@ -1,9 +1,12 @@
-import { EnumGender, EnumLanguage, EnumVipLevel } from "@/shared/enums/predefined-enums"
+import { EnumGender, EnumLanguage, EnumMealNumeric, EnumReservationStatusNumeric, EnumVipLevel } from "@/shared/enums/predefined-enums"
 import TRestaurantTagValidator from "@/shared/validators/restaurant-tag"
-import { TGuestInsert, TPersonelInsert } from "../schema"
+import { TGuestCompanyInsert, TGuestInsert, TPersonelInsert, TReservationInsert } from "../schema"
 import { TCountryInsert, TLanguageInsert } from "../schema/predefined"
 import { TRestaurantInsert } from "../schema/restaurant"
 import { languagesData } from "@/shared/data/predefined"
+import { restaurantEntities } from "@/server/layer/entities/restaurant"
+import { RoomEntities } from "@/server/layer/entities/room"
+import { guestEntities } from "@/server/layer/entities/guest"
 
 const countries = [
     {
@@ -52,6 +55,11 @@ export const restaurant = [
     }
 
 ] as TRestaurantInsert[]
+
+const getGuestCompanies = (restaurantId: number) => new Array(10).fill(0).map((_, index) => ({
+    companyName: `guestCompany${index}`,
+    restaurantId
+})) as TGuestCompanyInsert[]
 
 export const getGuests = (restaurantId: number) => new Array(40).fill(0).map((_, index) => ({
     name: `guest${index}`,
@@ -127,6 +135,55 @@ const hours = [
 ]
 
 
+async function f() {
+
+    const mealHoursData = await restaurantEntities.getMealHours({ restaurantId: 1 })
+    const mealHours = mealHoursData.find(mealHour => mealHour.meal.id === EnumMealNumeric.dinner)?.mealHours?.map(mealHour => mealHour.hour)
+
+    const roomIdsData = await RoomEntities.getRooms({ restaurantId: 1, languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.tr)!.id })
+    const roomIds = roomIdsData.map(room => room.id)
+
+    const roomTables: { roomId: number, tableId: number }[] = []
+
+    for (const roomId of roomIds) {
+        const tables = await RoomEntities.getTablesByRoomId({ roomId })
+        roomTables.push(...tables.map(table => ({ roomId, tableId: table.id })))
+    }
+
+    const guests = await guestEntities.guestsPagination({
+        restaurantId: 1,
+        paginationQuery: {
+            pagination: {
+                page: 1,
+                limit: 100
+            },
+            filters: {}
+        }
+    })
+
+
+    const newReservations: TReservationInsert = {
+        guestCount: 2,
+        guestId: 1,
+        restaurantId: 1,
+        roomId: 1,
+        mealId: EnumMealNumeric.dinner,
+        reservationStatusId: EnumReservationStatusNumeric.reservation,
+        hour: mealHours?.[0]!,
+        isSendEmail: true,
+        isSendSms: true,
+        reservationDate: new Date(),
+        waitingSessionId: 1,
+        prePaymentTypeId: 1,
+        tableIds: [roomTables?.[0]?.tableId!],
+    }
+
+    
+
+
+
+}
+
 
 
 export const seedDatas = {
@@ -136,5 +193,6 @@ export const seedDatas = {
     getGuests,
     hours,
     reservationTags,
-    getPersonels
+    getPersonels,
+    getGuestCompanies
 }

@@ -1,7 +1,7 @@
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumTableShape } from '@/shared/enums/predefined-enums';
 import { is, relations } from "drizzle-orm";
-import { boolean, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
+import { boolean, index, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 import { restaurant } from '../scripts/seedData';
 import { tblRestaurant } from './restaurant';
 
@@ -16,7 +16,10 @@ export const tblRoom = mysqlTable('room', {
     isWaitingRoom: boolean('is_waiting_room').default(false),
     layoutWidth: int('layout_width').notNull().default(1200),
     layoutRowHeight: int('layout_row_height').notNull().default(120),
-});
+}, (table) => ({
+    // Index for room status lookups
+    roomStatusIdx: index('idx_room_status').on(table.restaurantId, table.isActive, table.isWaitingRoom),
+}));
 export const roomRelations = relations(tblRoom, ({ one, many }) => ({
     tables: many(tblTable),
     translations: many(tblRoomTranslation),
@@ -73,8 +76,10 @@ export const tblTable = mysqlTable('table', {
     y: int('y').default(0),
     h: int('h').default(1),
     w: int('w').default(1),
-}, (t) => ({
-    unq: unique('unique_table').on(t.roomId, t.no),
+}, (table) => ({
+    unq: unique('unique_table').on(table.roomId, table.no),
+    // Index for table status lookups
+    tableStatusIdx: index('idx_table_status').on(table.roomId, table.isActive),
 }));
 export const tableRelations = relations(tblTable, ({ one, many }) => ({
     room: one(tblRoom, { fields: [tblTable.roomId], references: [tblRoom.id] }),

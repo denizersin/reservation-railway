@@ -1,19 +1,14 @@
-import { TTableStatuesRow } from '@/lib/reservation'
-import React from 'react'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from "@/components/ui/card"
-import { CircleCheck, Clock, EllipsisVertical, Users } from 'lucide-react'
-import { TooltipText } from '@/components/custom/tooltip-text'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 import {
     DropdownMenu,
-    DropdownMenuItem,
     DropdownMenuContent,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+    DropdownMenuItem,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Button } from '@/components/ui/button'
+import { TTableStatuesRow } from '@/lib/reservation'
+import { cn } from '@/lib/utils'
+import { CircleCheck, Clock, EllipsisVertical, Users } from 'lucide-react'
 
 type Props = {
     statusTableRow: TTableStatuesRow,
@@ -100,6 +95,7 @@ export const TableStatuesRowCard = ({
                 <div className="flex items-center text-xs ">
                     {isReserved && <div className='flex'>
                         <Users className="w-3 h-3 mr-1" />
+                        {statusTableRow.reservation?.guestCount}
                     </div>}
 
 

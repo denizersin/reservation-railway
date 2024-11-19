@@ -1,11 +1,10 @@
 import { db } from "@/server/db";
-import { tblPrepayment } from "@/server/db/schema";
+import { tblPrepayment, TReservationInsert } from "@/server/db/schema";
 import { TUseCaseOwnerLayer } from "@/server/types/types";
 import { createTransaction } from "@/server/utils/db-utils";
 import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
 import { ReservationEntities } from "../../entities/reservation";
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
 import { restaurantSettingEntities } from "../../entities/restaurant-setting";
@@ -22,21 +21,23 @@ export const requestForPrepayment = async ({
         notificationOptions: { withEmail, withSms }
     } = input
 
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
     //--------------------------------
-    //check if prepayment already requested
-    const prepayment = await db.query.tblPrepayment.findFirst({
-        where: (eq(tblPrepayment.reservationId, reservationId))
-    })
-    if (prepayment && prepayment.status === EnumPrepaymentStatus.pending) {
-        throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Prepayment already requested',
-        })
+    //check if prepayment already requested and is pending
+    const hasCurrentPrepayment = reservation.currentPrepaymentId
+
+    if (hasCurrentPrepayment) {
+        const currentPrepayment = await ReservationEntities.getCurrentPrepaymentById({ id: reservation.currentPrepaymentId! })
+        if (currentPrepayment?.status === EnumPrepaymentStatus.pending) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Prepayment already requested',
+            })
+        }
     }
     //--------------------------------
 
 
-    const reservation = await ReservationEntities.getReservationById({ reservationId })
 
     //check if reservation has a confirmation request
     if (reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation) {
@@ -60,7 +61,7 @@ export const requestForPrepayment = async ({
         reservationId,
         amount,
         status: EnumPrepaymentStatus.pending,
-        createdBy: ctx.session.user.userId.toString(),
+        createdBy: owner.name,
         isDefaultAmount,
     }).$returningId()
 
@@ -74,7 +75,7 @@ export const requestForPrepayment = async ({
     await ReservationEntities.updateReservation({
         reservationId,
         data: {
-            prepaymentId: newPrepaymentId,
+            currentPrepaymentId: newPrepaymentId,
             reservationStatusId: EnumReservationStatusNumeric.prepayment,
             prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
         },
@@ -104,27 +105,37 @@ export const cancelPrepayment = async ({
         notificationOptions: { withEmail, withSms }
     } = input
 
-
-    const prepayment = await ReservationEntities.getPrepaymentByReservationId({ reservationId })
-    if (!prepayment) throw new TRPCError({
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+    if (!reservation.currentPrepaymentId) throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'Reservation has no prepayment',
+        message: 'Reservation has no active prepayment',
     })
 
-    if (prepayment.status === EnumPrepaymentStatus.success) throw new TRPCError({
+    const currentPrepayment = await ReservationEntities.getCurrentPrepaymentById({ id: reservation.currentPrepaymentId })
+
+    if (!currentPrepayment) throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Reservation has no active prepayment',
+    })
+
+    if (currentPrepayment.status === EnumPrepaymentStatus.success) throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'Prepayment already paid',
     })
 
     createTransaction(async (trx) => {
-        await trx.delete(tblPrepayment).where(
-            eq(tblPrepayment.id, prepayment.id)
-        )
+        await ReservationEntities.updateReservationPrepayment({
+            data: {
+                id: currentPrepayment.id,
+                status: EnumPrepaymentStatus.cancelled,
+            },
+            trx
+        })
         await ReservationEntities.updateReservation({
             reservationId,
             data: {
                 reservationStatusId: EnumReservationStatusNumeric[EnumReservationStatus.reservation],
-                prepaymentId: null,
+                currentPrepaymentId: null,
                 prePaymentTypeId: EnumReservationPrepaymentNumeric.none,
             },
             trx
@@ -278,13 +289,15 @@ export const cancelReservation = async ({
         notificationOptions: { withEmail, withSms }
     } = input
 
-    const prepayment = await ReservationEntities.getPrepaymentByReservationId({ reservationId })
     const reservation = await ReservationEntities.getReservationById({ reservationId })
 
+    const currentPrepayment = reservation.currentPrepaymentId ?
+        await ReservationEntities.getCurrentPrepaymentById({ id: reservation.currentPrepaymentId }) : undefined
 
-    const isStatusPrepayment = prepayment && reservation.reservationStatusId === EnumReservationStatusNumeric.prepayment
-    const isPrepaymentPaid = isStatusPrepayment && prepayment.status === EnumPrepaymentStatus.success
-    const isPrepaymentNotPaid = isStatusPrepayment && prepayment.status !== EnumPrepaymentStatus.success
+
+    const isStatusPrepayment = currentPrepayment && reservation.reservationStatusId === EnumReservationStatusNumeric.prepayment
+    const isPrepaymentPaid = isStatusPrepayment && currentPrepayment.status === EnumPrepaymentStatus.success
+    const isPrepaymentNotPaid = isStatusPrepayment && currentPrepayment.status !== EnumPrepaymentStatus.success
 
     const isStatusConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
 
@@ -296,7 +309,24 @@ export const cancelReservation = async ({
         }
 
         if (isPrepaymentNotPaid) {
-            await ReservationEntities.deletePrepayment({ reservationId, trx })
+            // await ReservationEntities.deletePrepayment({ reservationId, trx })
+            // await 
+            await ReservationEntities.updateReservation({
+                reservationId,
+                data: {
+                    currentPrepaymentId: null,
+                    reservationStatusId: EnumReservationStatusNumeric.cancel,
+                },
+                trx
+            })
+            await ReservationEntities.updateReservationPrepayment({
+                data: {
+                    id: currentPrepayment.id,
+                    status: EnumPrepaymentStatus.cancelled,
+                },
+                trx
+            })
+
         }
 
         if (isStatusConfirmation) {

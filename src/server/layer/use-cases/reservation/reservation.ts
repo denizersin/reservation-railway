@@ -97,7 +97,7 @@ export const createReservation = async ({
 
             await ReservationEntities.updateReservation({
                 data: {
-                    prepaymentId: newPrepaymentId,
+                    currentPrepaymentId: newPrepaymentId,
                     reservationStatusId: EnumReservationStatusNumeric.prepayment,
                 },
                 reservationId: newReservation.id,

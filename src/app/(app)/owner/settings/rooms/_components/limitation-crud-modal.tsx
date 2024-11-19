@@ -90,6 +90,7 @@ const LimitationCrudModal = ({
         value:hour.hour
     }))
 
+    console.log(hours,'hours')
 
     useEffect(() => {
         if (limitationData) {
