@@ -151,7 +151,7 @@ const seedFunctions = [
 
         await RoomEntities.createRoomWithTranslations({
             order: 2,
-            
+
             restaurantId: 1,
             translations: [
                 {
@@ -208,8 +208,8 @@ const seedFunctions = [
                 no: 'S-' + i.toString(),
                 order: i,
                 roomId: 2,
-                x: (i % 5) ,
-                y: Math.floor(i / 5) ,
+                x: (i % 5),
+                y: Math.floor(i / 5),
             })),
         })
 
@@ -270,53 +270,57 @@ const seedFunctions = [
         for (const guestCompany of seedDatas.getGuestCompanies(1)) {
             await db.insert(schema.tblGusetCompany).values(guestCompany)
         }
-  
+
 
 
     },
     async function createNotificationsTables() {
-        await db.insert(schema.tblPrepaymentMessage).values({
-            languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
-            restaurantId: 1,
-            prepaymentMessage: 'Prepayment message @Client @Date @Link @Restaurant',
-            prepaymentCancellationMessage: 'Prepayment cancellation message @Client @Date @Link @Restaurant',
-            prepaymentReminderMessage: 'Prepayment reminder message @Client @Date @Link @Restaurant',
-            prepaymentRefundMessage: 'Prepayment refund message @Client @Date @Link @Restaurant',
-            prepaymentReceivedMessage: 'Prepayment received message @Client @Date @Link @Restaurant',
-            accountPaymentRequestMessage: 'Account payment request message @Client @Date @Link @Restaurant',
-            accountPaymentSuccessMessage: 'Account payment success message @Client @Date @Link @Restaurant',
-        })
+
+        for (const language of languagesData) {
+
+            await db.insert(schema.tblPrepaymentMessage).values({
+                languageId: language.id,
+                restaurantId: 1,
+                prepaymentMessage: 'Prepayment message @Client @Date @Link @Restaurant',
+                prepaymentCancellationMessage: 'Prepayment cancellation message @Client @Date @Link @Restaurant',
+                prepaymentReminderMessage: 'Prepayment reminder message @Client @Date @Link @Restaurant',
+                prepaymentRefundMessage: 'Prepayment refund message @Client @Date @Link @Restaurant',
+                prepaymentReceivedMessage: 'Prepayment received message @Client @Date @Link @Restaurant',
+                accountPaymentRequestMessage: 'Account payment request message @Client @Date @Link @Restaurant',
+                accountPaymentSuccessMessage: 'Account payment success message @Client @Date @Link @Restaurant',
+            })
 
 
-        await db.insert(schema.tblReservationMessage).values({
-            languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
-            restaurantId: 1,
-            newReservationMessage: 'New reservation message @Client @Date @Link @Restaurant',
-            dateTimeChangeMessage: 'Date time change message @Client @Date @Link @Restaurant',
-            guestCountChangeMessage: 'Guest count change message @Client @Date @Link @Restaurant',
-            reservationCancellationMessage: 'Reservation cancellation message @Client @Date @Link @Restaurant',
-            reservationConfirmationRequestMessage: 'Reservation confirmation request message @Client @Date @Link @Restaurant',
-            reservationCancellationWithReasonMessage: 'Reservation cancellation with reason message @Client @Date @Link @Restaurant',
-            reservationReminderMessage: 'Reservation reminder message @Client @Date @Link @Restaurant',
-            reservationFeedbackRequestMessage: 'Reservation feedback request message @Client @Date @Link @Restaurant',
-            reservationConfirmedMessage: 'Reservation confirmed message @Client @Date @Link @Restaurant',
-        })
+            await db.insert(schema.tblReservationMessage).values({
+                languageId: language.id,
+                restaurantId: 1,
+                newReservationMessage: 'New reservation message @Client @Date @Link @Restaurant',
+                dateTimeChangeMessage: 'Date time change message @Client @Date @Link @Restaurant',
+                guestCountChangeMessage: 'Guest count change message @Client @Date @Link @Restaurant',
+                reservationCancellationMessage: 'Reservation cancellation message @Client @Date @Link @Restaurant',
+                reservationConfirmationRequestMessage: 'Reservation confirmation request message @Client @Date @Link @Restaurant',
+                reservationCancellationWithReasonMessage: 'Reservation cancellation with reason message @Client @Date @Link @Restaurant',
+                reservationReminderMessage: 'Reservation reminder message @Client @Date @Link @Restaurant',
+                reservationFeedbackRequestMessage: 'Reservation feedback request message @Client @Date @Link @Restaurant',
+                reservationConfirmedMessage: 'Reservation confirmed message @Client @Date @Link @Restaurant',
+            })
 
-        await db.insert(schema.tblRestaurantTexts).values({
-            restaurantId: 1,
-            languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
-            agreements: 'Agreements',
-            dressCode: 'Dress code',
-            reservationRequirements: 'Reservation requirements',
-        })
+            await db.insert(schema.tblRestaurantTexts).values({
+                restaurantId: 1,
+                languageId: language.id,
+                agreements: 'Agreements',
+                dressCode: 'Dress code',
+                reservationRequirements: 'Reservation requirements',
+            })
 
-        await db.insert(schema.tblWaitlistMessage).values({
-            restaurantId: 1,
-            languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
-            addedToWaitlistMessage: 'Added to waitlist message @Client @Date @Link @Restaurant ',
-            addedToWaitlistWalkinMessage: 'Added to waitlist walkin message @Client @Date @Link @Restaurant',
-            calledFromWaitlistMessage: 'Called from waitlist message @Client @Date @Link @Restaurant',
-        })
+            await db.insert(schema.tblWaitlistMessage).values({
+                restaurantId: 1,
+                languageId: language.id,
+                addedToWaitlistMessage: 'Added to waitlist message @Client @Date @Link @Restaurant ',
+                addedToWaitlistWalkinMessage: 'Added to waitlist walkin message @Client @Date @Link @Restaurant',
+                calledFromWaitlistMessage: 'Called from waitlist message @Client @Date @Link @Restaurant',
+            })
+        }
 
 
 

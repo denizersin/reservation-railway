@@ -60,7 +60,7 @@ export const restaurantRouter = createTRPCRouter({
             const tags = await restaurantTagEntities.getAllRestaurantTags2(input)
             return tags
         }),
-    getTags: ownerProcedure
+    getTags: publicProcedure
         .query(async ({ ctx }) => {
             return await restaurantTagEntities.getAllRestaurantTags2({
                 page: -1,
@@ -81,8 +81,8 @@ export const restaurantRouter = createTRPCRouter({
     getMeals: publicProcedure.query(async () => {
         return await predefinedEntities.getMeals()
     }),
-    getRestaurantLanguages: ownerProcedure.query(async ({ ctx }) => {
-        const { session: { user: { restaurantId } } } = ctx
+    getRestaurantLanguages: publicProcedure.query(async ({ ctx }) => {
+        const { restaurantId } = ctx
         return await restaurantEntities.getRestaurantLanguages({ restaurantId })
     }),
     getLanguages: ownerProcedure.query(async () => {

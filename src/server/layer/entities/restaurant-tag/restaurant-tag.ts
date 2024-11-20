@@ -88,6 +88,7 @@ export const getAllRestaurantTags2 = async ({
 
     const whereConditions = [];
     whereConditions.push(eq(tblRestaurantTagTranslation.languageId, languageId));
+    
 
     if (name) {
         whereConditions.push(like(tblRestaurantTagTranslation.name, `%${name}%`));

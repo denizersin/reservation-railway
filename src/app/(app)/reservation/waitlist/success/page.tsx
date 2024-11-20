@@ -22,7 +22,7 @@ export default function WaitlistSuccessPage() {
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper className="pb-10 max-w-[525px]">
-            <div className="mt-10"></div>
+            <div className=""></div>
             <div className="px-2">
 
                 <div className="flex flex-col items-center justify-center w-full">

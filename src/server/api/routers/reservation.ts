@@ -16,6 +16,7 @@ import { TOAST_MESSAGE_HEADER_KEY } from "@/shared/constants";
 import { NextResponse } from "next/server";
 import { clientQueryValidator } from "@/shared/validators/front/reservation";
 import { getRandom } from "@/server/utils/server-utils";
+import { clientFormValidator } from "@/shared/validators/front/create";
 
 
 
@@ -359,5 +360,26 @@ export const reservationRouter = createTRPCRouter({
             return await reservationUseCases.getMonthAvailability(opts)
         }),
 
+    createReservation: publicProcedure
+        .input(clientFormValidator.createReservationSchema)
+        .mutation(async (opts) => {
+            const newReservationId = await reservationUseCases.createPublicReservation(opts)
+            return { newReservationId }
+        }),
 
+    getReservationStatusData: publicProcedure
+        .input(z.object({
+            reservationId: z.number().int().positive()
+        }))
+        .query(async (opts) => {
+            return await reservationUseCases.getReservationStatusData(opts)
+        }),
+
+    cancelPublicReservation: publicProcedure
+        .input(z.object({
+            reservationId: z.number().int().positive()
+        }))
+        .mutation(async (opts) => {
+            await reservationUseCases.cancelPublicReservation(opts)
+        }),
 });

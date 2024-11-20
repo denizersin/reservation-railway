@@ -1,5 +1,5 @@
 import { db } from "@/server/db";
-import { tblReservationLog, tblReservationNote, tblReservationNotification, tblReservationTag, tblRestaurantGeneralSetting } from "@/server/db/schema";
+import { tblReservationLog, tblReservationNote, tblReservationNotification, tblReservationTag } from "@/server/db/schema";
 import { tblReservation } from "@/server/db/schema/reservation";
 import { TUseCaseOwnerLayer, TUseCasePublicLayer } from "@/server/types/types";
 import { createTransaction, TTransaction } from "@/server/utils/db-utils";
@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { asc, between, eq } from "drizzle-orm";
 import { ReservationEntities } from "../../entities/reservation";
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
+import { restaurantEntities } from "../../entities/restaurant";
 import { RoomEntities } from "../../entities/room";
 import { userEntities } from "../../entities/user";
 import { notificationUseCases } from "./notification";
@@ -31,12 +32,12 @@ export const createReservation = async ({
 
     //set reservation time to utc
     const hour = localHourToUtcHour(reservationData.hour)
+
+
     reservationData.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
 
-    const restaurantSettings = await db.query.tblRestaurantGeneralSetting.findFirst({
-        where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId)
-    })
-    if (!restaurantSettings) throw new Error('Restaurant settings not found')
+
+    const restaurantSettings = await restaurantEntities.getRestaurantSettings({restaurantId})
 
     const hasPrepayment = reservationData.prepaymentTypeId === EnumReservationPrepaymentNumeric.prepayment
     const prePaymentAmount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount

@@ -1,151 +1,54 @@
+
+
 "use client"
-
-import { AreaSelect } from "@/components/custom/front/area-select";
-import { FrontCard } from "@/components/custom/front/card";
-import { DateSelect } from "@/components/custom/front/date-select";
-import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
-import { GuestSelect } from "@/components/custom/front/guest-select";
-import HeadBanner from "@/components/custom/front/head-banner";
-import { TimeSelect } from "@/components/custom/front/time-select";
-import { Button } from "@/components/ui/button";
-import { localStorageStates } from "@/data/local-storage-states";
-import { api } from "@/server/trpc/react";
-import { EnumMealNumeric } from "@/shared/enums/predefined-enums";
-import { useRouter } from "next/navigation";
-import React, { createContext, useEffect, useMemo, useState } from "react";
-import RootPageHandler from "./root-page-handler";
-import { RouterOutputs } from "@/server/trpc/react";
-import { format } from 'date-fns';
-
-export type TMonthAvailabilityRow = RouterOutputs['reservation']['getMonthAvailability'][0]
+import useAuth from "@/components/providers/AuthProvider";
+import { ClientI18nProvider } from "@/hooks/18n-provider";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { EnumHeader, EnumUserRole } from "@/shared/enums/predefined-enums";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
 
-
-//define context
-type TMonthAvailabilityContext = {
-  monthAvailabilityData: TMonthAvailabilityRow[] | undefined
-  guestCount: number,
-  isLoadingMonthAvailability: boolean,
-  selectedDate: Date | undefined,
-  selectedTime: string | undefined,
-  setSelectedTime: (time: string | undefined) => void,
-  selectedAreaId: number | undefined,
-  setSelectedAreaId: (areaId: number | undefined) => void
-}
-
-export const MonthAvailabilityContext = createContext<TMonthAvailabilityContext>({} as TMonthAvailabilityContext)
-
-export default function Home() {
+export default function RootPageHandler({ children }: { children: React.ReactNode }) {
 
   // void api.post.getLatest.prefetch();
 
+  const pathname = usePathname();
+
+  const session = useAuth()
 
   const router = useRouter();
 
 
-
-
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
-  const [month, setMonth] = React.useState<number>(new Date().getMonth())
-  const [guestCount, setGuestCount] = React.useState<number>(1)
-  const [time, setTime] = React.useState<string | undefined>(undefined)
-  const [areaId, setAreaId] = React.useState<number | undefined>(undefined)
-
-  function handleContinue() {
-    localStorageStates.updateReservationState({
-      areaId: areaId!,
-      date: date!,
-      guestCount: guestCount,
-      time: time!
-    })
-
-    router.push('/reservation/user-info')
-  }
-
-
-
-  function onClickAddWaitList() {
-    router.push('/reservation/waitlist')
-  }
-
   useEffect(() => {
-    const reservationState = localStorageStates.getReservationState()
-    if (reservationState) {
-      setGuestCount(reservationState.guestCount)
-      setDate(reservationState.date)
-      setTime(reservationState.time)
-      setAreaId(reservationState.areaId)
+    if (session.isLoading) return;
+    if (!session.isAuthenticated) {
+      router.push('/reservation')
+
+      //!TODO: remove this
+      // router.push('/auth/login')
+      return;
+    };
+    if (session.session?.user.userRole === EnumUserRole.admin && !pathname.includes('admin')) {
+      router.push('/panel/admin')
+    } else if (session.session?.user.userRole === EnumUserRole.owner && !pathname.includes('owner')) {
+      router.push('/panel/owner')
     }
-  }, [])
 
 
+  }, [session.isAuthenticated, session.isLoading])
 
-  const { data: monthAvailabilityData, isLoading: isLoadingMonthAvailability } = api.reservation.getMonthAvailability.useQuery({
-    month: month,
-    mealId: EnumMealNumeric.dinner
+  const [restaurantId, setRestaurantId] = useLocalStorage({
+    key: EnumHeader.RESTAURANT_ID,
+    defaultValue: 1,
   })
 
 
-  //"dd-mm-yy"
-  const [avaliableDates, setAvaliableDates] = useState<Record<string, TMonthAvailabilityRow>>({});
-
-
-
-
-
-  const handleGuestCountChange = (guestCount: number) => {
-
-
-
-    setGuestCount(guestCount)
-  }
 
 
 
 
 
 
-  const contextValue: TMonthAvailabilityContext = {
-    monthAvailabilityData,
-    guestCount,
-    isLoadingMonthAvailability,
-    selectedDate: date,
-    selectedTime: time,
-    setSelectedTime: setTime,
-    selectedAreaId: areaId,
-    setSelectedAreaId: setAreaId
-  }
-
-
-
-  return (
-    <RootPageHandler>
-      <MonthAvailabilityContext.Provider value={contextValue}>
-        <div className='relative h-full overflow-hidden bg-background flex text-front-primary'>
-          <div className="main h-screen overflow-y-scroll flex-1">
-            <div className="text-5xl h-[200vh] ">
-              <HeadBanner />
-              <FrontMaxWidthWrapper className="mt-10">
-                <GuestSelect guestCount={guestCount} setGuestCount={setGuestCount} />
-                <DateSelect date={date!} setDate={setDate} onClickAddWaitList={onClickAddWaitList} />
-                <TimeSelect time={time} setTime={setTime} />
-                <AreaSelect areaId={areaId} setAreaId={setAreaId} />
-                <div className="px-2 md:px-0">
-                  <Button onClick={handleContinue} className="bg-front-primary text-white w-full h-[45px] rounded-sm mt-6">Continue</Button>
-                  <FrontCard className="mt-6">
-                    <FrontCard.Title className="">Are you a large group?</FrontCard.Title>
-                    <div className="font-light text-sm ">To ensure a smooth experience for all our guests, a
-                      <span className="font-medium"> maximum of 5 people </span>
-                      per booking are allowed on a single table.</div>
-                  </FrontCard>
-                </div>
-              </FrontMaxWidthWrapper>
-
-            </div>
-          </div>
-        </div>
-      </MonthAvailabilityContext.Provider>
-    </RootPageHandler>
-
-  );
+  return children
 }

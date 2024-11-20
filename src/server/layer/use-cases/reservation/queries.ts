@@ -9,7 +9,7 @@ import { TUseCaseOwnerLayer } from "@/server/types/types";
 import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumReservationExistanceStatusNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
-import { and, between, count, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
+import { and, asc, between, count, desc, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
 
 export function getLimitationStatus({ date, mealId, restaurantId }: { date: Date, mealId: number, restaurantId: number }) {
 
@@ -440,7 +440,8 @@ export const getReservations = async ({
             eq(tblReservation.restaurantId, restaurantId),
             between(tblReservation.reservationDate, start, end),
             ...whereConditions,
-        )
+        ),
+        orderBy: [asc(tblReservation.hour)]
     })
 
     reservations.forEach(r => {

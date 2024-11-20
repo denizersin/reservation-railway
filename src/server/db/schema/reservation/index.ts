@@ -13,6 +13,7 @@ import { tblReservationLog } from './reservation-log';
 import { tblReservationNote } from './reservation-note';
 import { tblReserVationStatus } from './reservation-status';
 import { tblReservationTag } from './tag';
+import { tblInvoice } from './invoice';
 
 
 export const tblReservation = mysqlTable('reservation', {
@@ -29,6 +30,7 @@ export const tblReservation = mysqlTable('reservation', {
     billPaymentId: int('bill_payment_id'),
     linkedReservationId: int('linked_reservation_id'),
     waitingSessionId: int('waiting_session_id').notNull(),
+    invoiceId: int('invoice_id'),
 
     //if exists, it means that the reservation is created by restaurant owner
     createdOwnerId: int('created_owner_id'),
@@ -41,6 +43,9 @@ export const tblReservation = mysqlTable('reservation', {
     checkedinAt: timestamp('checkedin_at'),
     enteredMainTableAt: timestamp('entered_main_table_at'),
     checkedoutAt: timestamp('checkedout_at'),
+
+    canceledBy: varchar('canceled_by', { length: 255 }),
+    canceledAt: timestamp('canceled_at'),
 
     prePaymentTypeId: int('prepayment_type_id').notNull(),
 
@@ -106,6 +111,7 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
     //nullable relations
     currentPrepayment: one(tblPrepayment, { fields: [tblReservation.currentPrepaymentId], references: [tblPrepayment.id] }),
     billPayment: one(tblBillPayment, { fields: [tblReservation.billPaymentId], references: [tblBillPayment.id] }),
+    invoice: one(tblInvoice, { fields: [tblReservation.invoiceId], references: [tblInvoice.id] }),
 
 }));
 

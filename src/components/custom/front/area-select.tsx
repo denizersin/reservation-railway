@@ -1,13 +1,12 @@
-import React, { useContext, useMemo, useState } from 'react'
 import {
     Sheet,
     SheetClose,
     SheetContent,
     SheetDescription,
-    SheetHeader,
     SheetTitle,
-    SheetTrigger,
+    SheetTrigger
 } from "@/components/ui/sheet"
+import { useContext, useMemo, useState } from 'react'
 
 import {
     Popover,
@@ -19,28 +18,25 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+    DialogTitle
 } from "@/components/ui/dialog"
 
 
 
 
-import { IconArrowLeft, IconArrowRight, IconGuests, IconImage, IconSittingArea } from '@/components/svgs'
-import { Button } from '@/components/ui/button'
-import { PopoverClose } from '@radix-ui/react-popover'
+import { IconArrowLeft, IconArrowRight, IconImage, IconSittingArea } from '@/components/svgs'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
-import { MonthAvailabilityContext } from '@/app/(app)/page'
+import { PopoverClose } from '@radix-ui/react-popover'
 import { format } from 'date-fns'
+import Image from 'next/image'
+import { MonthAvailabilityContext } from "@/app/(app)/reservation/page"
+import { localStorageStates } from "@/data/local-storage-states"
 
 
 type Props = {
     areaId: number | undefined
-        setAreaId: (areaId: number) => void
+    setAreaId: (areaId: number) => void
 }
 
 type Item = {
@@ -80,7 +76,7 @@ export const AreaSelect = ({
     ]
 
 
-    const { selectedDate, monthAvailabilityData, guestCount, selectedTime } = useContext(MonthAvailabilityContext)
+    const { selectedDate, monthAvailabilityData, guestCount, selectedTime,setAreaName } = useContext(MonthAvailabilityContext)
 
 
     const avaliableRooms = useMemo(() => {
@@ -137,6 +133,7 @@ export const AreaSelect = ({
     }
 
 
+
     return (
         <div className='w-full '>
             <div className="w-full md:hidden">
@@ -173,6 +170,7 @@ export const AreaSelect = ({
                                             onClick={() => {
                                                 if (isAvailable) {
                                                     setAreaId(item.id)
+                                                    setAreaName(item.name)
                                                 }
                                             }}
                                             className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
@@ -220,6 +218,7 @@ export const AreaSelect = ({
                                         onClick={() => {
                                             if (isAvailable) {
                                                 setAreaId(item.room.id)
+                                                setAreaName(item.room.name)
                                             }
                                         }}
                                         className={cn('flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center ', {

@@ -35,13 +35,13 @@ export const adminSidelinks: SideLink[] = [
     {
         title: 'Users',
         label: '',
-        href: '/admin/users',
+        href: '/panel/admin/users',
         icon: <IconUsers size={18} />,
     },
     {
         title: 'Restaurants',
         label: '',
-        href: '/admin/restaurants',
+        href: '/panel/admin/restaurants',
         icon: <IconUsers size={18} />,
     },
     // {

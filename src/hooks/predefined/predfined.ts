@@ -70,4 +70,12 @@ export const usePersonalSelectData = () => {
     return { selectData: withNoneOption, isLoading }
 }
 
+export const useReservationTagsSelectData = () => {
+    const { data, isLoading } = api.restaurant.getTags.useQuery()
+    const selectData = useMemo(() => data?.data?.map((tag) => ({
+        label: tag.translations?.[0]?.name || '',
+        value: String(tag.id)
+    })) || [], [data])
+    return { selectData, isLoading }
+}
 

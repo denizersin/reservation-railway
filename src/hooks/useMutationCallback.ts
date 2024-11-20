@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "./use-toast"
 import { getQueryKey } from "@trpc/react-query"
 import { api } from "@/server/trpc/react"
-import { useReservationsContext } from "@/app/(app)/owner/reservations/page"
+import { useReservationsContext } from "@/app/(app)/panel/owner/reservations/page"
 
 export const useMutationCallback = () => {
     const { toast } = useToast()

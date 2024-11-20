@@ -289,6 +289,7 @@ export const cancelReservation = async ({
         notificationOptions: { withEmail, withSms }
     } = input
 
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
     const reservation = await ReservationEntities.getReservationById({ reservationId })
 
     const currentPrepayment = reservation.currentPrepaymentId ?
@@ -305,6 +306,7 @@ export const cancelReservation = async ({
     createTransaction(async (trx) => {
 
         if (isPrepaymentPaid) {
+            //!TODO: check if this is needed
             // await ReservationEntities.deletePrepayment({ reservationId, trx })
         }
 
@@ -316,6 +318,8 @@ export const cancelReservation = async ({
                 data: {
                     currentPrepaymentId: null,
                     reservationStatusId: EnumReservationStatusNumeric.cancel,
+                    canceledBy: owner.name,
+                    canceledAt: new Date(),
                 },
                 trx
             })
@@ -346,7 +350,7 @@ export const cancelReservation = async ({
     await ReservationLogEntities.createLog({
         message: 'Reservation canceled',
         reservationId,
-        owner: ctx.session.user.userId.toString()
+        owner: owner.name
     })
 
     await notificationUseCases.handleReservationCancelled({

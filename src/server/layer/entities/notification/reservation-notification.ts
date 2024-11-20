@@ -5,7 +5,7 @@ import { reservationLinks } from "@/server/utils/front-link";
 import { EnumLanguage, EnumNotificationType } from "@/shared/enums/predefined-enums";
 import { and, eq } from "drizzle-orm";
 import { LanguageEntity } from "../language";
-import { DEFAULT_LANGUAGE, languagesData } from "@/shared/data/predefined";
+import { languagesData } from "@/shared/data/predefined";
 import { TRPCError } from "@trpc/server";
 
 

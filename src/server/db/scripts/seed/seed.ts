@@ -72,7 +72,8 @@ async function createReservations() {
         userPrefrences: {
             theme: EnumTheme.light,
             language: languagesData.find(l => l.languageCode === EnumLanguage.en)!
-        }
+        },
+        restaurantId:1
     }
 
 
@@ -133,6 +134,8 @@ async function createReservations() {
 async function createGuests() {
 
     for (let i = 300; i < guestCount; i++) {
+        const createdAt = new Date()
+        createdAt.setMinutes(getRandom(0, 59))
         const newGuest = await guestEntities.createGuest({
             guestData: {
                 name: `Guest ${i}`,
@@ -143,10 +146,12 @@ async function createGuests() {
                 languageId: languagesData.find(a => a.languageCode === EnumLanguage.en)!.id,
                 restaurantId: 1,
                 surname: `Surname ${i}`,
-                phone: `+905331234567`,
+                phone: `5331234567`,
+                phoneCode: `+90`,
                 tagIds: [],
                 vipLevel: EnumVipLevel.goodSpender,
                 isSendReviewNotifs: false,
+                createdAt: createdAt
             }
         })
     }
@@ -159,7 +164,9 @@ async function createGuests() {
 
 async function seed() {
     await createGuests()
+    console.log('end guests')
     await createReservations()
+    console.log('end seed')
 }
 
 seed()

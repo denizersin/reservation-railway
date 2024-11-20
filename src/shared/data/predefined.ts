@@ -24,7 +24,7 @@ export const languagesData: TLanguage[] = [
     }
 ]
 
-export const DEFAULT_LANGUAGE = languagesData.find((lang) => lang.languageCode === EnumLanguage.en) as TLanguage
+export const DEFAULT_LANGUAGE_DATA = languagesData.find((lang) => lang.languageCode === EnumLanguage.en) as TLanguage
 
 
 

@@ -23,7 +23,8 @@ export const getMonthAvailability = async ({
 }: TUseCasePublicLayer<TClientQueryValidator.TMonthAvailabilityQuery>) => {
 
     const { month, mealId } = input
-    const { restaurantId, language } = ctx
+    const { restaurantId } = ctx
+    const language =ctx.userPrefrences.language
 
     const today = new Date();
 

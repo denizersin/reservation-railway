@@ -97,7 +97,7 @@ const handleNotificationSending = async ({
     logPrefix: string,
     emailMessage: string,
     smsMessage: string,
-    ctx: TCtx
+    ctx?: TCtx
 }) => {
     const guest = reservation.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
@@ -159,7 +159,7 @@ type NotificationHandlerParams = {
     reservationId: number
     withSms: boolean
     withEmail: boolean
-    ctx: TCtx
+    ctx?: TCtx
 }
 
 export const handleReservationCreated = async ({
@@ -247,7 +247,6 @@ export const handleReservationCancelled = async ({
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'reservation cancelled notification',
-        ctx
     })
 }
 
@@ -255,7 +254,6 @@ export const handleReservationConfirmed = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams) => {
     const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
         reservationId
@@ -291,7 +289,6 @@ export const handleReservationConfirmed = async ({
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'reservation confirmed notification',
-        ctx
     })
 }
 

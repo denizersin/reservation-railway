@@ -16,7 +16,7 @@ import { EnumHeader, EnumLanguage, EnumTheme } from "@/shared/enums/predefined-e
 import { TUserPreferences } from "../layer/use-cases/user/user";
 import { db } from "../db";
 import { userUseCases } from "../layer/use-cases/user";
-import { DEFAULT_LANGUAGE, languagesData } from "@/shared/data/predefined";
+import { DEFAULT_LANGUAGE_DATA, languagesData } from "@/shared/data/predefined";
 
 /**
  * 1. CONTEXT
@@ -41,13 +41,13 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
   const userPrefrences: TUserPreferences = {
     theme: EnumTheme.light,
-    language: DEFAULT_LANGUAGE
+    language: DEFAULT_LANGUAGE_DATA
   }
 
   if (language && languageData) {
     userPrefrences.language = languageData
   } else {
-    userUseCases.updateUserPreferences({ language: DEFAULT_LANGUAGE.languageCode })
+    userUseCases.updateUserPreferences({ language: DEFAULT_LANGUAGE_DATA.languageCode })
   }
 
   // const toast = {
@@ -156,9 +156,6 @@ export const publicProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
     throw new TRPCError({ code: "BAD_REQUEST", message: "Restaurant id header is required" });
   }
 
-  const language = ctx.headers.get(EnumHeader.LANGUAGE) || EnumLanguage.en;
-
-  const languageData = languagesData.find(l => l.languageCode === language)!
 
 
   console.log(parseInt(restaurantId), 'Number(restaurantId)')
@@ -167,7 +164,6 @@ export const publicProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
     ctx: {
       ...ctx,
       restaurantId: Number(restaurantId),
-      language: languageData,
     }
   })
 });
@@ -214,6 +210,7 @@ export const ownerProcedure = t.procedure
     return next({
       ctx: {
         ...ctx,
+        restaurantId: ctx.session.user.restaurantId!,
         // infers the `session` as non-nullable
         session: {
           user: {

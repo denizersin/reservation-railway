@@ -1,11 +1,13 @@
 
 import { db } from "@/server/db";
-import { tblPrepayment, tblReservationTable, TReservationInsert } from "@/server/db/schema";
+import { tblPrepayment, tblReservationTable, tblRoom, tblRoomTranslation, tblTable, TReservationInsert, TTable } from "@/server/db/schema";
 import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblConfirmationRequest, TConfirmationRequestInsert } from "@/server/db/schema/reservation/confirmation-request";
 import { createTransaction, TTransaction } from "@/server/utils/db-utils";
-import { and, desc, eq } from "drizzle-orm";
+import { and, between, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
 import { RoomEntities } from "../room";
+import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
+import { getLocalTime, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
 
 
 
@@ -264,4 +266,129 @@ export const deletePrepayment = async ({
     trx?: TTransaction
 }) => {
     await trx?.delete(tblPrepayment).where(eq(tblPrepayment.reservationId, reservationId))
+}
+
+
+export const getAvaliableTable = async ({
+    restaurantId,
+    date,
+    time,
+    guestCount,
+    mealId
+}: {
+    restaurantId: number,
+    date: Date,
+    time: string,
+    guestCount: number,
+    mealId: number
+}) => {
+
+    console.log(date, 'date')
+    console.log(getLocalTime((new Date(date))), 'getLocalTime')
+    const { start, end } = getStartAndEndOfDay({
+        date:
+            getLocalTime((new Date(date)))
+    })
+
+    const getReservationTables = () => db
+        .select({
+            RESERVATION_TABLE_ID: tblReservationTable.id,
+            RESERVATION_ID: tblReservationTable.reservationId,
+            TABLE_ID: tblReservationTable.tableId,
+        })
+        .from(tblReservation)
+        .leftJoin(tblReservationTable, eq(tblReservationTable.reservationId, tblReservation.id))
+        .where(
+            and(
+                eq(tblReservation.mealId, mealId),
+                between(tblReservation.reservationDate, start, end),
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.completed)
+
+            )
+        )
+
+    const reservationTables = getReservationTables().as('reservationTables')
+
+    const TEST = await db
+        .select()
+        .from(tblRoom)
+        .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
+        .leftJoin(reservationTables, eq(reservationTables.TABLE_ID, tblTable.id))
+        .leftJoin(tblReservation, and(
+            eq(tblReservation.id, reservationTables.RESERVATION_ID),
+        ))
+        .leftJoin(tblReservationTable, eq(tblReservationTable.id, reservationTables.RESERVATION_TABLE_ID))
+        .where(and(
+            eq(tblRoom.restaurantId, restaurantId),
+            eq(tblRoom.isWaitingRoom, false),
+            isNotNull(tblTable.id),
+            isNull(tblReservation.id)
+        ))
+
+
+    //return most appropriate table for guest count
+
+    // guest count:3  tables: 2-4 2-5 return 2-4
+
+    let mostAppropriateTable: TTable | undefined = undefined
+
+    TEST.forEach(r => {
+        if (r.table?.id) {
+            const table = r.table
+            const isTableAvaliable = table.maxCapacity >= guestCount && table.minCapacity <= guestCount
+            if (!isTableAvaliable) return;
+
+            if (!mostAppropriateTable) {
+                mostAppropriateTable = table
+            }
+
+            if (isTableAvaliable && table.maxCapacity < mostAppropriateTable.maxCapacity) {
+                mostAppropriateTable = table
+            }
+
+        }
+    })
+
+    console.log(TEST)
+
+
+    return mostAppropriateTable as TTable | undefined
+
+}
+
+
+export const getReservationStatusData = async ({
+    reservationId,
+    languageId
+}: {
+    reservationId: number,
+    languageId: number
+}) => {
+
+
+    const result = await db.query.tblReservation.findFirst({
+        where: eq(tblReservation.id, reservationId),
+        with: {
+            guest: true,
+            currentPrepayment: true,
+            reservationStatus: true,
+        }
+    })
+
+    if (!result) throw new Error('Reservation not found')
+    const roomName = await db.query.tblRoomTranslation.findFirst({
+        where: eq(tblRoomTranslation.languageId, languageId)
+    })
+
+    result.hour = utcHourToLocalHour(result.hour)
+
+    const resultWithRoomName = {
+        ...result,
+        roomName: roomName?.name
+    }
+
+    return resultWithRoomName
+
+
 }

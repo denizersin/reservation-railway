@@ -32,90 +32,57 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { CookieContent } from "../_components/cookie-content"
 import { ReservationStatusHeader } from "../_components/reservation-status-header"
-
+import TClientFormValidator, { clientFormValidator } from "@/shared/validators/front/create"
+import { useReservationTagsSelectData } from "@/hooks/predefined/predfined"
+import { MultiSelect } from "@/components/custom/multi-select"
+import { api } from "@/server/trpc/react"
+import { EnumMealNumeric } from "@/shared/enums/predefined-enums"
+import { useToast } from "@/hooks/use-toast"
 export type UserInfoImperativeModalRefs = RefObject<{
     openCookieModal?: () => void
 }>
 
-const formSchema = z.object({
-    first_name: z.string().min(2, "First name must be at least 2 characters"),
-    last_name: z.string().min(2, "Last name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    phone_number_code: z.string(),
-    phone_number: z.string().min(10, "Phone number must be at least 10 digits"),
-    allergen_warning: z.boolean(),
-    special_requests: z.string().optional(),
-    reservation_tags: z.array(z.string()).optional(),
-    invoice_required: z.boolean(),
-    // Invoice related fields
-    invoice_type: z.enum(["individual", "corporate"]).optional(),
-    invoice_first_name: z.string().optional(),
-    invoice_last_name: z.string().optional(),
-    invoice_phone_number_code: z.string().optional(),
-    invoice_phone_number: z.string().optional(),
-    city: z.string().optional(),
-    district: z.string().optional(),
-    neighbourhood: z.string().optional(),
-    address: z.string().optional(),
-    tin: z.string().optional(),
-    tax_office: z.string().optional(),
-    company_name: z.string().optional(),
-    is_e_invoice_taxpayer: z.boolean().optional(),
-    allergen_accuracy_consent: z.boolean().refine((val) => val === true, {
-        message: "You must accept the accuracy of allergen information",
-    }),
-    marketing_consent: z.boolean().optional(),
-})
 
-export type TReservationUserInfoFormValues = z.infer<typeof formSchema>
 
-const reservationTags = [
-    { id: "birthday", label: "Birthday" },
-    { id: "anniversary", label: "Anniversary" },
-    { id: "honeymoon", label: "Honeymoon" },
-]
 
 export default function UserInfo() {
 
     const reservationUserInfoFormValues = localStorageStates.getReservationUserInfoFormValues()
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<TClientFormValidator.TUserInfoForm>({
+        resolver: zodResolver(clientFormValidator.userInfoFormSchema),
         defaultValues: reservationUserInfoFormValues || {
-            first_name: "",
-            last_name: "",
-            email: "",
-            phone_number_code: "+90",
-            phone_number: "",
-            allergen_warning: false,
-            special_requests: "",
-            reservation_tags: [],
-            invoice_required: false,
-            invoice_type: "individual",
-            invoice_first_name: "",
-            invoice_last_name: "",
-            invoice_phone_number_code: "+90",
-            invoice_phone_number: "",
+            name: "erdem",
+            surname: "yilmaz",
+            email: "erdem@gmail.com",
+            phoneCode: "+90",
+            phone: "5321234567",
+            allergenWarning: false,
+            specialRequests: "",
+            reservationTags: [],
+            invoiceRequired: false,
+            invoiceType: "individual",
+            invoiceFirstName: "",
+            invoiceLastName: "",
+            invoicePhoneCode: "+90",
+            invoicePhone: "5321234567",
             city: "",
             district: "",
             neighbourhood: "",
             address: "",
             tin: "",
-            tax_office: "",
-            company_name: "",
-            is_e_invoice_taxpayer: false,
-            allergen_accuracy_consent: false,
-            marketing_consent: false,
+            taxOffice: "",
+            companyName: "",
+            isEInvoiceTaxpayer: false,
+            allergenAccuracyConsent: true,
+            marketingConsent: false,
         },
     })
 
-    const invoiceRequired = form.watch("invoice_required")
-    const invoiceType = form.watch("invoice_type")
+    const invoiceRequired = form.watch("invoiceRequired")
+    const invoiceType = form.watch("invoiceType")
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        localStorageStates.updateReservationUserInfoFormValues(values)
-        router.push('/reservation/summary');
-    }
+    const { selectData: reservationTagsSelectData, isLoading: reservationTagsIsLoading } = useReservationTagsSelectData()
 
 
     const router = useRouter()
@@ -128,18 +95,63 @@ export default function UserInfo() {
 
     const cookieModalRef = useRef<ResponsiveModalHandleRef>({})
 
+
+    function onSubmit(values: TClientFormValidator.TUserInfoForm) {
+
+        const reservationData = localStorageStates.getReservationState();
+        const userInfoData = values
+
+
+        const newDate = reservationData?.date!
+        newDate.setHours(Number(reservationData?.time?.split(':')[0]), Number(reservationData?.time?.split(':')[1]), 0)
+
+
+        createReservation({
+            reservationData: {
+                date: newDate,
+                guestCount: reservationData?.guestCount!,
+                mealId: EnumMealNumeric.dinner,
+                time: reservationData?.time!,
+            },
+            userInfo: values
+        })
+
+        localStorageStates.updateReservationUserInfoFormValues(values)
+        // router.push('/reservation/summary');
+    }
+
+
+    const { toast } = useToast();
+
+
+
+    const {
+        mutate: createReservation,
+    } = api.reservation.createReservation.useMutation({
+        onSuccess: ({ newReservationId }) => {
+            toast({
+                title: 'Reservation created successfully',
+                description: 'You can now see your reservation in the summary page to confirm your reservation please pay the prepayment',
+            })
+            router.push(`/reservation/summary/${newReservationId}`);
+        }
+    })
+
+
+
+
     return (
         <div>
             <HeadBanner showHoldingSection={true} />
 
-            <FrontMaxWidthWrapper className="mt-10 px-2 md:px-6 pb-12">
+            <FrontMaxWidthWrapper className=" px-2 md:px-6 pb-12">
                 <ReservationStatusHeader onGoBack={onGoBack} />
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="first_name"
+                                name="name"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>First Name</FormLabel>
@@ -153,7 +165,7 @@ export default function UserInfo() {
 
                             <FormField
                                 control={form.control}
-                                name="last_name"
+                                name="surname"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Last Name</FormLabel>
@@ -169,7 +181,7 @@ export default function UserInfo() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="phone_number_code"
+                                name="phoneCode"
                                 render={({ field }) => (
                                     <FormItem >
                                         <FormLabel>Code</FormLabel>
@@ -195,7 +207,7 @@ export default function UserInfo() {
 
                             <FormField
                                 control={form.control}
-                                name="phone_number"
+                                name="phone"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
                                         <FormLabel>Phone Number</FormLabel>
@@ -224,7 +236,7 @@ export default function UserInfo() {
 
                         <FormField
                             control={form.control}
-                            name="allergen_warning"
+                            name="allergenWarning"
                             render={({ field }) => (
                                 <FormItem className="space-y-3">
                                     <FormLabel>Allergen Warning</FormLabel>
@@ -261,7 +273,7 @@ export default function UserInfo() {
 
                         <FormField
                             control={form.control}
-                            name="special_requests"
+                            name="specialRequests"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Special Requests</FormLabel>
@@ -278,26 +290,16 @@ export default function UserInfo() {
 
                         <FormField
                             control={form.control}
-                            name="reservation_tags"
+                            name="reservationTags"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Tag your reservation</FormLabel>
                                     <div className="flex space-x-4">
-                                        {reservationTags.map((tag) => (
-                                            <div key={tag.id} className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    checked={field.value?.includes(tag.id)}
-                                                    onCheckedChange={(checked) => {
-                                                        const updatedTags = checked
-                                                            ? [...(field.value || []), tag.id]
-                                                            : field.value?.filter((value) => value !== tag.id) ||
-                                                            []
-                                                        field.onChange(updatedTags)
-                                                    }}
-                                                />
-                                                <label>{tag.label}</label>
-                                            </div>
-                                        ))}
+                                        <MultiSelect
+                                            options={reservationTagsSelectData}
+                                            onValueChange={vals => field.onChange(vals.map(Number))}
+                                            value={field.value?.map(String)}
+                                        />
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -306,7 +308,7 @@ export default function UserInfo() {
 
                         <FormField
                             control={form.control}
-                            name="invoice_required"
+                            name="invoiceRequired"
                             render={({ field }) => (
                                 <FormItem className="space-y-3">
                                     <FormLabel>Will you request an invoice for this visit?</FormLabel>
@@ -315,7 +317,7 @@ export default function UserInfo() {
                                             onValueChange={(value) => {
                                                 field.onChange(value === "true")
                                                 if (value === "false") {
-                                                    form.setValue("invoice_type", undefined)
+                                                    form.setValue("invoiceType", undefined)
                                                 }
                                             }}
                                             defaultValue={field.value ? "true" : "false"}
@@ -340,7 +342,7 @@ export default function UserInfo() {
                             <div className="space-y-6 border rounded-lg p-4">
                                 <FormField
                                     control={form.control}
-                                    name="invoice_type"
+                                    name="invoiceType"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
@@ -366,7 +368,7 @@ export default function UserInfo() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="invoice_first_name"
+                                        name="invoiceFirstName"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>First Name</FormLabel>
@@ -380,7 +382,7 @@ export default function UserInfo() {
 
                                     <FormField
                                         control={form.control}
-                                        name="invoice_last_name"
+                                        name="invoiceLastName"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Last Name</FormLabel>
@@ -396,7 +398,7 @@ export default function UserInfo() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="invoice_phone_number_code"
+                                        name="invoicePhoneCode"
                                         render={({ field }) => (
                                             <FormItem className="">
                                                 <FormLabel>Code</FormLabel>
@@ -422,7 +424,7 @@ export default function UserInfo() {
 
                                     <FormField
                                         control={form.control}
-                                        name="invoice_phone_number"
+                                        name="invoicePhone"
                                         render={({ field }) => (
                                             <FormItem className="flex-1">
                                                 <FormLabel>Phone Number</FormLabel>
@@ -539,7 +541,7 @@ export default function UserInfo() {
 
                                             <FormField
                                                 control={form.control}
-                                                name="tax_office"
+                                                name="taxOffice"
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Tax Office</FormLabel>
@@ -554,7 +556,7 @@ export default function UserInfo() {
 
                                         <FormField
                                             control={form.control}
-                                            name="company_name"
+                                            name="companyName"
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Company Name</FormLabel>
@@ -568,7 +570,7 @@ export default function UserInfo() {
 
                                         <FormField
                                             control={form.control}
-                                            name="is_e_invoice_taxpayer"
+                                            name="isEInvoiceTaxpayer"
                                             render={({ field }) => (
                                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                                     <FormControl>
@@ -594,7 +596,7 @@ export default function UserInfo() {
                         <div className="space-y-4">
                             <FormField
                                 control={form.control}
-                                name="allergen_accuracy_consent"
+                                name="allergenAccuracyConsent"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                         <FormControl>
@@ -615,7 +617,7 @@ export default function UserInfo() {
 
                             <FormField
                                 control={form.control}
-                                name="marketing_consent"
+                                name="marketingConsent"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                         <FormControl>

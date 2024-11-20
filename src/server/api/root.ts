@@ -6,6 +6,7 @@ import { reservationRouter } from "./routers/reservation";
 import { languageRouter } from "./routers/language";
 import { roomRouter } from "./routers/room";
 import { guestRouter } from "./routers/guest";
+import { testRouter } from "./routers/test";
 
 
 /**
@@ -20,8 +21,8 @@ export const appRouter = createTRPCRouter({
   reservation: reservationRouter,
   language: languageRouter,
   room:roomRouter,
-  guest:guestRouter
-
+  guest:guestRouter,
+  test:testRouter
 
 });
 

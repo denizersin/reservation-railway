@@ -25,7 +25,7 @@ export default function ReservationWaitlistCancelPage() {
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper>
-            <div className="mt-10"></div>
+            <div className=""></div>
             <div className="px-2">
 
 

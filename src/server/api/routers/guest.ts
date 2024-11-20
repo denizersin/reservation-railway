@@ -6,7 +6,7 @@ import { z } from "zod";
 export const guestRouter = createTRPCRouter({
     createGuest: ownerProcedure.input(guestValidator.createGuestSchema).mutation(async ({ input, ctx }) => {
         const { session: { user: { restaurantId } } } = ctx
-
+        
         await guestEntities.createGuest({
             guestData: {
                 ...input,
@@ -16,6 +16,7 @@ export const guestRouter = createTRPCRouter({
     }),
 
     updateGuest: ownerProcedure.input(guestValidator.updateGuestSchema).mutation(async ({ input, ctx }) => {
+        // input.data.
         await guestEntities.updateGuest({
             id: input.id,
             guestData: {

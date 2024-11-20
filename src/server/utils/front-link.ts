@@ -4,7 +4,7 @@ const getConfirmationLink = ({
 }: {
     reservationId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/confirmation/${reservationId}`
+    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
 }
 
 
@@ -13,7 +13,7 @@ const getPrepaymentLink = ({
 }: {
     reservationId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/prepayment/${reservationId}`
+    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
 }
 
 const getReservationDetailLink = ({
@@ -21,7 +21,7 @@ const getReservationDetailLink = ({
 }: {
     reservationId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/detail/${reservationId}`
+    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
 }
 
 

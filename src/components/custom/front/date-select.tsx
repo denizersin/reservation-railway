@@ -16,11 +16,11 @@ import {
 
 
 
-import { MonthAvailabilityContext } from '@/app/(app)/page'
 import { IconArrowLeft, IconArrowRight, IconCalendar } from '@/components/svgs'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { CustomCalendar } from '../custom-calendar'
+import { MonthAvailabilityContext } from "@/app/(app)/reservation/page"
 
 
 type Props = {

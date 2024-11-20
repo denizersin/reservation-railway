@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "9501c6b7-70b7-4e44-90ac-50fc0dff0762",
+  "id": "43b07fee-ecc5-4416-93e2-411f8bd27b8c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -32,7 +32,7 @@
           "name": "country_id",
           "type": "int",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "name": {
@@ -63,6 +63,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "phone_code": {
+          "name": "phone_code",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "stable_phone": {
           "name": "stable_phone",
           "type": "varchar(256)",
@@ -74,14 +81,14 @@
           "name": "gender",
           "type": "enum('male','female','other')",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "birth_date": {
           "name": "birth_date",
           "type": "date",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "anniversary_date": {
@@ -160,7 +167,7 @@
           "name": "vip_level",
           "type": "enum('Big Spender','Good Spender','Low Spender','Regular Customer','Potential Customer','Black List','Lost Customer')",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "is_send_sms_and_email": {
@@ -2359,6 +2366,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_owner_id": {
           "name": "created_owner_id",
           "type": "int",
@@ -2404,6 +2418,20 @@
         },
         "checkedout_at": {
           "name": "checkedout_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "canceled_by": {
+          "name": "canceled_by",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "canceled_at": {
+          "name": "canceled_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
@@ -2588,7 +2616,15 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "idx_reservation_table_unique": {
+          "name": "idx_reservation_table_unique",
+          "columns": [
+            "reservation_id",
+            "table_id"
+          ]
+        }
+      }
     },
     "waiting_session_tables": {
       "name": "waiting_session_tables",
@@ -3420,6 +3456,128 @@
           ]
         }
       }
+    },
+    "invoices": {
+      "name": "invoices",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "reservation_id": {
+          "name": "reservation_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_type": {
+          "name": "invoice_type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_first_name": {
+          "name": "invoice_first_name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "invoice_last_name": {
+          "name": "invoice_last_name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "invoice_phone_code": {
+          "name": "invoice_phone_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "invoice_phone": {
+          "name": "invoice_phone",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "city": {
+          "name": "city",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "district": {
+          "name": "district",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "neighbourhood": {
+          "name": "neighbourhood",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_identification_number": {
+          "name": "tax_identification_number",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_office": {
+          "name": "tax_office",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_e_invoice_taxpayer": {
+          "name": "is_e_invoice_taxpayer",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "invoices_id": {
+          "name": "invoices_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
     }
   },
   "_meta": {

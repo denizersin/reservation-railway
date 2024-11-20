@@ -19,6 +19,9 @@ export const createGuest = async ({ guestData }: {
         await db.insert(tblGuestTag).values(tagIds.map(tagId => ({ guestId: result?.id!, tagId })));
     }
 
+    if (!result) throw new Error('Guest not created')
+    return result.id
+
 };
 
 
@@ -81,7 +84,7 @@ export const guestsPagination = async ({
     paginationQuery: TGuestValidator.GuestsPaginationSchema
 }): Promise<TPagination<TGuest>> => {
 
-    const { name, email, surname, phone, companyId, countryId, languageId, vipLevel, isVip, isContactAssistant,guestId } = paginationQuery.filters;
+    const { name, email, surname, phone, companyId, countryId, languageId, vipLevel, isVip, isContactAssistant, guestId } = paginationQuery.filters;
     const { page, limit } = paginationQuery.pagination;
     const { global_search } = paginationQuery;
 
@@ -135,7 +138,7 @@ export const guestsPagination = async ({
         orConditions.length > 0 ? or(...orConditions) : undefined
     )
 
-    function generateQueryWithoutPagination(whereCondition:  SQL<unknown> | undefined) {
+    function generateQueryWithoutPagination(whereCondition: SQL<unknown> | undefined) {
         return db.select({
             guest: tblGuest,
             company: tblGusetCompany,
@@ -280,3 +283,8 @@ export const getGuestDetail = async ({ guestId }: { guestId: number }) => {
     return { guest, guestReservations }
 }
 
+
+export const getGuestByPhoneAndEmail = async ({ phone, email, phoneCode }: { phone: string, email: string, phoneCode: string }) => {
+    const [result] = await db.select().from(tblGuest).where(and(eq(tblGuest.phone, phone), eq(tblGuest.email, email), eq(tblGuest.phoneCode, phoneCode)));
+    return result;
+}

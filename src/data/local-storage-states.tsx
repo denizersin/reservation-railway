@@ -1,10 +1,11 @@
-import { TReservationUserInfoFormValues } from "@/app/(app)/reservation/user-info/page"
 import { WaitlistFormValues } from "@/app/(app)/reservation/waitlist/join/page"
+import TClientFormValidator from "@/shared/validators/front/create"
 
 type ReservationState = {
     date: Date
     guestCount: number
     areaId: number,
+    areaName?: string,
     time: string
 }
 
@@ -30,11 +31,11 @@ export const clearReservationState = () => {
 
 
 // Reservation User Info Form Values
-export const updateReservationUserInfoFormValues = (values: TReservationUserInfoFormValues) => {
+export const updateReservationUserInfoFormValues = (values: TClientFormValidator.TUserInfoForm) => {
     localStorage.setItem('reservationUserInfoFormValues', JSON.stringify(values))
 }
 
-export const getReservationUserInfoFormValues = (): TReservationUserInfoFormValues | null => {
+export const getReservationUserInfoFormValues = (): TClientFormValidator.TUserInfoForm | null => {
     const values = localStorage.getItem('reservationUserInfoFormValues')
     if (values) {
         return JSON.parse(values)
@@ -90,8 +91,8 @@ export const clearWaitlistFormValues = () => {
 
 export const localStorageStates = {
     getReservationState,
-    clearReservationState,
     updateReservationState,
+    clearReservationState,
 
     // Reservation User Info Form Values
     getReservationUserInfoFormValues,
@@ -106,4 +107,5 @@ export const localStorageStates = {
     //waitlistFormValues
     getWaitlistFormValues,
     updateWaitlistFormValues,
+    clearWaitlistFormValues,
 }

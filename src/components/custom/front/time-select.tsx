@@ -23,8 +23,8 @@ import { Button } from '@/components/ui/button'
 import { PopoverClose } from '@radix-ui/react-popover'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/useMediaQueries'
-import { MonthAvailabilityContext } from '@/app/(app)/page'
 import { format } from 'date-fns'
+import { MonthAvailabilityContext } from '@/app/(app)/reservation/page'
 
 
 type Props = {

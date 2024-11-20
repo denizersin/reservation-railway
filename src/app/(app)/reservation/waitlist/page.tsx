@@ -23,7 +23,7 @@ export default function ReservationWaitlistPage() {
 
     return <div>
         <HeadBanner showHoldingSection={false} />
-        <FrontMaxWidthWrapper className="mt-10">
+        <FrontMaxWidthWrapper className="">
             <GuestSelect disabled={true} guestCount={guestCount} setGuestCount={setGuestCount} />
             <DateSelect date={date!} setDate={setDate} isWaitlistSelect={true} />
 

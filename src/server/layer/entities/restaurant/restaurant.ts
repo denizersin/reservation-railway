@@ -127,7 +127,7 @@ export const setDefaultsToRestaurant = async ({
                 mealId: dinner.id,
                 restaurantId: restaurantId,
                 day: day,
-                isOpen: [0, 1].includes(index) ? true : false
+                isOpen: [0, 1].includes(index) ? false : true
             }))
         )
 
@@ -430,4 +430,12 @@ export const getRestaurantRoomsWithTranslations = async ({
     })
 
     return rooms
+}
+
+export const getRestaurantSettings = async ({
+    restaurantId
+}: { restaurantId: number }) => {
+    const restaurantSettings = await db.query.tblRestaurantGeneralSetting.findFirst({ where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId) })
+    if (!restaurantSettings) throw new Error('Restaurant settings not found')
+    return restaurantSettings
 }

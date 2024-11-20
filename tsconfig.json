@@ -38,7 +38,7 @@
     "**/*.js",
     ".next/types/**/*.ts",
     "svgr.d.ts"
-, "src/app/(app)/owner/reservation/_components/grid-status-table-row-cardtsx"  ],
+, "src/app/(app)/panel/owner/reservation/_components/grid-status-table-row-cardtsx"  ],
   "exclude": [
     "node_modules",
     // "./src/app/**/*",

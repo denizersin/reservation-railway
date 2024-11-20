@@ -14,15 +14,16 @@ export const tblGuest = mysqlTable('guest', {
     id: int('id').autoincrement().primaryKey(),
     restaurantId: int('restaurant_id').notNull(),
     languageId: int('language_id').notNull(),
-    countryId: int('country_id').notNull(),
+    countryId: int('country_id'),
 
     name: varchar('name', { length: 256 }).notNull(),
     surname: varchar('surname', { length: 256 }).notNull(),
     email: varchar('email', { length: 256 }).notNull(),
     phone: varchar('phone', { length: 256 }).notNull(),
+    phoneCode: varchar('phone_code', { length: 256 }).notNull(),
     stablePhone: varchar('stable_phone', { length: 256 }),
-    gender: mysqlEnum('gender', getEnumValues(EnumGender)).notNull(),
-    birthDate: date('birth_date').notNull(),
+    gender: mysqlEnum('gender', getEnumValues(EnumGender)),
+    birthDate: date('birth_date'),
     anniversaryDate: date('anniversary_date'),
     description: varchar('description', { length: 256 }),
 
@@ -41,7 +42,7 @@ export const tblGuest = mysqlTable('guest', {
 
     //vip information
     isVip: boolean('is_vip').notNull().default(false),
-    vipLevel: mysqlEnum('vip_level', getEnumValues(EnumVipLevel)).notNull(),
+    vipLevel: mysqlEnum('vip_level', getEnumValues(EnumVipLevel)),
 
     //notification information
     isSendSmsAndEmail: boolean('is_send_sms_and_email').notNull().default(true),

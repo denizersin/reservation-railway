@@ -69,6 +69,7 @@ export const getGuests = (restaurantId: number) => new Array(40).fill(0).map((_,
     email: `guest${index}@gmail.comz`,
     languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.en)!.id,
     phone: '123',
+    phoneCode: '+90',
     gender: EnumGender.male,
     restaurantId,
 })) as TGuestInsert[]

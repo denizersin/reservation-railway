@@ -8,11 +8,11 @@ import { useRef, useState } from "react"
 import { localStorageStates } from "@/data/local-storage-states"
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
 import { Button } from "@/components/custom/button";
-import { SummaryCard } from "../summary/page";
 import { TermsConditionsCard } from "../_components/terms-conditions-card";
 import { DressCodeCard } from "../_components/dress-code-card";
 import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/responsive-modal";
 import Image from "next/image";
+import { SummaryCard } from "../summary/[id]/page";
 
 export default function ReservationSummaryPage() {
 
@@ -44,7 +44,7 @@ export default function ReservationSummaryPage() {
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper className="pb-10">
-            <div className="mt-10"></div>
+            <div className=""></div>
             <ReservationStatusHeader onGoBack={onGoBack} />
             <div className="px-2">
 
@@ -57,7 +57,7 @@ export default function ReservationSummaryPage() {
 
                 <SummaryCard
                     guestCount={reservationState?.guestCount!}
-                    area={reservationState?.area!}
+                    area={reservationState?.areaName!}
                     date={reservationState?.date!}
                     time={reservationState?.time!}
                     className="my-6 "

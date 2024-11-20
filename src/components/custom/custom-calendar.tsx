@@ -7,8 +7,8 @@ import { ActiveModifiers, DayPicker, DayPickerSingleProps, DayProps } from "reac
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
-import { MonthAvailabilityContext, TMonthAvailabilityRow } from "@/app/(app)/page"
 import { format } from "date-fns"
+import { MonthAvailabilityContext, TMonthAvailabilityRow } from "@/app/(app)/reservation/page"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
     date: Date

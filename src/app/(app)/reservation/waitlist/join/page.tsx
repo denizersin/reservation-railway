@@ -78,7 +78,7 @@ export default function ReservationWaitlistJoinPage() {
 
 
 
-                <FrontMaxWidthWrapper className="mt-10 pb-10">
+                <FrontMaxWidthWrapper className=" pb-10">
                     <div className="flex items-center mb-8">
                         <IconArrowLeft onClick={onGoBack} className="size-5 mr-2 text-front-primary cursor-pointer" />
                         <div className="text-lg flex-1 font-bold flex justify-center items-center">
