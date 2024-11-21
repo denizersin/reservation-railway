@@ -21,7 +21,7 @@ import { exit } from "process";
 
 
 
-if (!("DATABASE_URL" in process.env))
+if (!env.DATABASE_URL)
     throw new Error("DATABASE_URL not found on .env.development");
 
 const connection = await mysql.createConnection({
@@ -33,8 +33,8 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 20000
-const guestCount = 1000
+const reservationCount = 100
+const guestCount = 20
 
 const seedFunctions = [
     async function createUsers() {
@@ -74,7 +74,7 @@ const seedFunctions = [
 
     async function createGuests() {
 
-        for (let i = 300; i < guestCount; i++) {
+        for (let i = 1; i < guestCount; i++) {
             const createdAt = new Date()
             createdAt.setMinutes(getRandom(0, 59))
             const newGuest = await guestEntities.createGuest({
@@ -96,10 +96,11 @@ const seedFunctions = [
                 }
             })
         }
-        console.log('end')
+        console.log('guests created')
 
     },
     async function createRestaurant() {
+        console.log('createRestaurant started')
         const owner = await db.query.tblUser.findFirst({ where: eq(tblUser.email, 'owner@gmail.com') })
         const owner2 = await db.query.tblUser.findFirst({ where: eq(tblUser.email, 'owner2@gmail.com') })
 
@@ -252,6 +253,7 @@ const seedFunctions = [
 
     },
     async function createNotificationsTables() {
+        console.log('createNotificationsTables started')
 
         for (const language of languagesData) {
 
@@ -304,7 +306,7 @@ const seedFunctions = [
 
     },
     async function createReservations() {
-
+        console.log('createReservations started')
         const guestsData = await guestEntities.guestsPagination({
             paginationQuery: {
                 pagination: {
@@ -335,7 +337,6 @@ const seedFunctions = [
         const mealId = EnumMealNumeric.dinner
         const mealHours = await restaurantEntities.getMealHours({ restaurantId: 1 })
         const dinnerMealHours = mealHours.find(m => m.meal.id == mealId)?.mealHours?.map(m => m.hour)!
-        console.log(dinnerMealHours, 'dinnerMealHours')
         const ownerCtx: TOwnerProcedureCtx = {
             headers: new Headers(),
             session: {
@@ -365,7 +366,6 @@ const seedFunctions = [
                 newDate.setFullYear(2039)
             }
             const promises = roomTables.map(async (table, index) => {
-
                 const tableId = table.id
                 const hour = dinnerMealHours[getRandom(0, dinnerMealHours.length - 1)]!
                 newDate.setHours(Number(hour.split(':')[0]!), Number(hour.split(':')[1]!))
@@ -387,10 +387,6 @@ const seedFunctions = [
                     }
                 }
 
-                if (i === 0) {
-                    console.log('first reservation')
-                    console.log(input)
-                }
 
                 await reservationUseCases.createReservation({
                     input,
@@ -402,8 +398,10 @@ const seedFunctions = [
 
             await Promise.all(promises)
 
+
         }
 
+        console.log('createReservations finished')
 
     },
 ]
@@ -415,6 +413,7 @@ async function seed() {
     for (const fn of seedFunctions) {
         await fn()
     }
+    
     await connection.end()
     exit()
 }

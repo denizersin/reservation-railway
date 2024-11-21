@@ -29,14 +29,13 @@ export const createReservation = async ({
     const { reservationData, data } = input
 
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
-
+    
     //set reservation time to utc
     const hour = localHourToUtcHour(reservationData.hour)
-
-
+    
     reservationData.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
-
-
+    
+    
     const restaurantSettings = await restaurantEntities.getRestaurantSettings({restaurantId})
 
     const hasPrepayment = reservationData.prepaymentTypeId === EnumReservationPrepaymentNumeric.prepayment
@@ -46,7 +45,6 @@ export const createReservation = async ({
     const reservation = await db.transaction(async (trx) => {
 
         const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
-
         const newReservation = await ReservationEntities.createReservation({
             ...reservationData,
             hour,
@@ -111,6 +109,7 @@ export const createReservation = async ({
         return newReservation
     })
 
+
     await ReservationLogEntities.createLog({
         message: `Reservation created`,
         reservationId: reservation.id,
@@ -132,7 +131,6 @@ export const createReservation = async ({
         owner: owner.name,
     })
 
-
     //notifications
     if (hasPrepayment) {
         await notificationUseCases.handlePrePayment({
@@ -141,13 +139,13 @@ export const createReservation = async ({
             withSms: reservation.isSendSms,
             ctx
         })
-
         await ReservationLogEntities.createLog({
             message: `Asked for prepayment`,
             reservationId: reservation.id,
             owner: owner.name,
         })
     }
+
 
 }
 

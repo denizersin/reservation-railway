@@ -31,10 +31,8 @@ export default async function OwnerLayout({
 
 
     const meals = await db.query.tblMeal.findMany()
-    console.log(meals,'meal3131')
     const countries = await db.query.tblCountry.findMany()
 
-    console.log(restaurantEntities,'restaurantEntities21')
 
     const restauratnLanguages = await restaurantEntities.getRestaurantLanguages(({ restaurantId: currentRestaurant.id }))
     const reservationStatues = await db.query.tblReserVationStatus.findMany()

@@ -396,4 +396,9 @@ export const reservationRouter = createTRPCRouter({
         .mutation(async (opts) => {
             await reservationUseCases.confirmPublicReservation(opts)
         }),
+    occupyTable: publicProcedure
+        .input(clientFormValidator.occupyTableSchema)
+        .mutation(async (opts) => {
+            // await reservationUseCases.occupyTable(opts)
+        }),
 });

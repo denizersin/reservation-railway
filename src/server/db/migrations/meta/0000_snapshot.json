@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "8597f546-2c81-4fa5-976f-339c5c58d778",
+  "id": "8ff4c5a7-f896-407f-a1f9-c67cc0c70a23",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -2027,6 +2027,21 @@
           "notNull": true,
           "autoincrement": false,
           "default": true
+        },
+        "is_occupied": {
+          "name": "is_occupied",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "occupied_at": {
+          "name": "occupied_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "x": {
           "name": "x",

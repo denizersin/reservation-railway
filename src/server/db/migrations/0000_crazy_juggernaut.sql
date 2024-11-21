@@ -321,6 +321,8 @@ CREATE TABLE `table` (
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`shape` enum('square','rectangle','round') NOT NULL DEFAULT 'rectangle',
 	`is_active` boolean NOT NULL DEFAULT true,
+	`is_occupied` boolean NOT NULL DEFAULT false,
+	`occupied_at` timestamp,
 	`x` int DEFAULT 0,
 	`y` int DEFAULT 0,
 	`h` int DEFAULT 1,

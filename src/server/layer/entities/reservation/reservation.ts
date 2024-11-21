@@ -374,3 +374,62 @@ export const getReservationStatusData = async ({
 
 
 }
+
+export const queryTableAvailability = async ({
+    restaurantId,
+    date,
+    mealId,
+    tableId
+}: {
+    restaurantId: number,
+    date: Date,
+    mealId: number,
+    tableId: number
+}) => {
+
+    const { start, end } = getStartAndEndOfDay({
+        date: getLocalTime((new Date(date)))
+    })
+
+    const getReservationTables = () => db
+        .select({
+            RESERVATION_TABLE_ID: tblReservationTable.id,
+            RESERVATION_ID: tblReservationTable.reservationId,
+            TABLE_ID: tblReservationTable.tableId,
+        })
+        .from(tblReservation)
+        .leftJoin(tblReservationTable, eq(tblReservationTable.reservationId, tblReservation.id))
+        .where(
+            and(
+                eq(tblReservation.mealId, mealId),
+                between(tblReservation.reservationDate, start, end),
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.completed)
+
+            )
+        )
+
+    const reservationTables = getReservationTables().as('reservationTables')
+    const TEST = await db
+        .select()
+        .from(tblRoom)
+        .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
+        .leftJoin(reservationTables, eq(reservationTables.TABLE_ID, tblTable.id))
+        .leftJoin(tblReservation, and(
+            eq(tblReservation.id, reservationTables.RESERVATION_ID),
+        ))
+        .leftJoin(tblReservationTable, eq(tblReservationTable.id, reservationTables.RESERVATION_TABLE_ID))
+        .where(and(
+            eq(tblTable.id, tableId),
+            eq(tblRoom.restaurantId, restaurantId),
+            eq(tblRoom.isWaitingRoom, false),
+            isNotNull(tblTable.id),
+            isNull(tblReservation.id),
+
+        ))
+
+    const isTableAvaliable = TEST.length === 0
+
+    return isTableAvaliable
+
+}

@@ -61,3 +61,6 @@ async function initDb() {
 
 // initDb()
 
+
+
+console.log(env.DATABASE_URL)

@@ -4,6 +4,7 @@ import { JWT_EXPIRY_DAYS } from "@/server/utils/server-utils"
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies, headers } from 'next/headers';
 import { TSession } from "../../use-cases/user/user";
+import { EnumCookieName } from "@/server/utils/server-constants";
 
 export type jwtBody = {
     userId: number;
@@ -60,7 +61,7 @@ export const getJwtBody = async ({
 export const getServerSession = async (): Promise<TSession | null> => {
 
     const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value ?? "";
+    const token = cookieStore.get(EnumCookieName.TOKEN)?.value ?? "";
 
 
     try {

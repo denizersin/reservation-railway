@@ -8,6 +8,7 @@ const connection = await mysql.createConnection({
 
 
 try {
+    console.log(env.DB_NAME, 'env.DB_NAME')
     await connection.query(`DROP DATABASE IF EXISTS ${env.DB_NAME}`);
     console.log(`Database ${env.DB_NAME} dropped if it existed.`);
 

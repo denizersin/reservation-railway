@@ -77,7 +77,6 @@ export function localHourToUtcHour(localTime: string, utcOffset = DEFAULT_UTC_OF
     // Format hours and minutes to two digits
     const formattedHours = utcHours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
-    console.log(localTime,utcOffset,`${formattedHours}:${formattedMinutes}`)
     return `${formattedHours}:${formattedMinutes}`;
 }
 

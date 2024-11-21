@@ -1,4 +1,4 @@
-import { tblReservation, TGuestSelect } from "@/server/db/schema";
+import { tblReservation, TGuestSelect, TTable } from "@/server/db/schema";
 import { ReservationLogEntities } from "@/server/layer/entities/reservation/reservation-log";
 import { TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, localHourToUtcHour } from "@/server/utils/server-utils";
@@ -10,6 +10,10 @@ import { restaurantEntities } from "../../../entities/restaurant";
 import { notificationUseCases } from "../notification";
 import TClientReservationActionValidator from "@/shared/validators/front/reservation-actions";
 import { db } from "@/server/db";
+import { TRPCError } from "@trpc/server";
+import { cookies } from "next/headers";
+import { EnumCookieName, OCCUPIED_TABLE_TIMEOUT } from "@/server/utils/server-constants";
+import { RoomEntities } from "@/server/layer/entities/room";
 
 export const createPublicReservation = async ({
     input,
@@ -49,15 +53,33 @@ export const createPublicReservation = async ({
     //--------------------------------
 
 
+    const occupiedTableIdValue = cookies().get(EnumCookieName.OCCUPIED_TABLE_ID)?.value
+
+    let avaliableTable: TTable | undefined = undefined
+
+    if (occupiedTableIdValue) {
+
+        const isTableAvaliable = await ReservationEntities.queryTableAvailability({
+            restaurantId,
+            date: reservationData.date,
+            mealId,
+            tableId: Number(occupiedTableIdValue)
+        })
+
+        if (isTableAvaliable) {
+            avaliableTable = await RoomEntities.getTableById({ tableId: Number(occupiedTableIdValue) })
+        }
+    } else {
+        avaliableTable = await ReservationEntities.getAvaliableTable({
+            restaurantId,
+            date: reservationData.date,
+            time,
+            guestCount,
+            mealId
+        })
+    }
 
 
-    const avaliableTable = await ReservationEntities.getAvaliableTable({
-        restaurantId,
-        date: reservationData.date,
-        time,
-        guestCount,
-        mealId
-    })
 
     if (!avaliableTable) throw new Error('No Avaliable Table')
 
@@ -185,6 +207,45 @@ export const createPublicReservation = async ({
     //--------------------------------
 
     return reservation.id
+
+
+
+}
+
+export const occupyTable = async ({
+    input,
+    ctx
+}: TUseCasePublicLayer<TClientFormValidator.TOccupyTableSchema>) => {
+    const { date, time, guestCount, mealId } = input
+
+    const { restaurantId } = ctx
+
+    const avaliableTable = await ReservationEntities.getAvaliableTable({
+        restaurantId,
+        date: date,
+        time,
+        guestCount,
+        mealId
+    })
+    if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
+
+    cookies().set(EnumCookieName.OCCUPIED_TABLE_ID, avaliableTable.id.toString())
+
+    await RoomEntities.updateTable({
+        id: avaliableTable.id,
+        isOccupied: true,
+        occupiedAt: new Date(),
+    })
+
+    setTimeout(async() => {
+        console.log('occupied table timeout id:', avaliableTable.id)
+        cookies().delete(EnumCookieName.OCCUPIED_TABLE_ID)
+        await RoomEntities.updateTable({
+            id: avaliableTable.id,
+            isOccupied: false,
+            occupiedAt: null,
+        })
+    }, OCCUPIED_TABLE_TIMEOUT)
 
 
 

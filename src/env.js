@@ -7,12 +7,16 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
+    DATABASE_URL_DEVELOPMENT: z.string().url(),
+    DATABASE_URL_PRODUCTION: z.string().url(),
     DATABASE_URL: z.string().url(),
     JWT_SECRET: z.string(),
     DB_NAME: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    EMAIL_USER: z.string().email(),
+    EMAIL_PASS: z.string(),
   },
 
   /**
@@ -21,7 +25,8 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_FRONTEND_URL_DEVELOPMENT: z.string().url(),
+    NEXT_PUBLIC_FRONTEND_URL_PRODUCTION: z.string().url(),
   },
 
   /**
@@ -29,10 +34,18 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_URL_DEVELOPMENT: process.env.DATABASE_URL_DEVELOPMENT,
+    DATABASE_URL_PRODUCTION: process.env.DATABASE_URL_PRODUCTION,
+    DATABASE_URL: process.env.NODE_ENV === "development" 
+      ? process.env.DATABASE_URL_DEVELOPMENT 
+      : process.env.DATABASE_URL_PRODUCTION,
     NODE_ENV: process.env.NODE_ENV,
     JWT_SECRET: process.env.JWT_SECRET,
     DB_NAME: process.env.DB_NAME,
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS,
+    NEXT_PUBLIC_FRONTEND_URL_DEVELOPMENT: process.env.NEXT_PUBLIC_FRONTEND_URL_DEVELOPMENT,
+    NEXT_PUBLIC_FRONTEND_URL_PRODUCTION: process.env.NEXT_PUBLIC_FRONTEND_URL_PRODUCTION,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

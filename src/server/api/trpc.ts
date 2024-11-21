@@ -17,6 +17,7 @@ import { TUserPreferences } from "../layer/use-cases/user/user";
 import { db } from "../db";
 import { userUseCases } from "../layer/use-cases/user";
 import { DEFAULT_LANGUAGE_DATA, languagesData } from "@/shared/data/predefined";
+import { EnumCookieName } from "../utils/server-constants";
 
 /**
  * 1. CONTEXT
@@ -33,7 +34,7 @@ import { DEFAULT_LANGUAGE_DATA, languagesData } from "@/shared/data/predefined";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await jwtEntities.getServerSession()
 
-  const language = (cookies().get('language')?.value) as EnumLanguage | undefined
+  const language = (cookies().get(EnumCookieName.LANGUAGE)?.value) as EnumLanguage | undefined
   const languageData = languagesData.find(l => l.languageCode === language)
 
 

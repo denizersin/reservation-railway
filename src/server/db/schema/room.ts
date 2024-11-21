@@ -70,6 +70,9 @@ export const tblTable = mysqlTable('table', {
     updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
     shape: mysqlEnum('shape', getEnumValues(EnumTableShape)).notNull().default(EnumTableShape.rectangle),
     isActive: boolean('is_active').notNull().default(true),
+    
+    isOccupied: boolean('is_occupied').notNull().default(false),
+    occupiedAt: timestamp('occupied_at'),
 
     x: int('x').default(0),
     y: int('y').default(0),

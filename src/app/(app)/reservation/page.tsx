@@ -45,6 +45,10 @@ export const MonthAvailabilityContext = createContext<TMonthAvailabilityContext>
 
 export default function RootPage() {
 
+
+
+    const { mutate: occupyTable, isSuccess: isOccupiedTableSuccess } = api.reservation.occupyTable.useMutation({})
+
     // void api.post.getLatest.prefetch();
     const router = useRouter();
 
@@ -72,10 +76,20 @@ export default function RootPage() {
         const isValid = date && areaId && guestCount && time
         if (!isValid) return
 
-        router.push('/reservation/user-info')
+        occupyTable({
+            date: date!,
+            time: time!,
+            guestCount: guestCount,
+            mealId: EnumMealNumeric.dinner
+        })
+
     }
 
-
+    useEffect(() => {
+        if (isOccupiedTableSuccess) {
+            router.push('/reservation/user-info')
+        }
+    }, [isOccupiedTableSuccess])
 
 
     function onClickAddWaitList() {
@@ -99,7 +113,7 @@ export default function RootPage() {
     //     month: month,
     //     mealId: EnumMealNumeric.dinner
     // })
-    
+
 
     const { data: monthAvailabilityData, isLoading: isLoadingMonthAvailability } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({
         month: month.getMonth(),
