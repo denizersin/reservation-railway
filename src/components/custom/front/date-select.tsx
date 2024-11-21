@@ -24,7 +24,7 @@ import { MonthAvailabilityContext } from "@/app/(app)/reservation/page"
 
 
 type Props = {
-    date: Date
+    date: Date | undefined
     setDate: (date: Date) => void
     isWaitlistSelect?: boolean
     onClickAddWaitList?: () => void
@@ -57,7 +57,7 @@ export const DateSelect = ({
         </div>
         <div className="c flex flex-col items-center">
             <div className="text-front-primary font-semibold mb-1 flex items-center gap-x-2">
-                <div className="">{date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</div>
+                <div className="">{date?.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</div>
                 {isWaitlistSelect && <Button
                     variant={'default'}
                     size={'sm'}
@@ -86,7 +86,7 @@ export const DateSelect = ({
         setSelectedAreaId(undefined)
     }
 
-
+ 
 
     return (
         <div className='w-full '>

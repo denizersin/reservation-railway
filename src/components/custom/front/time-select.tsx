@@ -56,7 +56,7 @@ export const TimeSelect = ({
         if (!(selectedDate && monthAvailabilityData && guestCount)) return []
 
         const allHours: string[] = []
-
+        console.log(selectedDate, 'selectedDate')
         const row = monthAvailabilityData?.find(r => format(r.date, 'dd-mm-yy') === format(selectedDate, 'dd-mm-yy'))
         const avaliables = row?.roomStatus.map(roomRecord => {
             return roomRecord.hourStatus.map(hourRecord => {
@@ -120,7 +120,7 @@ export const TimeSelect = ({
                             <div
                                 onClick={() => setTime(item.time)}
                                 className={cn(' px-4 py-2 cursor-pointer border rounded-full text-sm text-front-primary  ', {
-                                    'bg-muted': time === item.time,
+                                    'bg-front-primary text-front-primary-foreground ': time === item.time,
                                     'opacity-50 cursor-not-allowed': !isAvailable,
                                     "hover:bg-muted": isAvailable
                                 })}

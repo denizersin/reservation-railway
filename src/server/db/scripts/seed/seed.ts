@@ -24,7 +24,7 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 5000
+const reservationCount = 20000
 const guestCount = 40000
 
 async function createReservations() {
@@ -65,8 +65,8 @@ async function createReservations() {
         session: {
             user: {
                 restaurantId: 1,
-                userId: 1,
-                userRole: EnumUserRole.owner
+                userId: 2, //owner
+                userRole: EnumUserRole.owner 
             },
         },
         userPrefrences: {

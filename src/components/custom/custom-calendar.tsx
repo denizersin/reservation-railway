@@ -4,14 +4,14 @@ import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons"
 import { ActiveModifiers, DayPicker, DayPickerSingleProps, DayProps } from "react-day-picker"
 
-import { cn } from "@/lib/utils"
+import { cn, getNext3Months } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
 import { format } from "date-fns"
 import { MonthAvailabilityContext, TMonthAvailabilityRow } from "@/app/(app)/reservation/page"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
-    date: Date
+    date: Date | undefined
     onClickAddWaitList?: (date: Date) => void
     onDateSelect: (date: Date) => void
 }
@@ -31,8 +31,7 @@ function CustomCalendar({
     ...props
 }: CalendarProps) {
 
-
-    const { monthAvailabilityData, guestCount } = React.useContext(MonthAvailabilityContext)
+    const { monthAvailabilityData, guestCount, next3Months, month, setMonth } = React.useContext(MonthAvailabilityContext)
 
     const dateMap = React.useMemo(() => {
         const newMap: DateMapWithGuestCount = {};
@@ -50,15 +49,14 @@ function CustomCalendar({
         return newMap
     }, [monthAvailabilityData,guestCount])
 
-    const [month, setMonth] = React.useState(date)
 
     React.useEffect(() => {
-        if (month.getMonth() !== date.getMonth()) {
+        if (date && month?.getMonth() !== date?.getMonth()) {
             setMonth(date)
         }
     }, [date])
 
-    console.log(dateMap)
+
 
 
     return (
@@ -108,7 +106,10 @@ function CustomCalendar({
                 Caption: ({ ...props }) => <div className="flex justify-center w-full gap-x-5">
                     <Button
                         onClick={() => {
-                            setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+                            const newMonth = next3Months[next3Months.indexOf(month) - 1]
+                            if (newMonth) {
+                                setMonth(newMonth)
+                            }
                         }}
 
                         variant="ghost" className="w-7 h-7 p-0">
@@ -120,7 +121,10 @@ function CustomCalendar({
                     </div>
                     <Button
                         onClick={() => {
-                            setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+                            const newMonth = next3Months[next3Months.indexOf(month) + 1]
+                            if (newMonth) {
+                                setMonth(newMonth)
+                            }
                         }}
 
                         variant="ghost" className="w-7 h-7 p-0">
@@ -193,8 +197,8 @@ function CustomCalendar({
                 // Head: () => <div className="bg-red-400">Head</div>
             }}
             month={month}
-            fromYear={date.getFullYear()}
-            toYear={date.getFullYear() + 1}
+            fromYear={date?.getFullYear() || new Date().getFullYear()}
+            toYear={date?.getFullYear() || new Date().getFullYear() + 1}
 
             {...props}
         />

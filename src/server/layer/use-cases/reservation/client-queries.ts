@@ -1,17 +1,15 @@
+import { groupByWithKeyFn } from "@/lib/utils";
 import { db } from "@/server/db";
 import { tblReservation, tblReservationTable } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
-import { tblRoom, tblTable, TRoomWithTranslations } from "@/server/db/schema/room";
+import { tblRoom, tblTable } from "@/server/db/schema/room";
 import { TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumDaysNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TClientQueryValidator from "@/shared/validators/front/reservation";
-import { and, between, count, eq, ne, sql, sum } from "drizzle-orm";
+import { and, between, eq, ne, sql } from "drizzle-orm";
 import { restaurantEntities } from "../../entities/restaurant";
-import { groupByWithKeyFn } from "@/lib/utils";
-import { RoomEntities } from "../../entities/room";
-import { getLimitationStatus } from "./queries";
 
 
 
@@ -23,7 +21,7 @@ export const getMonthAvailability = async ({
     ctx,
 }: TUseCasePublicLayer<TClientQueryValidator.TMonthAvailabilityQuery>) => {
 
-    const { month, mealId } = input
+    const { month, mealId, } = input
     const { restaurantId } = ctx
     const language = ctx.userPrefrences.language
 
@@ -171,22 +169,15 @@ export const getMonthAvailabilityByGuestCount = async ({
     input,
     ctx,
 }: TUseCasePublicLayer<TClientQueryValidator.TMonthAvailabilityByGuestCountQuery>) => {
-
-    const { month, mealId, guestCount } = input
+    const { month, mealId, guestCount, monthDate } = input
     const { restaurantId } = ctx
     const language = ctx.userPrefrences.language
 
     const today = new Date();
+    const currentMonth = today.getUTCMonth();
 
-    const firstDate = new Date()
-    firstDate.setUTCDate(today.getUTCDate())
+    const firstDate = new Date(monthDate)
     firstDate.setUTCHours(0, 0, 0, 0)
-    firstDate.setUTCMonth(month)
-    firstDate.setUTCFullYear(today.getUTCFullYear())
-
-
-
-
 
     const endOfMonthDay = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0)
 
@@ -195,14 +186,15 @@ export const getMonthAvailabilityByGuestCount = async ({
         .filter((r) => !r.isOpen)
         .map((r) => EnumDaysNumeric[r.day] as number)
 
-
-
-    const monthDays = getMonthDays(firstDate, endOfMonthDay)
+    let monthDays = getMonthDays(firstDate, endOfMonthDay)
         .filter((day) => !inActiveMealDays.includes(getLocalTime(day).getUTCDay()))
 
-
-
-
+    // If the requested month is the current month, filter days starting from today
+    if (monthDate.getUTCMonth() === currentMonth && monthDate.getUTCFullYear() === today.getUTCFullYear()) {
+        monthDays = monthDays.filter(day => day >= today)
+    }
+    console.log(monthDate, 'monthDate')
+    console.log(monthDays.length, 'monthDays.length')
 
     const promises = monthDays.map(async (day) => {
         const tableStatuses = await getStatusWithLimitation({ date: day, mealId, restaurantId, guestCount })

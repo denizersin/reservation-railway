@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import {
   Sheet,
   SheetClose,
@@ -22,6 +22,7 @@ import { IconArrowLeft, IconArrowRight, IconGuests } from '@/components/svgs'
 import { Button } from '@/components/ui/button'
 import { PopoverClose } from '@radix-ui/react-popover'
 import { cn } from '@/lib/utils'
+import { MonthAvailabilityContext } from '@/app/(app)/reservation/page'
 
 
 type Props = {
@@ -45,6 +46,13 @@ export const GuestSelect = ({
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isPopOverOpen, setIsPopOverOpen] = useState(false)
 
+  const {
+    setSelectedAreaId,
+    setAreaName,
+    setSelectedTime,
+    setSelectedDate
+  }=useContext(MonthAvailabilityContext)
+
   const items: Item[] = new Array(5).fill(0).map((_, i) => ({ id: i + 1, count: i + 1 }))
 
 
@@ -65,6 +73,14 @@ export const GuestSelect = ({
   </div>
 
 
+  const handleGuestCountChange = (count: number) => {
+    setGuestCount(count)
+    setSelectedDate(undefined)
+    setSelectedTime(undefined)
+    setSelectedAreaId(undefined)
+    setAreaName('')
+
+  }
 
 
   return (
@@ -85,7 +101,7 @@ export const GuestSelect = ({
               {
                 items.map((item) => {
                   return <SheetClose
-                    onClick={() => setGuestCount(item.count)}
+                    onClick={() => handleGuestCountChange(item.count)}
                     key={item.id}
                     className={cn('w-full text-front-primary hover:bg-muted py-3 border-b text-base', {
                       'bg-muted': guestCount === item.count
@@ -113,7 +129,7 @@ export const GuestSelect = ({
             {
               items.map((item) => {
                 return <PopoverClose
-                  onClick={() => setGuestCount(item.count)}
+                  onClick={() => handleGuestCountChange(item.count)}
                   key={item.id}
                   className={cn('w-full text-front-primary hover:bg-muted py-3 border-b text-base', {
                     'bg-muted': guestCount === item.count

@@ -9,11 +9,14 @@ import HeadBanner from "@/components/custom/front/head-banner";
 import { TimeSelect } from "@/components/custom/front/time-select";
 import { Button } from "@/components/ui/button";
 import { localStorageStates } from "@/data/local-storage-states";
+import { getNext3Months } from "@/lib/utils";
 import { api, RouterOutputs } from "@/server/trpc/react";
 import { EnumMealNumeric } from "@/shared/enums/predefined-enums";
 import { useRouter } from "next/navigation";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+
 
 export type TMonthAvailabilityRow = RouterOutputs['reservation']['getMonthAvailability'][0]
 
@@ -25,12 +28,17 @@ type TMonthAvailabilityContext = {
     guestCount: number,
     isLoadingMonthAvailability: boolean,
     selectedDate: Date | undefined,
+    setSelectedDate: (date: Date | undefined) => void,
     selectedTime: string | undefined,
     setSelectedTime: (time: string | undefined) => void,
     selectedAreaId: number | undefined,
     setSelectedAreaId: (areaId: number | undefined) => void,
     areaName: string | undefined,
-    setAreaName: (areaName: string | undefined) => void
+    setAreaName: (areaName: string | undefined) => void,
+    month: Date,
+    setMonth: (month: Date) => void,
+    next3Months: Date[],
+
 }
 
 export const MonthAvailabilityContext = createContext<TMonthAvailabilityContext>({} as TMonthAvailabilityContext)
@@ -42,10 +50,13 @@ export default function RootPage() {
 
     const router = useRouter();
 
+    const next3Months = useMemo(() => getNext3Months(), [])
 
 
-    const [date, setDate] = React.useState<Date | undefined>(new Date())
-    const [month, setMonth] = React.useState<number>(new Date().getMonth())
+    const [today, setToday] = useState(next3Months[0]!)
+
+    const [date, setDate] = React.useState<Date | undefined>(today)
+    const [month, setMonth] = React.useState<Date>(today)
     const [guestCount, setGuestCount] = React.useState<number>(1)
     const [time, setTime] = React.useState<string | undefined>(undefined)
     const [areaId, setAreaId] = React.useState<number | undefined>(undefined)
@@ -58,6 +69,9 @@ export default function RootPage() {
             time: time!,
             areaName: areaName!
         })
+
+        const isValid = date && areaId && guestCount && time
+        if (!isValid) return
 
         router.push('/reservation/user-info')
     }
@@ -85,20 +99,22 @@ export default function RootPage() {
     //     month: month,
     //     mealId: EnumMealNumeric.dinner
     // })
+    
+
     const { data: monthAvailabilityData, isLoading: isLoadingMonthAvailability } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({
-        month: month,
+        month: month.getMonth(),
         mealId: EnumMealNumeric.dinner,
-        guestCount: guestCount
+        guestCount: guestCount,
+        monthDate: month
 
     })
 
-    const { data: monthAvailabilityByGuestCountData, isLoading: isLoadingMonthAvailabilityByGuestCount } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({
-        month: month,
-        mealId: EnumMealNumeric.dinner,
-        guestCount: guestCount
-    })
+    // const { data: monthAvailabilityByGuestCountData, isLoading: isLoadingMonthAvailabilityByGuestCount } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({
+    //     month: month.getMonth(),
+    //     mealId: EnumMealNumeric.dinner,
+    //     guestCount: guestCount
+    // })
 
-    console.log(monthAvailabilityByGuestCountData, 'monthAvailabilityByGuestCountData')
 
     //"dd-mm-yy"
     const [avaliableDates, setAvaliableDates] = useState<Record<string, TMonthAvailabilityRow>>({});
@@ -122,18 +138,21 @@ export default function RootPage() {
     console.log(date, 'date')
 
 
-
     const contextValue: TMonthAvailabilityContext = {
         monthAvailabilityData,
         guestCount,
         isLoadingMonthAvailability,
         selectedDate: date,
+        setSelectedDate: setDate,
         selectedTime: time,
         setSelectedTime: setTime,
         selectedAreaId: areaId,
         setSelectedAreaId: setAreaId,
         areaName,
-        setAreaName
+        setAreaName,
+        month,
+        setMonth,
+        next3Months,
     }
 
 
@@ -146,7 +165,7 @@ export default function RootPage() {
                         <HeadBanner />
                         <FrontMaxWidthWrapper className="">
                             <GuestSelect guestCount={guestCount} setGuestCount={setGuestCount} />
-                            <DateSelect date={date!} setDate={setDate} onClickAddWaitList={onClickAddWaitList} />
+                            <DateSelect date={date} setDate={setDate} onClickAddWaitList={onClickAddWaitList} />
                             <TimeSelect time={time} setTime={setTime} />
                             <AreaSelect areaId={areaId} setAreaId={setAreaId} />
                             <div className="px-2 md:px-0">

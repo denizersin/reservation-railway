@@ -23,7 +23,7 @@ export function useShowLoadingModal(loading: boolean[]) {
     useEffect(() => {
         return () => {
             if (wilShow) {
-                LoadingModal.hide()
+                LoadingModal?.hide()
             }
         }
     }, [])

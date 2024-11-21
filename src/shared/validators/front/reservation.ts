@@ -2,13 +2,14 @@ import { z } from "zod";
 
 const monthAvailabilityQuerySchema = z.object({
     mealId: z.number().int().positive(),
-    month: z.number().int().positive(),
+    month: z.number().int(),
 })
 
 const monthAvailabilityByGuestCountQuerySchema = z.object({
     mealId: z.number().int().positive(),
-    month: z.number().int().positive(),
+    month: z.number().int(),
     guestCount: z.number().int().positive(),
+    monthDate: z.date(),
 })
 
 

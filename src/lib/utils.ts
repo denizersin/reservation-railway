@@ -95,3 +95,31 @@ export function groupByWithKeyFn<T, K>(
     {} as Record<string, T[]>
   );
 }
+
+export function getNext3Months(currentDate: Date = new Date()): Date[] {
+  const months: Date[] = [];
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  const currentDay = currentDate.getDate();
+
+  for (let i = 0; i < 3; i++) {
+      let targetMonth = currentMonth + i;
+      let targetYear = currentYear;
+
+      // Eğer ay 12'yi geçerse, yeni yıla geç
+      if (targetMonth > 11) {
+          targetMonth = targetMonth - 12;
+          targetYear = currentYear + 1;
+      }
+
+      // İlk ay için bugünün tarihini kullan, diğerleri için ayın 1'ini
+      const day = i === 0 ? currentDay : 1;
+      months.push(new Date(targetYear, targetMonth, day));
+      months.forEach(d => d.setHours(0, 0, 0, 0))
+  }
+
+  return months;
+}
+
+// Kullanım örnekleri:
+const months = getNext3Months();
