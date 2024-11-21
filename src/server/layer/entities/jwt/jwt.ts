@@ -67,7 +67,6 @@ export const getServerSession = async (): Promise<TSession | null> => {
         const { payload } = await jwtVerify(token, secretKey, {
             algorithms: ['HS256'],
         })
-        console.log(payload, 'payload')
         return {
             user: payload as jwtBody
         }

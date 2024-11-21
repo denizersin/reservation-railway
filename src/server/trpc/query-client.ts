@@ -8,12 +8,7 @@ import {
 import SuperJSON from "superjson";
 
 
-function getToken() {
-  if (localStorage === undefined) {
-    return null
-  }
-  return localStorage?.getItem?.("token")
-}
+
 
 export const createQueryClient = ({ toast }: { toast?: TToast }) =>
   new QueryClient({

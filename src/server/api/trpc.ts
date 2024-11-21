@@ -36,8 +36,6 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   const language = (cookies().get('language')?.value) as EnumLanguage | undefined
   const languageData = languagesData.find(l => l.languageCode === language)
 
-  console.log(language, languageData, 'lang')
-
 
   const userPrefrences: TUserPreferences = {
     theme: EnumTheme.light,

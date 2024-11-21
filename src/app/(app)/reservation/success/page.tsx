@@ -1,17 +1,16 @@
 "use client";
-import HeadBanner from "@/components/custom/front/head-banner"
-import { ReservationStatusHeader } from "../_components/reservation-status-header"
-import { useRouter } from "next/navigation"
-import { FrontCard } from "@/components/custom/front/card"
-import { IconAppleCalendar, IconCalendar, IconClock, IconGoogleCalendar, IconGuests, IconLocation, IconOutlookCalendar, IconSuccess, IconTable, IconWallet, IconWarning } from "@/components/svgs"
-import { useRef, useState } from "react"
-import { localStorageStates } from "@/data/local-storage-states"
-import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
 import { Button } from "@/components/custom/button";
-import { TermsConditionsCard } from "../_components/terms-conditions-card";
-import { DressCodeCard } from "../_components/dress-code-card";
+import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
+import HeadBanner from "@/components/custom/front/head-banner";
 import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/responsive-modal";
+import { IconAppleCalendar, IconGoogleCalendar, IconOutlookCalendar, IconSuccess, IconWarning } from "@/components/svgs";
+import { useReservationStates } from "@/hooks/front/useReservatoinStates";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { DressCodeCard } from "../_components/dress-code-card";
+import { ReservationStatusHeader } from "../_components/reservation-status-header";
+import { TermsConditionsCard } from "../_components/terms-conditions-card";
 import { SummaryCard } from "../summary/[id]/page";
 
 export default function ReservationSummaryPage() {
@@ -23,7 +22,9 @@ export default function ReservationSummaryPage() {
         router.back()
     }
 
-    const [reservationState, setReservationState] = useState(localStorageStates.getReservationState())
+    const { getReservationState } = useReservationStates()
+
+    const [reservationState, setReservationState] = useState(getReservationState())
 
 
     const cancelReservationModalRef = useRef<ResponsiveModalHandleRef>({})

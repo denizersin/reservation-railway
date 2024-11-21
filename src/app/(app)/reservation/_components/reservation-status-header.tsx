@@ -1,5 +1,5 @@
 import { IconAlarm, IconArrowLeft } from "@/components/svgs"
-import { localStorageStates } from "@/data/local-storage-states"
+import { useReservationStates } from "@/hooks/front/useReservatoinStates"
 import { useState } from "react"
 
 export const ReservationStatusHeader = ({
@@ -16,7 +16,8 @@ export const ReservationStatusHeader = ({
     time?: string
 }) => {
 
-    const [reservationState, setReservationState] = useState(localStorageStates.getReservationState())
+    const { getReservationState } = useReservationStates()
+    const [reservationState, setReservationState] = useState(getReservationState())
 
 
     const count = guestCount ?? reservationState?.guestCount

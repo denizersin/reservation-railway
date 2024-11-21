@@ -2,7 +2,7 @@
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
 import HeadBanner from "@/components/custom/front/head-banner";
 import { IconSuccess } from "@/components/svgs";
-import { localStorageStates } from "@/data/local-storage-states";
+import { useReservationStates } from "@/hooks/front/useReservatoinStates";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -15,7 +15,10 @@ export default function ReservationWaitlistCancelPage() {
         router.back()
     }
 
-    const [reservationState, setReservationState] = useState(localStorageStates.getReservationState())
+
+    const { getReservationState } = useReservationStates()
+
+    const [reservationState, setReservationState] = useState(getReservationState())
 
 
     const handleContinueToPrepaymentPage = () => {

@@ -1,13 +1,8 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
     Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
+    SheetContent
+} from "@/components/ui/sheet";
 import useIsMobile from '@/hooks/useMediaQueries';
 import { cn } from '@/lib/utils';
 import { RefObject, useImperativeHandle, useState } from 'react';

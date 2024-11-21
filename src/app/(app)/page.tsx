@@ -1,6 +1,5 @@
 
-
-"use client"
+'use client'
 import useAuth from "@/components/providers/AuthProvider";
 import { ClientI18nProvider } from "@/hooks/18n-provider";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -48,6 +47,7 @@ export default function RootPageHandler({ children }: { children: React.ReactNod
 
 
 
+  if (typeof window === 'undefined') return null
 
 
   return children

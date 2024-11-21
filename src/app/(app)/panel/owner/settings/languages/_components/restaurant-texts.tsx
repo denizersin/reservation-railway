@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { restaurantMessagesValidators } from '@/shared/validators/language';
 import RichTextEditor from '@/components/rich-text-editor';
+import { ClientComponent } from '@/components/client-component';
 
 
 type Props = {
@@ -69,10 +70,12 @@ export const RestaurantTexts = ({ currentLanguageId }: Props) => {
                         <FormItem>
                             <FormLabel>Reservation Requirements</FormLabel>
                             <FormControl>
-                                <RichTextEditor
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <ClientComponent>
+                                    <RichTextEditor
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                </ClientComponent>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -85,10 +88,12 @@ export const RestaurantTexts = ({ currentLanguageId }: Props) => {
                         <FormItem>
                             <FormLabel>Dress Code</FormLabel>
                             <FormControl>
-                                <RichTextEditor
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <ClientComponent>
+                                    <RichTextEditor
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                </ClientComponent>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -101,10 +106,12 @@ export const RestaurantTexts = ({ currentLanguageId }: Props) => {
                         <FormItem>
                             <FormLabel>Agreements</FormLabel>
                             <FormControl>
-                                <RichTextEditor
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <ClientComponent>
+                                    <RichTextEditor
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                </ClientComponent>
                             </FormControl>
                             <FormMessage />
                         </FormItem>

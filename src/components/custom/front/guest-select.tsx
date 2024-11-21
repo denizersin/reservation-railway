@@ -53,7 +53,7 @@ export const GuestSelect = ({
     setSelectedDate
   }=useContext(MonthAvailabilityContext)
 
-  const items: Item[] = new Array(5).fill(0).map((_, i) => ({ id: i + 1, count: i + 1 }))
+  const items: Item[] = new Array(4).fill(0).map((_, i) => ({ id: i + 2, count: i + 2 }))
 
 
   const TriggerElement = <div className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>

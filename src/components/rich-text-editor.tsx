@@ -1,6 +1,6 @@
 // import "./styles.css";
-import React, { useState } from "react";
-import ReactQuill from "react-quill";
+import dynamic from "next/dynamic";
+import React, { useEffect, useMemo, useState } from "react";
 
 import "react-quill/dist/quill.snow.css";
 
@@ -56,6 +56,9 @@ export default function RichTextEditor({
     const handleProcedureContentChange = (content: any) => {
         setCode(content);
     };
+
+    const ReactQuill = useMemo(() => dynamic(() => import('react-quill'), { ssr: false }),[]);
+
     return (
         <>
             {console.log(code)}

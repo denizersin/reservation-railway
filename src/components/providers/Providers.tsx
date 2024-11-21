@@ -9,7 +9,6 @@ import { ThemeProvider } from './theme-provider';
 import { TooltipProvider } from '../ui/tooltip';
 import ConfirmModalWrapper from '../modal/confirm-modal';
 import { InferTailwind } from './InferTailwind';
-import { AppProvider } from './AppProcider';
 import { Toaster } from '../ui/toaster';
 
 
@@ -20,7 +19,6 @@ interface IProvidersProps {
 const Providers = ({ children }: IProvidersProps) => {
     return (
         <TRPCReactProvider>
-            <AppProvider>
                 <ThemeProvider>
                     <TooltipProvider>
                         <AuthProvider>
@@ -33,7 +31,6 @@ const Providers = ({ children }: IProvidersProps) => {
                         </AuthProvider>
                     </TooltipProvider>
                 </ThemeProvider>
-            </AppProvider>
         </TRPCReactProvider>
     )
 }

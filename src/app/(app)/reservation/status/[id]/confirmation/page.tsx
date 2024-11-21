@@ -1,18 +1,15 @@
 "use client";
-import HeadBanner from "@/components/custom/front/head-banner"
-import { useParams, useRouter } from "next/navigation"
-import { FrontCard } from "@/components/custom/front/card"
-import { IconCalendar, IconClock, IconGuests, IconLocation, IconTable, IconWallet } from "@/components/svgs"
-import { useState } from "react"
-import { localStorageStates } from "@/data/local-storage-states"
-import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
 import { Button } from "@/components/custom/button";
-import { cn } from "@/lib/utils";
-import { useReservationStatusContext } from "../layout";
-import { api } from "@/server/trpc/react";
+import { FrontCard } from "@/components/custom/front/card";
+import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
+import HeadBanner from "@/components/custom/front/head-banner";
+import { IconCalendar, IconClock, IconGuests, IconLocation, IconTable, IconWallet } from "@/components/svgs";
 import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
+import { cn } from "@/lib/utils";
+import { api } from "@/server/trpc/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import { useReservationStatusContext } from "../layout";
 
 export default function ReservationConfirmationPage() {
 

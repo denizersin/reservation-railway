@@ -18,7 +18,7 @@ import { useRef } from "react"
 import { CookieContent } from "../../_components/cookie-content"
 import { useRouter } from "next/navigation"
 import { IconArrowLeft } from "@/components/svgs"
-import { localStorageStates } from "@/data/local-storage-states"
+import { useReservationStates } from "@/hooks/front/useReservatoinStates"
 
 // Define the form schema with Zod
 const waitlistFormSchema = z.object({
@@ -47,11 +47,13 @@ export default function ReservationWaitlistJoinPage() {
         },
     })
 
+    const { updateWaitlistFormValues } = useReservationStates()
+
     async function onSubmit(data: WaitlistFormValues) {
 
 
         router.push('/reservation/waitlist/success')
-        localStorageStates.updateWaitlistFormValues(form.getValues())
+        updateWaitlistFormValues(form.getValues())
         // Here you would typically:
         // 1. Call your tRPC mutation
         // 2. Handle success (redirect to success page)

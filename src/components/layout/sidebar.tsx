@@ -24,6 +24,7 @@ export default function Sidebar({
 
     /* Make body not scrollable when navBar is opened */
     useEffect(() => {
+        if (typeof window === 'undefined') return
         if (navOpened) {
             document.body.classList.add('overflow-hidden')
         } else {

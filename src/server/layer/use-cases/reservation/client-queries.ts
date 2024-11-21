@@ -173,13 +173,17 @@ export const getMonthAvailabilityByGuestCount = async ({
     const { restaurantId } = ctx
     const language = ctx.userPrefrences.language
 
-    const today = new Date();
+    const todayLocal = getLocalTime(new Date());
+    todayLocal.setHours(0, 0, 0, 0)
+
+    const today=new Date(todayLocal.toISOString())
+    
     const currentMonth = today.getUTCMonth();
 
-    const firstDate = new Date(monthDate)
-    firstDate.setUTCHours(0, 0, 0, 0)
+    const firstDate = monthDate
 
     const endOfMonthDay = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0)
+
 
     const daysData = await restaurantEntities.getRestaurantMealDaysByMealId({ restaurantId: restaurantId, mealId: input.mealId })
     const inActiveMealDays = daysData
@@ -187,7 +191,8 @@ export const getMonthAvailabilityByGuestCount = async ({
         .map((r) => EnumDaysNumeric[r.day] as number)
 
     let monthDays = getMonthDays(firstDate, endOfMonthDay)
-        .filter((day) => !inActiveMealDays.includes(getLocalTime(day).getUTCDay()))
+        .filter((day) => !inActiveMealDays.includes(getLocalTime(day).getDay()))
+
 
     // If the requested month is the current month, filter days starting from today
     if (monthDate.getUTCMonth() === currentMonth && monthDate.getUTCFullYear() === today.getUTCFullYear()) {

@@ -8,7 +8,7 @@ import { jwtBody } from "../../entities/jwt/jwt";
 import { EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
 import { TLanguage } from "@/server/db/schema/predefined";
 import { revalidatePath } from "next/cache";
-import { DEFAULT_LANGUAGE, languagesData } from "@/shared/data/predefined";
+import { DEFAULT_LANGUAGE_DATA, languagesData } from "@/shared/data/predefined";
 
 
 export async function createUser({
@@ -154,12 +154,12 @@ export const getUserPreferences = () => {
 
     const userPrefrences: TUserPreferences = {
         theme: EnumTheme.light,
-        language: DEFAULT_LANGUAGE
+        language: DEFAULT_LANGUAGE_DATA
     }
     if (language && languageData) {
         userPrefrences.language = languageData
     } else {
-        cookies().set('language', DEFAULT_LANGUAGE.languageCode)
+        cookies().set('language', DEFAULT_LANGUAGE_DATA.languageCode)
         revalidatePath('/')
     }
     return userPrefrences

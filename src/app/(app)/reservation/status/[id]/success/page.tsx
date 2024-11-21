@@ -4,20 +4,19 @@ import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
 import HeadBanner from "@/components/custom/front/head-banner";
 import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/responsive-modal";
 import { IconAppleCalendar, IconGoogleCalendar, IconOutlookCalendar, IconSuccess, IconWarning } from "@/components/svgs";
-import { localStorageStates } from "@/data/local-storage-states";
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
+import { api } from "@/server/trpc/react";
+import { EnumReservationStatus } from "@/shared/enums/predefined-enums";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { DressCodeCard } from "../../../_components/dress-code-card";
 import { ReservationStatusHeader } from "../../../_components/reservation-status-header";
 import { TermsConditionsCard } from "../../../_components/terms-conditions-card";
 import { SummaryCard } from "../../../summary/[id]/page";
 import { useReservationStatusContext } from "../layout";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
-import { api } from "@/server/trpc/react";
-import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
-import { EnumReservationStatus } from "@/shared/enums/predefined-enums";
 
 export default function ReservationSummaryPage() {
 

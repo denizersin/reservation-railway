@@ -31,7 +31,6 @@ import { PopoverClose } from '@radix-ui/react-popover'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import { MonthAvailabilityContext } from "@/app/(app)/reservation/page"
-import { localStorageStates } from "@/data/local-storage-states"
 
 
 type Props = {

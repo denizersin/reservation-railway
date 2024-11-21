@@ -1,14 +1,14 @@
 "use client";
-import HeadBanner from "@/components/custom/front/head-banner"
-import { ReservationStatusHeader } from "../../_components/reservation-status-header"
-import { useParams, useRouter } from "next/navigation"
-import { FrontCard } from "@/components/custom/front/card"
-import { IconCalendar, IconClock, IconGuests, IconLocation, IconTable, IconWallet } from "@/components/svgs"
-import { useState } from "react"
-import { localStorageStates } from "@/data/local-storage-states"
-import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
 import { Button } from "@/components/custom/button";
+import { FrontCard } from "@/components/custom/front/card";
+import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
+import HeadBanner from "@/components/custom/front/head-banner";
+import { IconCalendar, IconClock, IconGuests, IconLocation, IconTable, IconWallet } from "@/components/svgs";
+import { useReservationStates } from "@/hooks/front/useReservatoinStates";
 import { cn } from "@/lib/utils";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { ReservationStatusHeader } from "../../_components/reservation-status-header";
 
 export default function ReservationSummaryPage() {
 
@@ -19,7 +19,9 @@ export default function ReservationSummaryPage() {
         router.back()
     }
 
-    const [reservationState, setReservationState] = useState(localStorageStates.getReservationState())
+    const { getReservationState } = useReservationStates()
+
+    const [reservationState, setReservationState] = useState(getReservationState())
 
     const { id } = useParams()
 

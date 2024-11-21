@@ -2,6 +2,7 @@
 import { FrontCard } from "@/components/custom/front/card"
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
 import HeadBanner from "@/components/custom/front/head-banner"
+import { MultiSelect } from "@/components/custom/multi-select"
 import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/responsive-modal"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -24,20 +25,18 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { localStorageStates } from "@/data/local-storage-states"
+import { useReservationStates } from "@/hooks/front/useReservatoinStates"
+import { useReservationTagsSelectData } from "@/hooks/predefined/predfined"
+import { useToast } from "@/hooks/use-toast"
+import { api } from "@/server/trpc/react"
+import { EnumMealNumeric } from "@/shared/enums/predefined-enums"
+import TClientFormValidator, { clientFormValidator } from "@/shared/validators/front/create"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { RefObject, useRef } from "react"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
 import { CookieContent } from "../_components/cookie-content"
 import { ReservationStatusHeader } from "../_components/reservation-status-header"
-import TClientFormValidator, { clientFormValidator } from "@/shared/validators/front/create"
-import { useReservationTagsSelectData } from "@/hooks/predefined/predfined"
-import { MultiSelect } from "@/components/custom/multi-select"
-import { api } from "@/server/trpc/react"
-import { EnumMealNumeric } from "@/shared/enums/predefined-enums"
-import { useToast } from "@/hooks/use-toast"
 export type UserInfoImperativeModalRefs = RefObject<{
     openCookieModal?: () => void
 }>
@@ -47,7 +46,9 @@ export type UserInfoImperativeModalRefs = RefObject<{
 
 export default function UserInfo() {
 
-    const reservationUserInfoFormValues = localStorageStates.getReservationUserInfoFormValues()
+    const { getReservationUserInfoFormValues, updateReservationUserInfoFormValues,getReservationState } = useReservationStates()
+
+    const reservationUserInfoFormValues = getReservationUserInfoFormValues()
 
     const form = useForm<TClientFormValidator.TUserInfoForm>({
         resolver: zodResolver(clientFormValidator.userInfoFormSchema),
@@ -88,7 +89,6 @@ export default function UserInfo() {
     const router = useRouter()
 
     const onGoBack = () => {
-        // localStorageStates.clearReservationUserInfoFormValues()
         router.back()
     }
 
@@ -96,9 +96,10 @@ export default function UserInfo() {
     const cookieModalRef = useRef<ResponsiveModalHandleRef>({})
 
 
+
     function onSubmit(values: TClientFormValidator.TUserInfoForm) {
 
-        const reservationData = localStorageStates.getReservationState();
+        const reservationData = getReservationState()
         const userInfoData = values
 
 
@@ -116,7 +117,7 @@ export default function UserInfo() {
             userInfo: values
         })
 
-        localStorageStates.updateReservationUserInfoFormValues(values)
+        updateReservationUserInfoFormValues(values)
         // router.push('/reservation/summary');
     }
 

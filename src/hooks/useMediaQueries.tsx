@@ -1,6 +1,7 @@
 import { useLayoutEffect, useState } from 'react';
 
 export const useIsMobile = (): boolean => {
+  if (typeof window === 'undefined') return false
   const [isMobile, setIsMobile] = useState(
     document?.documentElement?.clientWidth < 768
   );

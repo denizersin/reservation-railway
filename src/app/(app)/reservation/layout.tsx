@@ -1,6 +1,6 @@
 "use client"
-import { localStorageStates } from '@/data/local-storage-states'
 import { ClientI18nProvider } from '@/hooks/18n-provider'
+import { useReservationStates } from '@/hooks/front/useReservatoinStates'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 
@@ -13,11 +13,13 @@ const Layout = (props: Props) => {
     const pathname = usePathname()
     const router = useRouter()
 
+    const { clearWaitlistFormValues, clearReservationState, clearReservationUserInfoFormValues, clearWaitlistReservationState } = useReservationStates()
+
     useEffect(() => {
-        localStorageStates.clearWaitlistFormValues()
-        localStorageStates.clearReservationState()
-        localStorageStates.clearReservationUserInfoFormValues()
-        localStorageStates.clearWaitlistReservationState()
+        clearWaitlistFormValues()
+        clearReservationState()
+        clearReservationUserInfoFormValues()
+        clearWaitlistReservationState()
 
 
         if (!pathname.includes('reservation/status')) {

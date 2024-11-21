@@ -58,6 +58,7 @@ export function utcHourToLocalHour(hour: string, utcOffset = DEFAULT_UTC_OFFSET)
 }
 
 export function localHourToUtcHour(localTime: string, utcOffset = DEFAULT_UTC_OFFSET): string {
+    
     const [h, m] = localTime.split(':').map(Number);
     const hours = h as number
     const minutes = m as number

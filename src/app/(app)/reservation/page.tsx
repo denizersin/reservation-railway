@@ -8,7 +8,7 @@ import { GuestSelect } from "@/components/custom/front/guest-select";
 import HeadBanner from "@/components/custom/front/head-banner";
 import { TimeSelect } from "@/components/custom/front/time-select";
 import { Button } from "@/components/ui/button";
-import { localStorageStates } from "@/data/local-storage-states";
+import { useReservationStates } from "@/hooks/front/useReservatoinStates";
 import { getNext3Months } from "@/lib/utils";
 import { api, RouterOutputs } from "@/server/trpc/react";
 import { EnumMealNumeric } from "@/shared/enums/predefined-enums";
@@ -46,23 +46,22 @@ export const MonthAvailabilityContext = createContext<TMonthAvailabilityContext>
 export default function RootPage() {
 
     // void api.post.getLatest.prefetch();
-
-
     const router = useRouter();
 
     const next3Months = useMemo(() => getNext3Months(), [])
 
+    const { getReservationState, updateReservationState, clearReservationState } = useReservationStates()
 
     const [today, setToday] = useState(next3Months[0]!)
 
-    const [date, setDate] = React.useState<Date | undefined>(today)
+    const [date, setDate] = React.useState<Date | undefined>(undefined)
     const [month, setMonth] = React.useState<Date>(today)
-    const [guestCount, setGuestCount] = React.useState<number>(1)
+    const [guestCount, setGuestCount] = React.useState<number>(2)
     const [time, setTime] = React.useState<string | undefined>(undefined)
     const [areaId, setAreaId] = React.useState<number | undefined>(undefined)
     const [areaName, setAreaName] = React.useState<string | undefined>(undefined)
     function handleContinue() {
-        localStorageStates.updateReservationState({
+        updateReservationState({
             areaId: areaId!,
             date: date!,
             guestCount: guestCount,
@@ -83,8 +82,9 @@ export default function RootPage() {
         router.push('/reservation/waitlist')
     }
 
+
     useEffect(() => {
-        const reservationState = localStorageStates.getReservationState()
+        const reservationState = getReservationState()
         if (reservationState) {
             setGuestCount(reservationState.guestCount)
             setDate(reservationState.date)
