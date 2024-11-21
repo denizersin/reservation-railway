@@ -77,7 +77,7 @@ const PermanentLimitationsList = () => {
                                 <TableCell>{new Date(limitation.startDate).toLocaleDateString()}</TableCell>
                                 <TableCell>{new Date(limitation.endDate).toLocaleDateString()}</TableCell>
                                 <TableCell className="text-right">
-                                    <DropdownMenu>
+                                    <DropdownMenu modal={false}>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="icon">
                                                 <MoreVertical className="h-4 w-4" />

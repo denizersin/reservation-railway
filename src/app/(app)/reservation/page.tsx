@@ -81,11 +81,24 @@ export default function RootPage() {
 
 
 
-    const { data: monthAvailabilityData, isLoading: isLoadingMonthAvailability } = api.reservation.getMonthAvailability.useQuery({
+    // const { data: monthAvailabilityData, isLoading: isLoadingMonthAvailability } = api.reservation.getMonthAvailability.useQuery({
+    //     month: month,
+    //     mealId: EnumMealNumeric.dinner
+    // })
+    const { data: monthAvailabilityData, isLoading: isLoadingMonthAvailability } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({
         month: month,
-        mealId: EnumMealNumeric.dinner
+        mealId: EnumMealNumeric.dinner,
+        guestCount: guestCount
+
     })
 
+    const { data: monthAvailabilityByGuestCountData, isLoading: isLoadingMonthAvailabilityByGuestCount } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({
+        month: month,
+        mealId: EnumMealNumeric.dinner,
+        guestCount: guestCount
+    })
+
+    console.log(monthAvailabilityByGuestCountData, 'monthAvailabilityByGuestCountData')
 
     //"dd-mm-yy"
     const [avaliableDates, setAvaliableDates] = useState<Record<string, TMonthAvailabilityRow>>({});

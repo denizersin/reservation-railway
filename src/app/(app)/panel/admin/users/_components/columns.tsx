@@ -38,7 +38,7 @@ export const columns: ColumnDef<TUser>[] = [
 
             return (
                 <>
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger>
                             <Button variant={'secondary'} size="sm">
                                 <IconDotsVertical stroke={2} />

@@ -20,6 +20,15 @@ export function useShowLoadingModal(loading: boolean[]) {
 
     }, [wilShow])
 
+    useEffect(() => {
+        return () => {
+            if (wilShow) {
+                LoadingModal.hide()
+            }
+        }
+    }, [])
+
+
     return LoadingModal.isOpen
 
 }

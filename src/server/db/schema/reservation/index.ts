@@ -34,6 +34,7 @@ export const tblReservation = mysqlTable('reservation', {
 
     //if exists, it means that the reservation is created by restaurant owner
     createdOwnerId: int('created_owner_id'),
+    isCreatedByOwner: boolean('is_created_by_owner').notNull().default(false),
 
     isCheckedin: boolean('is_checked_in').notNull().default(false),
 

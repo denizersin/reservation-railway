@@ -70,8 +70,13 @@ const ConfirmModal = forwardRef<ConfirmModalRef, {}>((props, ref) => {
     const handleConfirm = async () => {
         setIsLoading(true)
         await onConfirm()
-        setIsLoading(false)
-        setIsOpen(false)
+            .then(() => {
+                setIsLoading(false)
+                setIsOpen(false)
+            })
+            .catch((err) => {
+                setIsLoading(false)
+            })
     }
 
     const handleCancel = () => {
@@ -89,7 +94,7 @@ const ConfirmModal = forwardRef<ConfirmModalRef, {}>((props, ref) => {
                 <DialogFooter>
                     <Button
                         variant={'outline'}
-                    onClick={handleCancel}>
+                        onClick={handleCancel}>
                         {cancelButtonText || defaultCancelTextMap[type]}
                     </Button>
                     <Button

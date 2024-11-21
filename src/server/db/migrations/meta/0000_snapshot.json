@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "43b07fee-ecc5-4416-93e2-411f8bd27b8c",
+  "id": "89bcc00f-b28a-483a-903b-1d8be5eea0ec",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -1981,13 +1981,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "capacity": {
-          "name": "capacity",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "min_capacity": {
           "name": "min_capacity",
           "type": "int",
@@ -2379,6 +2372,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "is_created_by_owner": {
+          "name": "is_created_by_owner",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         },
         "is_checked_in": {
           "name": "is_checked_in",
@@ -2906,6 +2907,13 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'pending'"
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_by": {
           "name": "created_by",

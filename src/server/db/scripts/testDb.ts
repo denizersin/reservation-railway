@@ -59,4 +59,5 @@ async function initDb() {
     }
 }
 
-initDb()
+// initDb()
+

@@ -43,7 +43,7 @@ export const StatusTableRowCard = ({
     const hasOptions = removeTable || unLinkReservation
 
     const optionDropdown = hasOptions && (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button
                     className={cn('rounded-full px-1 py-1 size-6 ', {

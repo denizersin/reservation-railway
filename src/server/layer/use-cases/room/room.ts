@@ -24,7 +24,6 @@ export const createTables = async ({
             roomId,
             order,
             no: tableNo,
-            capacity: data.capacity,
             minCapacity: data.minCapacity,
             maxCapacity: data.maxCapacity,
             shape: data.shape,

@@ -33,7 +33,6 @@ export const createRoomTableFormSchema = z.object({
     startLetter: z.string().min(1).max(255).optional().nullable(),
     endLetter: z.string().min(1).max(255).optional().nullable(),
 
-    capacity: z.number().int().positive(),
     minCapacity: z.number().int().positive(),
     maxCapacity: z.number().int().positive(),
     shape: z.enum(getEnumValues(EnumTableShape)).default(EnumTableShape.square),
@@ -50,16 +49,15 @@ export const createRoomTableSchema = z.object({
 export const updateRoomTableFormSchema = z.object({
     order: z.number().int().positive().optional(),
     no: z.string().min(1).max(255).optional(),
-    capacity: z.number().int().positive().optional(),
     minCapacity: z.number().int().positive().optional(),
     maxCapacity: z.number().int().positive().optional(),
     shape: z.enum(getEnumValues(EnumTableShape)).default(EnumTableShape.square).optional(),
     isActive: z.boolean().optional(),
 
-    x: z.number().int().min(0).optional(),
-    y: z.number().int().min(0).optional(),
-    h: z.number().int().min(0).optional(),
-    w: z.number().int().min(0).optional(),
+    x: z.number().int().min(0).optional().nullable(),
+    y: z.number().int().min(0).optional().nullable(),
+    h: z.number().int().min(0).optional().nullable(),
+    w: z.number().int().min(0).optional().nullable(),
 })
 
 export const updateRoomTableSchema = z.object({
@@ -71,6 +69,10 @@ export const updateMultipleTablesSchema = z.object({
     data: z.array(updateRoomTableSchema)
 })
 
+
+
+
+
 export const roomValidator = {
     createRoomSchema,
     updateRoomSchema,
@@ -80,7 +82,8 @@ export const roomValidator = {
     createRoomTableFormSchema,
     createRoomTableSchema,
     updateRoomTableSchema,
-    updateMultipleTablesSchema
+    updateMultipleTablesSchema,
+    updateRoomTableFormSchema
 }
 
 namespace TRoomValidator {
@@ -91,6 +94,7 @@ namespace TRoomValidator {
     export type createRoomTableSchema = z.infer<typeof createRoomTableSchema>
     export type updateRoomTableSchema = z.infer<typeof updateRoomTableSchema>
     export type updateMultipleTablesSchema = z.infer<typeof updateMultipleTablesSchema>
+    export type updateRoomTableFormSchema = z.infer<typeof updateRoomTableFormSchema>
 }
 
 export default TRoomValidator

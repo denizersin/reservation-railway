@@ -1,6 +1,5 @@
 "use client";
 import HeadBanner from "@/components/custom/front/head-banner"
-import { ReservationStatusHeader } from "../../_components/reservation-status-header"
 import { useParams, useRouter } from "next/navigation"
 import { FrontCard } from "@/components/custom/front/card"
 import { IconCalendar, IconClock, IconGuests, IconLocation, IconTable, IconWallet } from "@/components/svgs"
@@ -9,40 +8,44 @@ import { localStorageStates } from "@/data/local-storage-states"
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
 import { Button } from "@/components/custom/button";
 import { cn } from "@/lib/utils";
+import { useReservationStatusContext } from "../layout";
+import { api } from "@/server/trpc/react";
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 
-export default function ReservationSummaryPage() {
+export default function ReservationConfirmationPage() {
 
 
-    const router = useRouter()
+    const { reservationStatusData, } = useReservationStatusContext()
 
-    const onGoBack = () => {
-        router.back()
+    const queryClient = useQueryClient()
+
+    const { mutate: confirmReservation, isPending } = api.reservation.confirmPublicReservation.useMutation({
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getQueryKey(api.reservation.getReservationStatusData) })
+        }
+    })
+
+    const handleConfirmation = () => {
+        confirmReservation({ reservationId: reservationStatusData?.id! })
     }
 
-    const [reservationState, setReservationState] = useState(localStorageStates.getReservationState())
-
-    const { id } = useParams()
-
-    const reservationId = Number(id)
-
-    const handleContinueToPrepaymentPage = () => {
-        router.push(`/reservation/status/${reservationId}`)
-    }
+    useShowLoadingModal([isPending])
 
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper>
             <div className="mt-10"></div>
-            <ReservationStatusHeader showBackButton={false} onGoBack={onGoBack} />
             <div className="px-2">
                 <SummaryCard
-                    guestCount={reservationState?.guestCount!}
-                    area={reservationState?.areaName!}
-                    date={reservationState?.date!}
-                    time={reservationState?.time!}
+                    guestCount={reservationStatusData?.guestCount!}
+                    area={reservationStatusData?.roomName!}
+                    date={reservationStatusData?.reservationDate!}
+                    time={reservationStatusData?.hour!}
                 />
-                <Button onClick={handleContinueToPrepaymentPage} className="bg-front-primary rounded-sm w-full text-sm mt-4 h-[45px]">
-                    Continue To Prepayment Page
+                <Button onClick={handleConfirmation} className="bg-front-primary rounded-sm w-full text-sm mt-4 h-[45px]">
+                    Will you be able to attend?
                 </Button>
             </div>
         </FrontMaxWidthWrapper>

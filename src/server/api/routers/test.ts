@@ -15,5 +15,15 @@ export const testRouter = createTRPCRouter({
             })
             return result
         }),
+
+    sendMail: publicProcedure
+        .input(z.object({
+  
+        }))
+        .mutation(async ({ input }) => {
+
+
+
+        })
 });
 

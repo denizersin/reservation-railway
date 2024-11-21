@@ -7,7 +7,7 @@ import { useMutationCallback } from '@/hooks/useMutationCallback'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { TReservationRow } from '@/lib/reservation'
 import { api } from '@/server/trpc/react'
-import { EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
+import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
 import React, { useState } from 'react'
 import { CreatePrepaymentModal } from './create-prepayment-modal'
 
@@ -16,6 +16,10 @@ type Props = {
 }
 
 export const ReservationStatusActions = ({ reservation }: Props) => {
+
+    const { data: reservationDetailData } = api.reservation.getReservationDetail.useQuery({
+        reservationId: reservation.id
+    })
 
     const { onSuccessReservationUpdate } = useMutationCallback()
 
@@ -89,7 +93,18 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
 
     const canConfirmReservation = !isConfirmedOrCompleted
 
-    const canRequestForPrepayment = !isConfirmedOrCompleted && !hasCurrentPrepayment && !isWaitingForConfirmation 
+    const canRequestForPrepayment = !isConfirmedOrCompleted && !hasCurrentPrepayment && !isWaitingForConfirmation
+
+    const canCancelPayemntRequest = hasCurrentPrepayment && !isConfirmedOrCompleted
+
+    const isPrepaymetPaid = hasCurrentPrepayment && reservationDetailData?.currentPrepayment?.status === EnumPrepaymentStatus.success
+
+    const canNotifyPrepayment = hasCurrentPrepayment && !isPrepaymetPaid
+
+    const canCancelReservation = !isCompleted && !isCanceled
+
+
+    const canAskForBill = isCompleted
 
     const hasBill = reservation.billPaymentId !== null
 
@@ -221,11 +236,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
         <div>
             <div className='flex flex-wrap gap-3 py-2 mt-4 mb-2'>
 
-                {hasCurrentPrepayment && (<Button onClick={handleCancelPrepayment} variant={'destructive'}>Cancel Prepayment</Button>)}
+                {canCancelPayemntRequest && (<Button onClick={handleCancelPrepayment} variant={'destructive'}>Cancel Prepayment</Button>)}
                 {canRequestForPrepayment && (<Button onClick={handleRequestForPrepayment}>Request for Prepayment</Button>)}
 
                 {
-                    hasCurrentPrepayment && (
+                    canNotifyPrepayment && (
                         <Button
                             onClick={handleNotifyPrepayment}
                             variant={'outline'}
@@ -263,8 +278,14 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
                 }
 
                 {
-                    !isCanceled && (
+                    canCancelReservation && (
                         <Button variant={'destructive'} onClick={handleCancelReservation}>Cancel Reservation</Button>
+                    )
+                }
+
+                {
+                    canAskForBill && (
+                        <Button onClick={handleAskForBill}>Ask for Bill</Button>
                     )
                 }
 

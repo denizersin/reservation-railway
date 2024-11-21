@@ -9,10 +9,8 @@ export const getReservationMessages = async ({
     languageId: number
 }
 ) => {
-    console.log(restaurantId,languageId,'23sad')
     const data = await LanguageEntity.getReservationMessagesByLang({ restaurantId, languageId })
     if (!data) {
-        console.log('createdd')
         const newData=await LanguageEntity.createReservationMessages({ restaurantId, languageId })
         return newData
     }
@@ -27,10 +25,8 @@ export const getProvisionMessages = async ({
     languageId: number
 }
 ) => {
-    console.log(restaurantId,languageId,'provision_message')
     const data = await LanguageEntity.getProvisionMessagesByLang({ restaurantId, languageId })
     if (!data) {
-        console.log('created provision message')
         const newData = await LanguageEntity.createProvisionMessages({ restaurantId, languageId })
         return newData
     }

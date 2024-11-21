@@ -78,7 +78,7 @@ export const TimeSelect = ({
             time: hour,
             isAvailable: r.includes(hour)
         }))
-    }, [monthAvailabilityData, guestCount])
+    }, [monthAvailabilityData, guestCount, selectedDate])
 
 
 

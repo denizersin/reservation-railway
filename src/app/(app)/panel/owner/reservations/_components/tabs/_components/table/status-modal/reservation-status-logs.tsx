@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils'
 import { api } from '@/server/trpc/react'
 import { EnumReservationStatus, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
 import React from 'react'
+import { statuses } from '../data'
+import { IconCalendarPlus, IconCircleCheckFilled } from '@tabler/icons-react'
 
 type Props = {
     reservation: TReservationRow
@@ -24,14 +26,16 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
     const isCanceled = reservation.reservationStatus.status === EnumReservationStatus.cancel
 
 
+    const creator = reservationDetailData?.isCreatedByOwner ? reservationDetailData?.createdOwner?.name : 'Guest '
+
     return (
         <div className='flex flex-col gap-2 mb-2'>
-            <div className="order-1 border-b border-border pb-2 mb-2">
-                <div className="text-sm font-semibold">Created</div>
-
-                Created By: {reservationDetailData?.createdOwner?.name}
-
-                at {reservationDetailData?.createdAt.toLocaleString()}
+            <div className="order-1 border-b border-border pb-2 mb-2  bg-orange-50 text-orange-500 p-3 rounded-md flex flex-col items-center justify-center">
+                {<IconCalendarPlus className='text-orange-500 w-6 h-6' />}
+                <div>
+                    Created By: <span className='font-semibold mx-1'>{creator}</span>
+                    at <span className='font-semibold mx-1'>{reservationDetailData?.createdAt.toLocaleString()}</span>
+                </div>
             </div>
             {reservationDetailData?.confirmationRequests && reservationDetailData?.confirmationRequests.length > 0 && (
                 <div className={cn('order-2 flex flex-col gap-2 border-b border-border  mb-2', {
@@ -47,7 +51,7 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
                     ))}
                 </div>
             )}
-            
+
             {reservationDetailData?.prepayments && (
                 <div className={cn('order-3', {
                     'order-2': isStatusConfirmation,
@@ -59,6 +63,7 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
                             <TableRow>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Amount</TableHead>
+                                <TableHead>Paid At</TableHead>
                                 <TableHead>Created At</TableHead>
                                 <TableHead>Created By</TableHead>
                             </TableRow>
@@ -73,6 +78,7 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
                                             {isCurrentPrepayment && <Badge variant='outline'>Current</Badge>}
                                         </TableCell>
                                         <TableCell className="text-sm">{prepayment.amount}</TableCell>
+                                        <TableCell className="text-sm">{prepayment.paidAt?.toLocaleString()}</TableCell>
                                         <TableCell className="text-sm">{prepayment.createdAt.toLocaleString()}</TableCell>
                                         <TableCell className="text-sm">{prepayment.createdBy}</TableCell>
                                     </TableRow>
@@ -84,11 +90,13 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
             )}
 
             {
-                isConfirmed && (
-                    <div className="order-4 flex flex-col gap-2 border-b border-border pb-2 mb-2">
-                        <div className="text-sm font-semibold">Confirmed</div>
-                        <div className="text-sm">Confirmed at {reservationDetailData?.confirmedAt?.toLocaleString()}</div>
-                        <div className="text-sm">Confirmed by {reservationDetailData?.confirmedBy}</div>
+                reservationDetailData?.confirmedAt && (
+                    <div className="order-1 border-b border-border pb-2 mb-2  bg-green-500 text-white p-3 rounded-md flex flex-col items-center justify-center">
+                        {<IconCircleCheckFilled className='text-white w-6 h-6' />}
+                        <div>
+                            Confirmed by <span className='font-semibold mx-1'>{reservationDetailData?.confirmedBy}</span>
+                            at <span className='font-semibold mx-1'>{reservationDetailData?.confirmedAt?.toLocaleString()}</span>
+                        </div>
                     </div>
                 )
             }

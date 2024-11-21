@@ -122,8 +122,7 @@ export const updateProvisionMessages = async ({
     languageId,
     ...data
 }: TProvisionMessageInsert) => {
-    console.log(restaurantId, languageId, 'provision_update')
-    console.log(data, 'data')
+
 
     await db.update(tblProvisionMessage).set({
         ...data,
@@ -186,8 +185,7 @@ export const updateWaitlistMessages = async ({
     languageId,
     ...data
 }: TWaitlistMessageInsert) => {
-    console.log(restaurantId, languageId, 'waitlist_update')
-    console.log(data, 'data')
+
 
     await db.update(tblWaitlistMessage).set({
         ...data,
@@ -247,8 +245,7 @@ export const updatePrepaymentMessages = async ({
     languageId,
     ...data
 }: TPrepaymentMessageInsert) => {
-    console.log(restaurantId, languageId, 'prepayment_update')
-    console.log(data, 'data')
+
 
     await db.update(tblPrepaymentMessage).set({
         ...data,
@@ -309,8 +306,7 @@ export const updateRestaurantTexts = async ({
     ...data
 }: TRestaurantTextsInsert) => {
 
-    console.log(data, 'data')
-    console.log(restaurantId, languageId, 'restaurant_update')
+
     await db.update(tblRestaurantTexts).set({
         ...data,
     }).where(

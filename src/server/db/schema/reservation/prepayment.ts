@@ -10,10 +10,12 @@ export const tblPrepayment = mysqlTable('prepayment', {
     amount: int('amount').notNull(),
     isDefaultAmount: boolean('is_default_amount').notNull().default(false),
     status: mysqlEnum('status', getEnumValues(EnumPrepaymentStatus)).notNull().default(EnumPrepaymentStatus.pending),
+    paidAt: timestamp('paid_at'),
     createdBy: varchar('created_by', { length: 255 }).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
     deletedAt: timestamp('deleted_at'),
+    
 }, (t) => ({
     // unique: unique('unique_reservation_id').on(t.reservationId),
 }));

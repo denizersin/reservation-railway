@@ -19,12 +19,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { MoreVertical, PauseCircle, Pencil, PlayCircle, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ConfirmModalGlobal } from "@/components/modal/confirm-modal";
 
 type Props = {}
 
 export const RoomTablesList = (props: Props) => {
     const queryClinet = useQueryClient()
-    const { roomId,roomData } = useContext(RoomDetailContext)
+    const { roomId, roomData } = useContext(RoomDetailContext)
 
     const { data: tables } = api.room.getTables.useQuery({ roomId })
 
@@ -36,10 +37,10 @@ export const RoomTablesList = (props: Props) => {
         setUpdateTableModalOpen(false)
     }
 
-    const { mutate: updateTable,isPending:updateTablePending } = api.room.updateTable.useMutation({
+    const { mutate: updateTable, isPending: updateTablePending } = api.room.updateTable.useMutation({
         onSuccess: onSuccessCrud
     })
-    const { mutate: deleteTable } = api.room.deleteTable.useMutation({
+    const { mutateAsync: deleteTable } = api.room.deleteTable.useMutation({
         onSuccess: onSuccessCrud
     })
 
@@ -64,7 +65,15 @@ export const RoomTablesList = (props: Props) => {
     }
 
     const onDeleteTable = (table: TTable) => {
-        deleteTable({ tableId: table.id })
+
+        ConfirmModalGlobal.show({
+            title: "Masa Silinsin mi?",
+            type: "delete",
+            onConfirm: async () => {
+                await deleteTable({ tableId: table.id })
+            }
+        })
+
     }
 
     return (
@@ -113,12 +122,11 @@ export const RoomTablesList = (props: Props) => {
                                             </Button>
                                         </TableCell>
                                         <TableCell>{tableItem.no}</TableCell>
-                                        <TableCell>{tableItem.capacity}</TableCell>
                                         <TableCell>{tableItem.minCapacity}</TableCell>
                                         <TableCell>{tableItem.maxCapacity}</TableCell>
                                         <TableCell>{tableItem.order}</TableCell>
                                         <TableCell className="text-right">
-                                            <DropdownMenu>
+                                            <DropdownMenu modal={false}>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button variant="ghost" size="icon">
                                                         <MoreVertical className="h-4 w-4" />

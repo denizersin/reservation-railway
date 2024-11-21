@@ -1,7 +1,6 @@
 import { tblReservation, TGuestSelect } from "@/server/db/schema";
 import { ReservationLogEntities } from "@/server/layer/entities/reservation/reservation-log";
 import { TUseCasePublicLayer } from "@/server/types/types";
-import { createTransaction } from "@/server/utils/db-utils";
 import { getLocalTime, localHourToUtcHour } from "@/server/utils/server-utils";
 import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TClientFormValidator from "@/shared/validators/front/create";
@@ -9,6 +8,8 @@ import { guestEntities } from "../../../entities/guest";
 import { ReservationEntities } from "../../../entities/reservation";
 import { restaurantEntities } from "../../../entities/restaurant";
 import { notificationUseCases } from "../notification";
+import TClientReservationActionValidator from "@/shared/validators/front/reservation-actions";
+import { db } from "@/server/db";
 
 export const createPublicReservation = async ({
     input,
@@ -74,7 +75,7 @@ export const createPublicReservation = async ({
 
     const prePaymentAmount = restaurantSettings.prePayemntPricePerGuest * guestCount
 
-    const reservation = await createTransaction(async (trx) => {
+    const reservation = await db.transaction(async (trx) => {
 
 
         const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
@@ -92,7 +93,8 @@ export const createPublicReservation = async ({
             restaurantId,
             roomId: avaliableTable.roomId,
             waitingSessionId: newUnclaimedWaitingSessionId,
-            tableIds: [avaliableTable.id]
+            tableIds: [avaliableTable.id],
+
 
         })
 
@@ -231,7 +233,7 @@ export const cancelPublicReservation = async ({
 
     const isStatusConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
 
-    createTransaction(async (trx) => {
+    db.transaction(async (trx) => {
 
         if (isPrepaymentPaid) {
             //!TODO: check if this is needed
@@ -325,12 +327,13 @@ export const handleSuccessPrepaymentPublicReservation = async ({
         throw new Error('Prepayment not found While Success Callback!')
     }
 
-    createTransaction(async (trx) => {
+    db.transaction(async (trx) => {
 
         await ReservationEntities.updateReservationPrepayment({
             data: {
                 id: result.currentPrepaymentId!,
                 status: EnumPrepaymentStatus.success,
+                paidAt: new Date(),
             },
             trx
         })
@@ -339,6 +342,10 @@ export const handleSuccessPrepaymentPublicReservation = async ({
             reservationId,
             data: {
                 reservationStatusId: EnumReservationStatusNumeric.confirmed,
+                confirmedAt: new Date(),
+                confirmedBy: 'Guest',
+                isCreatedByOwner: false,
+
             },
             trx
         })
@@ -354,7 +361,7 @@ export const handleSuccessPrepaymentPublicReservation = async ({
             reservationId,
             withEmail: true,
             withSms: true,
-            
+
         })
 
 
@@ -362,6 +369,48 @@ export const handleSuccessPrepaymentPublicReservation = async ({
 
 
 
+    })
+
+
+
+}
+
+
+export const confirmPublicReservation = async ({
+    input,
+    ctx
+}: TUseCasePublicLayer<TClientReservationActionValidator.TConfirmReservation>) => {
+
+    const { reservationId } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    if (reservation.reservationStatusId !== EnumReservationStatusNumeric.confirmation)
+        throw new Error('Reservation not in confirmation status')
+
+    db.transaction(async (trx) => {
+        await ReservationEntities.updateReservation({
+            reservationId,
+            data: {
+                reservationStatusId: EnumReservationStatusNumeric.confirmed,
+                confirmedBy: 'Guest',
+                confirmedAt: new Date(),
+            },
+            trx
+        })
+    })
+
+    await ReservationLogEntities.createLog({
+        message: 'Reservation confirmed',
+        reservationId,
+        owner: 'Guest'
+    })
+
+    await notificationUseCases.handleReservationConfirmed({
+        reservationId,
+        withEmail: true,
+        withSms: true,
+        ctx
     })
 
 

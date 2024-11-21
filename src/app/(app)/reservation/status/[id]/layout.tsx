@@ -10,6 +10,7 @@ type TReservationStatusData = RouterOutputs['reservation']['getReservationStatus
 
 type TReservationStatusContext = {
     reservationStatusData: TReservationStatusData | undefined
+    isLoading: boolean
 }
 
 type Props = {
@@ -72,7 +73,8 @@ const Layout = (props: Props) => {
 
     return (
         <ReservationStatusContext.Provider value={{
-            reservationStatusData: reservationStatusData!
+            reservationStatusData: reservationStatusData!,
+            isLoading
         }}>
             {props.children}
         </ReservationStatusContext.Provider>

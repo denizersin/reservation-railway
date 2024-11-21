@@ -15,8 +15,9 @@ import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 import { TOAST_MESSAGE_HEADER_KEY } from "@/shared/constants";
 import { NextResponse } from "next/server";
 import { clientQueryValidator } from "@/shared/validators/front/reservation";
-import { getRandom } from "@/server/utils/server-utils";
+import { getRandom, localHourToUtcHour } from "@/server/utils/server-utils";
 import { clientFormValidator } from "@/shared/validators/front/create";
+import { clientReservationActionValidator } from "@/shared/validators/front/reservation-actions";
 
 
 
@@ -40,6 +41,9 @@ export const reservationRouter = createTRPCRouter({
     updateReservationLimitation: ownerProcedure
         .input(limitationValidator.updateLimitationSchema)
         .mutation(async ({ input }) => {
+            if (input.data.hour) {
+                input.data.hour = localHourToUtcHour(input.data.hour)
+            }
             await reservationLimitationEntities.updateLimitation({
                 id: input.limitationId,
                 ...input.data
@@ -359,6 +363,11 @@ export const reservationRouter = createTRPCRouter({
         .query(async (opts) => {
             return await reservationUseCases.getMonthAvailability(opts)
         }),
+    getMonthAvailabilityByGuestCount: publicProcedure
+        .input(clientQueryValidator.monthAvailabilityByGuestCountQuerySchema)
+        .query(async (opts) => {
+            return await reservationUseCases.getMonthAvailabilityByGuestCount(opts)
+        }),
 
     createReservation: publicProcedure
         .input(clientFormValidator.createReservationSchema)
@@ -381,5 +390,10 @@ export const reservationRouter = createTRPCRouter({
         }))
         .mutation(async (opts) => {
             await reservationUseCases.cancelPublicReservation(opts)
+        }),
+    confirmPublicReservation: publicProcedure
+        .input(clientReservationActionValidator.confirmReservation)
+        .mutation(async (opts) => {
+            await reservationUseCases.confirmPublicReservation(opts)
         }),
 });

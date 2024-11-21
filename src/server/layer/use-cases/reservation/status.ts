@@ -1,7 +1,6 @@
 import { db } from "@/server/db";
 import { tblPrepayment, TReservationInsert } from "@/server/db/schema";
 import { TUseCaseOwnerLayer } from "@/server/types/types";
-import { createTransaction } from "@/server/utils/db-utils";
 import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
 import { TRPCError } from "@trpc/server";
@@ -123,7 +122,7 @@ export const cancelPrepayment = async ({
         message: 'Prepayment already paid',
     })
 
-    createTransaction(async (trx) => {
+    db.transaction(async (trx) => {
         await ReservationEntities.updateReservationPrepayment({
             data: {
                 id: currentPrepayment.id,
@@ -163,7 +162,7 @@ export const requestForConfirmation = async ({
 
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
 
-    createTransaction(async (trx) => {
+    db.transaction(async (trx) => {
         await ReservationEntities.createConfirmationRequest({
             data: {
                 reservationId,
@@ -210,7 +209,7 @@ export const cancelConfirmationRequest = async ({
             message: 'Reservation is not waiting for confirmation',
         })
 
-    createTransaction(async (trx) => {
+    db.transaction(async (trx) => {
         await ReservationEntities.deleteReservationConfirmationRequests({ reservationId, trx })
         await ReservationEntities.updateReservation({
             reservationId,
@@ -235,16 +234,25 @@ export const confirmReservation = async ({
     const reservation = await ReservationEntities.getReservationById({ reservationId })
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
 
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            reservationStatusId: EnumReservationStatusNumeric.confirmed,
-            confirmedBy: owner.name,
-            confirmedAt: new Date(),
-        },
+
+    await db.transaction(async (trx) => {
+        await ReservationEntities.updateReservation({
+            reservationId,
+            data: {
+                reservationStatusId: EnumReservationStatusNumeric.confirmed,
+                confirmedBy: owner.name,
+                confirmedAt: new Date(),
+            },
+            trx
+        })
     })
 
-
+    await notificationUseCases.handleReservationConfirmed({
+        reservationId,
+        withEmail,
+        withSms,
+        ctx,
+    })
 
     await ReservationLogEntities.createLog({
         message: 'Reservation confirmed',
@@ -252,12 +260,6 @@ export const confirmReservation = async ({
         owner: owner.name
     })
 
-    await notificationUseCases.handleReservationConfirmed({
-        reservationId,
-        withEmail,
-        withSms,
-        ctx
-    })
 
 }
 
@@ -303,7 +305,7 @@ export const cancelReservation = async ({
     const isStatusConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
 
 
-    createTransaction(async (trx) => {
+    db.transaction(async (trx) => {
 
         if (isPrepaymentPaid) {
             //!TODO: check if this is needed

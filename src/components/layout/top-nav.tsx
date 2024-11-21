@@ -21,7 +21,7 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
   return (
     <>
       <div className='md:hidden'>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button size='icon' variant='outline'>
               <IconMenu />

@@ -1,6 +1,9 @@
 import { env } from "@/env";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
+import { restaurantTagEntities } from "@/server/layer/entities/restaurant-tag";
+import { RoomEntities } from "@/server/layer/entities/room";
 import { getEnumValues, localHourToUtcHour } from "@/server/utils/server-utils";
+import { languagesData } from "@/shared/data/predefined";
 import { EnumLanguage, EnumMealNumeric, EnumMeals, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationPrepaymentType, EnumReservationStatus, EnumReservationStatusNumeric, EnumUserRole } from "@/shared/enums/predefined-enums";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
@@ -10,10 +13,6 @@ import * as schema from "../schema";
 import { tblCountry, tblLanguage, tblMeal } from "../schema/predefined";
 import { tblUser } from "../schema/user";
 import { seedDatas } from "./seedData";
-import { RoomEntities } from "@/server/layer/entities/room";
-import { languagesData } from "@/shared/data/predefined";
-import { predefinedEntities } from "@/server/layer/entities/predefined";
-import { restaurantTagEntities } from "@/server/layer/entities/restaurant-tag";
 const connection = await mysql.createConnection({
     uri: env.DATABASE_URL,
 });
@@ -188,7 +187,6 @@ const seedFunctions = [
 
         await RoomEntities.createTables({
             tables: new Array(20).fill(undefined).map((_, i) => ({
-                capacity: 2,
                 maxCapacity: 2,
                 minCapacity: 2,
                 no: 'R1-' + i.toString(),
@@ -202,7 +200,6 @@ const seedFunctions = [
 
         await RoomEntities.createTables({
             tables: new Array(2).fill(undefined).map((_, i) => ({
-                capacity: 2,
                 maxCapacity: 2,
                 minCapacity: 2,
                 no: 'S-' + i.toString(),
@@ -217,7 +214,6 @@ const seedFunctions = [
 
         await RoomEntities.createTables({
             tables: new Array(10).fill(undefined).map((_, i) => ({
-                capacity: 2,
                 maxCapacity: 2,
                 minCapacity: 2,
                 no: 'W-' + i.toString(),
@@ -281,28 +277,28 @@ const seedFunctions = [
             await db.insert(schema.tblPrepaymentMessage).values({
                 languageId: language.id,
                 restaurantId: 1,
-                prepaymentMessage: 'Prepayment message @Client @Date @Link @Restaurant',
-                prepaymentCancellationMessage: 'Prepayment cancellation message @Client @Date @Link @Restaurant',
-                prepaymentReminderMessage: 'Prepayment reminder message @Client @Date @Link @Restaurant',
-                prepaymentRefundMessage: 'Prepayment refund message @Client @Date @Link @Restaurant',
-                prepaymentReceivedMessage: 'Prepayment received message @Client @Date @Link @Restaurant',
-                accountPaymentRequestMessage: 'Account payment request message @Client @Date @Link @Restaurant',
-                accountPaymentSuccessMessage: 'Account payment success message @Client @Date @Link @Restaurant',
+                prepaymentMessage: 'Prepayment message @Client @Date @Link @Restaurant ' +language.languageCode,
+                prepaymentCancellationMessage: 'Prepayment cancellation message @Client @Date @Link @Restaurant ' +language.languageCode,
+                prepaymentReminderMessage: 'Prepayment reminder message @Client @Date @Link @Restaurant ' +language.languageCode,
+                prepaymentRefundMessage: 'Prepayment refund message @Client @Date @Link @Restaurant ' +language.languageCode,
+                prepaymentReceivedMessage: 'Prepayment received message @Client @Date @Link @Restaurant ' +language.languageCode,
+                accountPaymentRequestMessage: 'Account payment request message @Client @Date @Link @Restaurant ' +language.languageCode,
+                accountPaymentSuccessMessage: 'Account payment success message @Client @Date @Link @Restaurant ' +language.languageCode,
             })
 
 
             await db.insert(schema.tblReservationMessage).values({
                 languageId: language.id,
                 restaurantId: 1,
-                newReservationMessage: 'New reservation message @Client @Date @Link @Restaurant',
-                dateTimeChangeMessage: 'Date time change message @Client @Date @Link @Restaurant',
-                guestCountChangeMessage: 'Guest count change message @Client @Date @Link @Restaurant',
-                reservationCancellationMessage: 'Reservation cancellation message @Client @Date @Link @Restaurant',
-                reservationConfirmationRequestMessage: 'Reservation confirmation request message @Client @Date @Link @Restaurant',
-                reservationCancellationWithReasonMessage: 'Reservation cancellation with reason message @Client @Date @Link @Restaurant',
-                reservationReminderMessage: 'Reservation reminder message @Client @Date @Link @Restaurant',
-                reservationFeedbackRequestMessage: 'Reservation feedback request message @Client @Date @Link @Restaurant',
-                reservationConfirmedMessage: 'Reservation confirmed message @Client @Date @Link @Restaurant',
+                newReservationMessage: 'New reservation message @Client @Date @Link @Restaurant '+language.languageCode,
+                dateTimeChangeMessage: 'Date time change message @Client @Date @Link @Restaurant '+language.languageCode,
+                guestCountChangeMessage: 'Guest count change message @Client @Date @Link @Restaurant '+language.languageCode,
+                reservationCancellationMessage: 'Reservation cancellation message @Client @Date @Link @Restaurant '+language.languageCode,
+                reservationConfirmationRequestMessage: 'Reservation confirmation request message @Client @Date @Link @Restaurant '+language.languageCode,
+                reservationCancellationWithReasonMessage: 'Reservation cancellation with reason message @Client @Date @Link @Restaurant '+language.languageCode,
+                reservationReminderMessage: 'Reservation reminder message @Client @Date @Link @Restaurant '+language.languageCode,
+                reservationFeedbackRequestMessage: 'Reservation feedback request message @Client @Date @Link @Restaurant '+language.languageCode,
+                reservationConfirmedMessage: 'Reservation confirmed message @Client @Date @Link @Restaurant '+language.languageCode,
             })
 
             await db.insert(schema.tblRestaurantTexts).values({
@@ -316,9 +312,9 @@ const seedFunctions = [
             await db.insert(schema.tblWaitlistMessage).values({
                 restaurantId: 1,
                 languageId: language.id,
-                addedToWaitlistMessage: 'Added to waitlist message @Client @Date @Link @Restaurant ',
-                addedToWaitlistWalkinMessage: 'Added to waitlist walkin message @Client @Date @Link @Restaurant',
-                calledFromWaitlistMessage: 'Called from waitlist message @Client @Date @Link @Restaurant',
+                addedToWaitlistMessage: 'Added to waitlist message @Client @Date @Link @Restaurant '+language.languageCode,
+                addedToWaitlistWalkinMessage: 'Added to waitlist walkin message @Client @Date @Link @Restaurant '+language.languageCode,
+                calledFromWaitlistMessage: 'Called from waitlist message @Client @Date @Link @Restaurant '+language.languageCode,
             })
         }
 

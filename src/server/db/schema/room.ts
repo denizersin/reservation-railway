@@ -64,7 +64,6 @@ export const tblTable = mysqlTable('table', {
     roomId: int('room_id').notNull(),
     no: varchar('no', { length: 256 }).notNull(),
     order: int('order').notNull(),
-    capacity: int('capacity').notNull(),
     minCapacity: int('min_capacity').notNull(),
     maxCapacity: int('max_capacity').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),

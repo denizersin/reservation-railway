@@ -45,7 +45,11 @@ export default function ReservationSummaryPage() {
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper className="pb-10">
             <div className=""></div>
-            <ReservationStatusHeader onGoBack={onGoBack} />
+            <ReservationStatusHeader
+                date={reservationState?.date}
+                time={reservationState?.time}
+                guestCount={reservationState?.guestCount}
+                onGoBack={onGoBack} />
             <div className="px-2">
 
                 <div className="flex flex-col items-center justify-center w-full">
@@ -86,8 +90,8 @@ export default function ReservationSummaryPage() {
 
                 <div className="my-6">
                     <Image
-                    className="max-w-full"
-                    src='/map-ss.png' alt="map" width={638} height={477} />
+                        className="max-w-full"
+                        src='/map-ss.png' alt="map" width={638} height={477} />
                 </div>
 
                 <div className="flex flex-col items-center justify-center">
@@ -159,14 +163,14 @@ export default function ReservationSummaryPage() {
 
             <div
                 onClick={onClickAddToCalendar}
-            className="bg-gray-100 w-full flex justify-center items-center gap-x-3 h-[56px] cursor-pointer hover:bg-gray-200">
+                className="bg-gray-100 w-full flex justify-center items-center gap-x-3 h-[56px] cursor-pointer hover:bg-gray-200">
                 <IconGoogleCalendar className="size-8 " />
                 <div className="text-sm text-front-primary font-medium">Add to Google Calendar</div>
             </div>
 
             {/* applecalendar */}
 
-            <div 
+            <div
                 onClick={onClickAddToCalendar}
                 className="bg-gray-100 w-full flex justify-center items-center gap-x-3 h-[56px] cursor-pointer hover:bg-gray-200">
                 <IconAppleCalendar className="size-8 " />

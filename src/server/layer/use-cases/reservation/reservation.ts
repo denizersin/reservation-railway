@@ -2,7 +2,7 @@ import { db } from "@/server/db";
 import { tblReservationLog, tblReservationNote, tblReservationNotification, tblReservationTag } from "@/server/db/schema";
 import { tblReservation } from "@/server/db/schema/reservation";
 import { TUseCaseOwnerLayer, TUseCasePublicLayer } from "@/server/types/types";
-import { createTransaction, TTransaction } from "@/server/utils/db-utils";
+import {  TTransaction } from "@/server/utils/db-utils";
 import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
@@ -43,7 +43,7 @@ export const createReservation = async ({
     const prePaymentAmount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount
     const isDefaultAmount = data.customPrepaymentAmount ? false : true
 
-    const reservation = await createTransaction(async (trx) => {
+    const reservation = await db.transaction(async (trx) => {
 
         const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
 
@@ -58,6 +58,7 @@ export const createReservation = async ({
 
             //!TODO: split this to two different functions
             createdOwnerId: ctx.session.user.userId,
+            isCreatedByOwner: true,
         })
 
         await ReservationEntities.updateUnClaimedReservationWaitingSession({
@@ -214,7 +215,7 @@ export const checkInReservation = async ({
 
     } = ReservationEntities
 
-    await createTransaction(async (trx) => {
+    await db.transaction(async (trx) => {
         const reservation = await getReservationById({ reservationId })
 
         await updateReservation({
@@ -256,7 +257,7 @@ export const takeReservationIn = async ({
 
     } = ReservationEntities
 
-    await createTransaction(async (trx) => {
+    await db.transaction(async (trx) => {
         const reservation = await getReservationById({ reservationId })
 
         await updateReservation({

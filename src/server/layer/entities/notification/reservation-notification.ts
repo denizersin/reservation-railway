@@ -224,8 +224,14 @@ export const generateReservationGuestCountChange = async ({
 }) => {
 
 
+    const statusLink = reservationLinks.status({ reservationId: reservation.id })
+    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
+
+    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
 
     const params: MessageParams = getBaseParams(reservation)
+    params.Link = link
+    
     const restaurantReservationMessages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
@@ -234,6 +240,8 @@ export const generateReservationGuestCountChange = async ({
     const message = restaurantReservationMessages.guestCountChangeMessage
     if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation guest count change message not found' })
     const notificationMessage = parseMessage(message, params)
+
+
 
     return notificationMessage
 }
@@ -250,10 +258,17 @@ export const generateReservationTimeChange = async ({
     type: EnumNotificationType
 }) => {
 
+    const statusLink = reservationLinks.status({ reservationId: reservation.id })
+    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
+
+    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
+
     const params: MessageParams = {
         ...getBaseParams(reservation),
         Date: newTime
     }
+    params.Link = link
+
     const restaurantReservationMessages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
@@ -261,6 +276,7 @@ export const generateReservationTimeChange = async ({
 
     const message = restaurantReservationMessages.dateTimeChangeMessage
     if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation date time change message not found' })
+
     const notificationMessage = parseMessage(message, params)
 
     return notificationMessage

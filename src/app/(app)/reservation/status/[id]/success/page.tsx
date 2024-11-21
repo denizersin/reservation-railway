@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { api } from "@/server/trpc/react";
 import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
+import { EnumReservationStatus } from "@/shared/enums/predefined-enums";
 
 export default function ReservationSummaryPage() {
 
@@ -57,11 +58,17 @@ export default function ReservationSummaryPage() {
 
     useShowLoadingModal([isCancelingPublicReservation])
 
+    const canCancelReservation = reservationStatusData?.reservationStatus.status !== EnumReservationStatus.completed
+
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper className="pb-10">
             <div className=""></div>
-            <ReservationStatusHeader onGoBack={onGoBack} />
+            <ReservationStatusHeader
+                date={reservationStatusData?.reservationDate}
+                time={reservationStatusData?.hour}
+                guestCount={reservationStatusData?.guestCount}
+                showBackButton={false} onGoBack={onGoBack} />
             <div className="px-2">
 
                 <div className="flex flex-col items-center justify-center w-full">
@@ -87,6 +94,7 @@ export default function ReservationSummaryPage() {
                         Add to Calendar
                     </Button>
                     <Button
+                        disabled={!canCancelReservation}
                         onClick={() => cancelReservationModalRef.current.openModal?.()}
                         variant={'outline'} className="rounded-sm flex-1 h-full border-destructive">
                         Cancel Reservation

@@ -30,7 +30,6 @@ const CreateTableModal = ({ isOpen, setOpen }: Props) => {
             tableCount: 1,
             orderStartAt: 1,
             tableNumberStartAt: 0,
-            capacity: 2,
             minCapacity: 1,
             maxCapacity: 2,
             shape: EnumTableShape.square,
@@ -142,20 +141,6 @@ const CreateTableModal = ({ isOpen, setOpen }: Props) => {
                             )}
                         />
 
-                        <FormField
-                            control={form.control}
-                            name="capacity"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Masalar kaç kişilik?</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                                    </FormControl>
-                                    <FormDescription>2, 3, 4, 5, 6, 8, 10 gibi masaların kapasitelerini belirleyebilirsiniz.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
 
                         <FormField
                             control={form.control}

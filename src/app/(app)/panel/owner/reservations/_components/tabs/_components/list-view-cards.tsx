@@ -42,6 +42,8 @@ export const ListViewCards = (props: Props) => {
         ).length
         const canceledCount = data.filter((r) => (r.reservationStatus.status === EnumReservationStatus.cancel)).length
 
+
+
         return {
             reservationCount,
             guestCount,
@@ -52,6 +54,9 @@ export const ListViewCards = (props: Props) => {
         }
     }, [data])
 
+
+    console.log(cardValues, 'cardValues')
+    console.log(data,'data')
 
 
 
@@ -83,7 +88,7 @@ export const ListViewCards = (props: Props) => {
                     <IconCheck className='text-muted-foreground' />
                 </CardHeader>
                 <CardContent>
-                    <div className='text-2xl font-bold'>{cardValues?.confirmedCount??0 + (cardValues?.completedCount??0)}</div>
+                    <div className='text-2xl font-bold'>{(cardValues?.confirmedCount??0) + (cardValues?.completedCount??0)}</div>
                     <p className='text-xs text-muted-foreground'>
                         Konfirm edilen ve tamamlanmış rezervasyon
                     </p>

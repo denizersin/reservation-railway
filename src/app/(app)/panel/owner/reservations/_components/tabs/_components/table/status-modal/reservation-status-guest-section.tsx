@@ -53,6 +53,9 @@ export const ReservationStatusGuestSection = ({
             <div className="">
                 <Button onClick={handleSearchOnGoogle} className='text-blue-500' variant='link'>Search On Google</Button>
             </div>
+            <div>
+                reservation Id: {reservation.id}
+            </div>
 
             <GuestCrudModal
                 open={openGuestUpdateModal}

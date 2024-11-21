@@ -91,7 +91,13 @@ export default function Page() {
         <div>
             <HeadBanner showHoldingSection={false} />
             <FrontMaxWidthWrapper className="px-2 md:px-6 pb-12">
-                <ReservationStatusHeader onGoBack={onGoBack} showBackButton={false} />
+                <ReservationStatusHeader
+                    guestCount={reservationStatusData?.guestCount}
+                    date={reservationStatusData?.reservationDate}
+                    time={reservationStatusData?.hour}
+                    onGoBack={onGoBack}
+                    showBackButton={false}
+                />
 
                 <div className="info-alert p-4 text-sm text-front-primary bg-gray-100/50 rounded-md mb-6">
                     <span className="font-bold">{amount} TL</span> will be charged to your credit card to confirm your reservation.

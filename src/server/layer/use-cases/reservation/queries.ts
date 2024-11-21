@@ -441,7 +441,7 @@ export const getReservations = async ({
             between(tblReservation.reservationDate, start, end),
             ...whereConditions,
         ),
-        orderBy: [asc(tblReservation.hour)]
+        orderBy: [asc(tblReservation.id)]
     })
 
     reservations.forEach(r => {

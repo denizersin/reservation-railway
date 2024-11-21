@@ -5,6 +5,12 @@ const monthAvailabilityQuerySchema = z.object({
     month: z.number().int().positive(),
 })
 
+const monthAvailabilityByGuestCountQuerySchema = z.object({
+    mealId: z.number().int().positive(),
+    month: z.number().int().positive(),
+    guestCount: z.number().int().positive(),
+})
+
 
 const avaliableHoursByDateQuerySchema = z.object({
     date: z.string(),
@@ -16,11 +22,14 @@ const avaliableHoursByDateQuerySchema = z.object({
 
 export const clientQueryValidator = {
     monthAvailabilityQuerySchema,
+    monthAvailabilityByGuestCountQuerySchema,
     avaliableHoursByDateQuerySchema,
+
 }
 
 namespace TClientQueryValidator {
     export type TMonthAvailabilityQuery = z.infer<typeof monthAvailabilityQuerySchema>
+    export type TMonthAvailabilityByGuestCountQuery = z.infer<typeof monthAvailabilityByGuestCountQuerySchema>
     export type TAvaliableHoursByDateQuery = z.infer<typeof avaliableHoursByDateQuerySchema>
 }
 

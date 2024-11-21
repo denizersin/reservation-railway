@@ -2,8 +2,7 @@
 import { db } from "@/server/db";
 import { tblPrepayment, tblReservationTable, tblRoom, tblRoomTranslation, tblTable, TReservationInsert, TTable } from "@/server/db/schema";
 import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
-import { tblConfirmationRequest, TConfirmationRequestInsert } from "@/server/db/schema/reservation/confirmation-request";
-import { createTransaction, TTransaction } from "@/server/utils/db-utils";
+import { TTransaction } from "@/server/utils/db-utils";
 import { and, between, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
 import { RoomEntities } from "../room";
 import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
@@ -131,15 +130,6 @@ export const updateReservationTable = async ({
     )
 }
 
-export const createConfirmationRequest = async ({
-    data,
-    trx = db
-}: {
-    data: TConfirmationRequestInsert,
-    trx?: TTransaction
-}) => {
-    await trx?.insert(tblConfirmationRequest).values(data)
-}
 
 
 export const getReservationDetail = async ({
@@ -166,6 +156,7 @@ export const getReservationDetail = async ({
             prepayments: {
                 orderBy: [desc(tblPrepayment.createdAt)]
             },
+
             meal: true,
             assignedPersonal: true,
             tags: true,
@@ -201,7 +192,7 @@ export const resetReservationTablesAndLinks = async ({
 
 
 
-    createTransaction(async (trx) => {
+    await db.transaction(async (trx) => {
 
         const table = await RoomEntities.getTableById({ tableId })
 
@@ -248,15 +239,6 @@ export const geTReservationMessageInstance = async ({
 }
 
 
-export const deleteReservationConfirmationRequests = async ({
-    reservationId,
-    trx = db
-}: {
-    reservationId: number,
-    trx?: TTransaction
-}) => {
-    await trx?.delete(tblConfirmationRequest).where(eq(tblConfirmationRequest.reservationId, reservationId))
-}
 
 export const deletePrepayment = async ({
     reservationId,
