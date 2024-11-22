@@ -191,7 +191,7 @@ const seedFunctions = [
 
         await RoomEntities.createTables({
             tables: new Array(20).fill(undefined).map((_, i) => ({
-                maxCapacity: 2,
+                maxCapacity: 3,
                 minCapacity: 2,
                 no: 'R1-' + i.toString(),
                 order: i,
@@ -204,7 +204,7 @@ const seedFunctions = [
 
         await RoomEntities.createTables({
             tables: new Array(2).fill(undefined).map((_, i) => ({
-                maxCapacity: 2,
+                maxCapacity: 3,
                 minCapacity: 2,
                 no: 'S-' + i.toString(),
                 order: i,

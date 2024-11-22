@@ -113,6 +113,7 @@ export default function UserInfo() {
                 guestCount: reservationData?.guestCount!,
                 mealId: EnumMealNumeric.dinner,
                 time: reservationData?.time!,
+                roomId: reservationData?.areaId!
             },
             userInfo: values
         })

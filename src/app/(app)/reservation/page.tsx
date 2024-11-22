@@ -9,6 +9,7 @@ import HeadBanner from "@/components/custom/front/head-banner";
 import { TimeSelect } from "@/components/custom/front/time-select";
 import { Button } from "@/components/ui/button";
 import { useReservationStates } from "@/hooks/front/useReservatoinStates";
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
 import { getNext3Months } from "@/lib/utils";
 import { api, RouterOutputs } from "@/server/trpc/react";
 import { EnumMealNumeric } from "@/shared/enums/predefined-enums";
@@ -80,7 +81,8 @@ export default function RootPage() {
             date: date!,
             time: time!,
             guestCount: guestCount,
-            mealId: EnumMealNumeric.dinner
+            mealId: EnumMealNumeric.dinner,
+            roomId: areaId!
         })
 
     }
@@ -172,6 +174,7 @@ export default function RootPage() {
     }
 
 
+    useShowLoadingModal([isLoadingMonthAvailability])
 
     return (
         <MonthAvailabilityContext.Provider value={contextValue}>

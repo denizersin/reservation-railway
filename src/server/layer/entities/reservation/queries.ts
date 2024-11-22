@@ -120,13 +120,15 @@ export const getAvaliableTable = async ({
     date,
     utcHour,
     guestCount,
-    mealId
+    mealId,
+    roomId
 }: {
     restaurantId: number,
     date: Date,
     utcHour: string,
     guestCount: number,
-    mealId: number
+    mealId: number,
+    roomId: number
 }) => {
 
     const { start, end } = getStartAndEndOfDay({
@@ -149,7 +151,8 @@ export const getAvaliableTable = async ({
                 eq(tblReservation.mealId, mealId),
                 between(tblReservation.reservationDate, start, end),
                 ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
-                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.completed)
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.completed),
+                eq(tblReservation.roomId, roomId)
 
             )
         )
@@ -169,11 +172,12 @@ export const getAvaliableTable = async ({
             eq(tblRoom.restaurantId, restaurantId),
             eq(tblRoom.isWaitingRoom, false),
             isNotNull(tblTable.id),
-            isNull(tblReservation.id)
+            isNull(tblReservation.id),
+            eq(tblRoom.id, roomId)
         ))
 
     console.log(TEST, 'TEST')
-
+    console.log(roomId, 'roomId')
     //return most appropriate table for guest count
 
     // guest count:3  tables: 2-4 2-5 return 2-4
@@ -203,6 +207,7 @@ export const getAvaliableTable = async ({
         restaurantId,
         utcHour,
         guestCount,
+        roomId
     })
     if (!isHourAavailable) return undefined
 
@@ -273,9 +278,9 @@ export const queryTableAvailability = async ({
 }
 
 
-export async function queryHourAvaliability({ date, mealId, restaurantId, utcHour, guestCount
+export async function queryHourAvaliability({ date, mealId, restaurantId, utcHour, guestCount, roomId
 
-}: { date: Date, mealId: number, restaurantId: number, utcHour: string, guestCount: number }) {
+}: { date: Date, mealId: number, restaurantId: number, utcHour: string, guestCount: number, roomId: number }) {
     const { start, end } = getStartAndEndOfDay({
         date:
             getLocalTime(date)
@@ -321,6 +326,7 @@ export async function queryHourAvaliability({ date, mealId, restaurantId, utcHou
                 eq(tblReservationLimitation.hour, utcHour),
                 eq(tblReservationLimitation.mealId, mealId),
                 eq(tblReservationLimitation.isActive, true),
+                eq(tblReservationLimitation.roomId, roomId)
             )
         )
         .groupBy(tblReservationLimitation.id)

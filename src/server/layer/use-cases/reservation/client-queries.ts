@@ -4,7 +4,7 @@ import { tblReservation, tblReservationTable } from "@/server/db/schema/reservat
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
 import { tblRoom, tblTable } from "@/server/db/schema/room";
-import { TUseCasePublicLayer } from "@/server/types/types";
+import { TUseCaseClientLayer, TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumDaysNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservatoinClientValidator from "@/shared/validators/front/reservation";
@@ -21,7 +21,7 @@ import { union } from "drizzle-orm/mysql-core";
 export const getMonthAvailability = async ({
     input,
     ctx,
-}: TUseCasePublicLayer<TReservatoinClientValidator.TMonthAvailabilityQuery>) => {
+}: TUseCaseClientLayer<TReservatoinClientValidator.TMonthAvailabilityQuery>) => {
 
     const { month, mealId, } = input
     const { restaurantId } = ctx
@@ -152,7 +152,7 @@ export const getMonthAvailability = async ({
 export const getAvaliableHoursByDate = async ({
     input,
     ctx,
-}: TUseCasePublicLayer<TReservatoinClientValidator.TAvaliableHoursByDateQuery>) => {
+}: TUseCaseClientLayer<TReservatoinClientValidator.TAvaliableHoursByDateQuery>) => {
     const { date, mealId } = input
     const { restaurantId } = ctx
 
@@ -170,7 +170,7 @@ export const getAvaliableHoursByDate = async ({
 export const getMonthAvailabilityByGuestCount = async ({
     input,
     ctx,
-}: TUseCasePublicLayer<TReservatoinClientValidator.TMonthAvailabilityByGuestCountQuery>) => {
+}: TUseCaseClientLayer<TReservatoinClientValidator.TMonthAvailabilityByGuestCountQuery>) => {
     const { month, mealId, guestCount, monthDate } = input
     const { restaurantId } = ctx
     const language = ctx.userPrefrences.language
@@ -178,9 +178,13 @@ export const getMonthAvailabilityByGuestCount = async ({
     const todayLocal = getLocalTime(new Date());
     todayLocal.setHours(0, 0, 0, 0);
 
+    console.log(new Date().toISOString(), 'new Date().toISOString()')
+    console.log(new Date().toString(), 'new Date().toString()')
+    console.log(new Date().toLocaleDateString(), 'new Date().toLocaleDateString()')
 
-    const today=new Date(todayLocal.toISOString())
-    
+
+    const today = new Date(todayLocal.toISOString())
+
     const currentMonth = today.getUTCMonth();
 
     const firstDate = monthDate
@@ -233,7 +237,7 @@ export const getMonthAvailabilityByGuestCount = async ({
                 if (r.avaliableTable <= 0) {
                     r.avaliableMinCapacity = 0;
                     r.avaliableMaxCapacity = 0
-                    
+
                 }
             }
         })
@@ -304,16 +308,16 @@ export const getMonthAvailabilityByGuestCount = async ({
 
 
 
-function getStatusWithLimitation({ 
-    date, 
-    mealId, 
-    restaurantId, 
-    guestCount 
-}: { 
-    date: Date, 
-    mealId: number, 
+function getStatusWithLimitation({
+    date,
+    mealId,
+    restaurantId,
+    guestCount
+}: {
+    date: Date,
+    mealId: number,
     restaurantId: number,
-    guestCount: number 
+    guestCount: number
 }) {
     const { start, end } = getStartAndEndOfDay({
         date: getLocalTime(date)
@@ -457,16 +461,16 @@ function getStatusWithLimitation({
 
 
 
-function getStatusWithLimitationWithHolding({ 
-    date, 
-    mealId, 
-    restaurantId, 
-    guestCount 
-}: { 
-    date: Date, 
-    mealId: number, 
+function getStatusWithLimitationWithHolding({
+    date,
+    mealId,
+    restaurantId,
+    guestCount
+}: {
+    date: Date,
+    mealId: number,
     restaurantId: number,
-    guestCount: number 
+    guestCount: number
 }) {
     const { start, end } = getStartAndEndOfDay({
         date: getLocalTime(date)
@@ -477,27 +481,27 @@ function getStatusWithLimitationWithHolding({
         db.select({
             tableId: tblReservationTable.tableId
         })
-        .from(tblReservation)
-        .leftJoin(tblReservationTable, eq(tblReservation.id, tblReservationTable.reservationId))
-        .where(and(
-            between(tblReservation.reservationDate, start, end),
-            ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
-            eq(tblReservation.restaurantId, restaurantId),
-            eq(tblReservation.mealId, mealId),
-        )),
+            .from(tblReservation)
+            .leftJoin(tblReservationTable, eq(tblReservation.id, tblReservationTable.reservationId))
+            .where(and(
+                between(tblReservation.reservationDate, start, end),
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
+                eq(tblReservation.restaurantId, restaurantId),
+                eq(tblReservation.mealId, mealId),
+            )),
         db.select({
             tableId: tblReservationHolding.holdedTableId
         })
-        .from(tblReservationHolding)
-        .where(and(
-            between(tblReservationHolding.holdingDate, start, end),
-            eq(tblReservationHolding.restaurantId, restaurantId),
-            eq(tblReservationHolding.mealId, mealId),
-        ))
+            .from(tblReservationHolding)
+            .where(and(
+                between(tblReservationHolding.holdingDate, start, end),
+                eq(tblReservationHolding.restaurantId, restaurantId),
+                eq(tblReservationHolding.mealId, mealId),
+            ))
     ).as('reservedTables')
 
     // Hourly reservations for limited hours
-const hourlyStats = db
+    const hourlyStats = db
         .select({
             hour: tblMealHours.hour,
             roomId: tblRoom.id,
@@ -546,7 +550,7 @@ const hourlyStats = db
         .as('hourlyStats')
 
 
-        
+
 
     return db
         .select({

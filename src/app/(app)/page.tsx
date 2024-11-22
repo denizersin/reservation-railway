@@ -23,7 +23,7 @@ export default function RootPageHandler({ children }: { children: React.ReactNod
     if (session.isLoading) return;
     if (!session.isAuthenticated) {
       router.push('/reservation')
-
+      
       //!TODO: remove this
       // router.push('/auth/login')
       return;
@@ -42,6 +42,7 @@ export default function RootPageHandler({ children }: { children: React.ReactNod
     defaultValue: 1,
   })
 
+  
 
 
 

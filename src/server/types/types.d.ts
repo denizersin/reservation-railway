@@ -16,6 +16,11 @@ export type TUseCasePublicLayer<T, C = {}> = {
     ctx: TPublicProcedureCtx
 } & C
 
+export type TUseCaseClientLayer<T> = {
+    input: T
+    ctx: TClientProcedureCtx
+} 
+
 export type TPagination<T> = {
     data: T[]
     pagination: {

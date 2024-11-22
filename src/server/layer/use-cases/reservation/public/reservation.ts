@@ -1,6 +1,5 @@
 import { tblReservation, tblRoom, tblTable, TGuestSelect, TReservationSelect, TTable } from "@/server/db/schema";
 import { ReservationLogEntities } from "@/server/layer/entities/reservation/reservation-log";
-import { TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, localHourToUtcHour } from "@/server/utils/server-utils";
 import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TClientFormValidator from "@/shared/validators/front/create";
@@ -16,17 +15,18 @@ import { EnumCookieName, HOLDING_RESERVATION_GUEST_ID, HOLDING_TIMEOUT, OCCUPIED
 import { RoomEntities } from "@/server/layer/entities/room";
 import TReservatoinClientValidator from "@/shared/validators/front/reservation";
 import { and, eq, sql } from "drizzle-orm";
+import { TUseCaseClientLayer } from "@/server/types/types";
 
 export const createPublicReservation = async ({
     input,
     ctx
-}: TUseCasePublicLayer<TClientFormValidator.TCreateReservationSchema>) => {
+}: TUseCaseClientLayer<TClientFormValidator.TCreateReservationSchema>) => {
 
     const { userInfo, reservationData } = input
 
     const { restaurantId } = ctx
 
-    const { mealId, time, guestCount } = reservationData
+    const { mealId, time, guestCount, } = reservationData
 
     const { email, phone, phoneCode, name, surname } = userInfo
 
@@ -64,11 +64,11 @@ export const createPublicReservation = async ({
     if (occupiedTableIdValue) {
         const result = await ReservationEntities.getReservationHoldingByTableId({ holdedTableId: Number(occupiedTableIdValue) })
         if (result?.reservation) {
-
+            console.log('111111')
             //create reservation from holding 
-            await createReservationFromHolding({ input: { ...input, holdedReservation: result.reservation, table: result.table, guest: guest }, ctx })
-
-            return
+            const newReservationId = await createReservationFromHolding({ input: { ...input, holdedReservation: result.reservation, table: result.table, guest: guest }, ctx })
+            cookies().delete(EnumCookieName.OCCUPIED_TABLE_ID)
+            return newReservationId
         }
     }
 
@@ -81,6 +81,7 @@ export const createPublicReservation = async ({
             restaurantId,
             utcHour: localHourToUtcHour(time),
             guestCount,
+            roomId: reservationData.roomId
         })
 
         if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
@@ -90,7 +91,8 @@ export const createPublicReservation = async ({
             date: reservationData.date,
             utcHour,
             guestCount,
-            mealId
+            mealId,
+            roomId: reservationData.roomId
         })
     }
 
@@ -223,7 +225,7 @@ export const createPublicReservation = async ({
 export const createReservationFromHolding = async ({
     input,
     ctx
-}: TUseCasePublicLayer<
+}: TUseCaseClientLayer<
     TClientFormValidator.TCreateReservationSchema & {
         holdedReservation: TReservationSelect,
         table: TTable,
@@ -244,7 +246,6 @@ export const createReservationFromHolding = async ({
     const prePaymentAmount = restaurantSettings.prePayemntPricePerGuest * guestCount
 
     await db.transaction(async (trx) => {
-        const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
 
         //assume this as created reservation
 
@@ -262,8 +263,6 @@ export const createReservationFromHolding = async ({
                 reservationStatusId: EnumReservationStatusNumeric.reservation,
                 restaurantId,
                 roomId: table.roomId,
-                waitingSessionId: newUnclaimedWaitingSessionId,
-
                 isHolding: false,
                 holdExpiredAt: null,
                 holdedAt: null,
@@ -272,13 +271,6 @@ export const createReservationFromHolding = async ({
         })
 
 
-        await ReservationEntities.updateUnClaimedReservationWaitingSession({
-            data: {
-                reservationId: holdedReservation.id,
-            },
-            waitingSessionId: newUnclaimedWaitingSessionId,
-            trx,
-        })
 
 
         if (userInfo.specialRequests) {
@@ -374,8 +366,8 @@ export const createReservationFromHolding = async ({
 export const occupyTable = async ({
     input,
     ctx
-}: TUseCasePublicLayer<TClientFormValidator.TOccupyTableSchema>) => {
-    const { date, time, guestCount, mealId } = input
+}: TUseCaseClientLayer<TClientFormValidator.TOccupyTableSchema>) => {
+    const { date, time, guestCount, mealId, roomId } = input
 
     const { restaurantId } = ctx
 
@@ -393,38 +385,50 @@ export const occupyTable = async ({
         date: date,
         utcHour: localHourToUtcHour(time),
         guestCount,
-        mealId
+        mealId,
+        roomId
     })
     if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
 
 
     cookies().set(EnumCookieName.OCCUPIED_TABLE_ID, avaliableTable.id.toString())
 
-    await ReservationEntities.createReservation({
-        guestCount,
-        hour: localHourToUtcHour(time),
-        reservationDate: date,
-        reservationStatusId: EnumReservationStatusNumeric.holding,
-        waitingSessionId: 1,
-        guestId: HOLDING_RESERVATION_GUEST_ID,
-        isSendEmail: false,
-        isSendSms: false,
-        tableIds: [avaliableTable.id],
-        mealId,
-        prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
-        restaurantId,
-        roomId: avaliableTable.roomId,
-        isHolding: true,
-        holdedAt: new Date(),
-        holdExpiredAt: new Date(Date.now() + HOLDING_TIMEOUT),
-    })
+    await db.transaction(async (trx) => {
+        const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
 
+        const newReservation = await ReservationEntities.createReservation({
+            guestCount,
+            hour: localHourToUtcHour(time),
+            reservationDate: date,
+            reservationStatusId: EnumReservationStatusNumeric.holding,
+            waitingSessionId: newUnclaimedWaitingSessionId,
+            guestId: HOLDING_RESERVATION_GUEST_ID,
+            isSendEmail: false,
+            isSendSms: false,
+            tableIds: [avaliableTable.id],
+            mealId,
+            prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+            restaurantId,
+            roomId: avaliableTable.roomId,
+            isHolding: true,
+            holdedAt: new Date(),
+            holdExpiredAt: new Date(Date.now() + HOLDING_TIMEOUT),
+        })
+
+        await ReservationEntities.updateUnClaimedReservationWaitingSession({
+            waitingSessionId: newUnclaimedWaitingSessionId,
+            data: {
+                reservationId: newReservation.id,
+            },
+            trx
+        })
+    })
 
     //!TODO: BUNUN ICIN CRON JOB KULLANILABILIR
     setTimeout(async () => {
         console.log('occupied table timeout id:', avaliableTable.id)
         const holding = await ReservationEntities.getReservationHoldingByTableId({ holdedTableId: avaliableTable.id })
-        if (holding) {
+        if (holding?.reservation?.isHolding) {
             await ReservationEntities.deleteHoldedReservationByOccupiedTableId({ holdedTableId: avaliableTable.id })
         }
 
@@ -438,7 +442,7 @@ export const occupyTable = async ({
 export const getReservationStatusData = async ({
     input,
     ctx
-}: TUseCasePublicLayer<{
+}: TUseCaseClientLayer<{
     reservationId: number
 }>) => {
 
@@ -455,7 +459,7 @@ export const getReservationStatusData = async ({
 export const cancelPublicReservation = async ({
     input,
     ctx
-}: TUseCasePublicLayer<{
+}: TUseCaseClientLayer<{
     reservationId: number
 }>) => {
 
@@ -540,7 +544,7 @@ export const cancelPublicReservation = async ({
 export const handlePrepaymentPublicReservation = async ({
     input,
     ctx
-}: TUseCasePublicLayer<{
+}: TUseCaseClientLayer<{
     reservationId: number
 }>) => {
     //succsess callback from payment gateway
@@ -623,7 +627,7 @@ export const handleSuccessPrepaymentPublicReservation = async ({
 export const confirmPublicReservation = async ({
     input,
     ctx
-}: TUseCasePublicLayer<TClientReservationActionValidator.TConfirmReservation>) => {
+}: TUseCaseClientLayer<TClientReservationActionValidator.TConfirmReservation>) => {
 
     const { reservationId } = input
 
@@ -664,7 +668,7 @@ export const confirmPublicReservation = async ({
 export const getGuestCountFilterValues = async ({
     input,
     ctx
-}: TUseCasePublicLayer<undefined>) => {
+}: TUseCaseClientLayer<undefined>) => {
 
     const { restaurantId } = ctx
 

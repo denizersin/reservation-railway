@@ -8,7 +8,7 @@ import { restaurantTagValidator } from "@/shared/validators/restaurant-tag";
 import { restaurantAssetsValidator } from "@/shared/validators/restaurant/restauran-assets";
 import { personelValidator } from "@/shared/validators/user/personel";
 import { z } from "zod";
-import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
+import { clientProcedure, createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 import { EnumDaysNumeric } from "@/shared/enums/predefined-enums";
 
 export const restaurantRouter = createTRPCRouter({
@@ -60,7 +60,7 @@ export const restaurantRouter = createTRPCRouter({
             const tags = await restaurantTagEntities.getAllRestaurantTags2(input)
             return tags
         }),
-    getTags: publicProcedure
+    getTags: clientProcedure
         .query(async ({ ctx }) => {
             return await restaurantTagEntities.getAllRestaurantTags2({
                 page: -1,
@@ -78,10 +78,10 @@ export const restaurantRouter = createTRPCRouter({
         const translations = await restaurantTagEntities.getRestaurantTagTranslationsById(input)
         return translations
     }),
-    getMeals: publicProcedure.query(async () => {
+    getMeals: clientProcedure.query(async () => {
         return await predefinedEntities.getMeals()
     }),
-    getRestaurantLanguages: publicProcedure.query(async ({ ctx }) => {
+    getRestaurantLanguages: clientProcedure.query(async ({ ctx }) => {
         const { restaurantId } = ctx
         return await restaurantEntities.getRestaurantLanguages({ restaurantId })
     }),
@@ -171,7 +171,7 @@ export const restaurantRouter = createTRPCRouter({
     getPersonels: ownerProcedure.query(async (opt) => {
         return await restaurantUseCases.getPersonel(opt)
     }),
-    getMealDaysByMealId: publicProcedure.input(z.object({ mealId: z.number() })).query(async ({ input, ctx }) => {
+    getMealDaysByMealId: clientProcedure.input(z.object({ mealId: z.number() })).query(async ({ input, ctx }) => {
         const { restaurantId } = ctx
         const daysData = await restaurantEntities.getRestaurantMealDaysByMealId({ restaurantId: restaurantId, mealId: input.mealId })
         return daysData.map((r) => EnumDaysNumeric[r.day] as number)

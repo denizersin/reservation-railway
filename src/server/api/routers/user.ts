@@ -1,10 +1,9 @@
 import { z } from "zod";
 
-import { userUseCases } from "@/server/layer/use-cases/user";
 import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
-import { userValidator } from "@/shared/validators/user";
-import { cookies } from "next/headers";
 import { jwtEntities } from "@/server/layer/entities/jwt";
+import { userUseCases } from "@/server/layer/use-cases/user";
+import { userValidator } from "@/shared/validators/user";
 
 
 

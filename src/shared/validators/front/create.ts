@@ -37,6 +37,8 @@ const reservationDataFormSchema = z.object({
     date: z.date(),
     time: z.string(),
     guestCount: z.number().int().positive(),
+    roomId: z.number().int().positive()
+
 })
 
 
@@ -51,6 +53,8 @@ const occupyTableSchema = z.object({
     date: z.date(),
     time: z.string(),
     guestCount: z.number().int().positive(),
+    roomId: z.number().int().positive()
+
 })
 
 

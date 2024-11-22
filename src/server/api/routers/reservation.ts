@@ -7,22 +7,20 @@ import { reservationLimitationEntities } from "@/server/layer/entities/reservati
 import { userEntities } from "@/server/layer/entities/user";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { reservationLimitationUseCases } from "@/server/layer/use-cases/reservation-limitation.ts";
+import { localHourToUtcHour } from "@/server/utils/server-utils";
+import { clientFormValidator } from "@/shared/validators/front/create";
+import { reservatoinClientValidator } from "@/shared/validators/front/reservation";
+import { clientReservationActionValidator } from "@/shared/validators/front/reservation-actions";
 import { reservationValidator } from "@/shared/validators/reservation";
 import { limitationValidator } from "@/shared/validators/reservation-limitation/inex";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
-import { TOAST_MESSAGE_HEADER_KEY } from "@/shared/constants";
-import { NextResponse } from "next/server";
-import { reservatoinClientValidator } from "@/shared/validators/front/reservation";
-import { getRandom, localHourToUtcHour } from "@/server/utils/server-utils";
-import { clientFormValidator } from "@/shared/validators/front/create";
-import { clientReservationActionValidator } from "@/shared/validators/front/reservation-actions";
+import { clientProcedure, createTRPCRouter, ownerProcedure } from "../trpc";
 
 
 
 export const reservationRouter = createTRPCRouter({
-    getReservationSatues: publicProcedure.query(async () => {
+    getReservationSatues: clientProcedure.query(async () => {
         return await predefinedEntities.getReservationSatues()
     }),
 
@@ -358,25 +356,25 @@ export const reservationRouter = createTRPCRouter({
         }),
 
 
-    getMonthAvailability: publicProcedure
+    getMonthAvailability: clientProcedure
         .input(reservatoinClientValidator.monthAvailabilityQuerySchema)
         .query(async (opts) => {
             return await reservationUseCases.getMonthAvailability(opts)
         }),
-    getMonthAvailabilityByGuestCount: publicProcedure
+    getMonthAvailabilityByGuestCount: clientProcedure
         .input(reservatoinClientValidator.monthAvailabilityByGuestCountQuerySchema)
         .query(async (opts) => {
             return await reservationUseCases.getMonthAvailabilityByGuestCount(opts)
         }),
 
-    createReservation: publicProcedure
+    createReservation: clientProcedure
         .input(clientFormValidator.createReservationSchema)
         .mutation(async (opts) => {
             const newReservationId = await reservationUseCases.createPublicReservation(opts)
             return { newReservationId }
         }),
 
-    getReservationStatusData: publicProcedure
+    getReservationStatusData: clientProcedure
         .input(z.object({
             reservationId: z.number().int().positive()
         }))
@@ -384,26 +382,28 @@ export const reservationRouter = createTRPCRouter({
             return await reservationUseCases.getReservationStatusData(opts)
         }),
 
-    cancelPublicReservation: publicProcedure
+    cancelPublicReservation: clientProcedure
         .input(z.object({
             reservationId: z.number().int().positive()
         }))
         .mutation(async (opts) => {
             await reservationUseCases.cancelPublicReservation(opts)
         }),
-    confirmPublicReservation: publicProcedure
+    confirmPublicReservation: clientProcedure
         .input(clientReservationActionValidator.confirmReservation)
         .mutation(async (opts) => {
             await reservationUseCases.confirmPublicReservation(opts)
         }),
-    occupyTable: publicProcedure
+    occupyTable: clientProcedure
         .input(clientFormValidator.occupyTableSchema)
         .mutation(async (opts) => {
             await reservationUseCases.occupyTable(opts)
         }),
 
-    getGuestCountFilterValues: publicProcedure
+    getGuestCountFilterValues: clientProcedure
         .query(async (opts) => {
             return await reservationUseCases.getGuestCountFilterValues(opts)
         }),
+
+        
 });

@@ -149,6 +149,14 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  */
 export const publicProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
 
+  return next({
+    ctx
+  })
+});
+
+
+export const clientProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+
   const restaurantId = ctx.headers.get(EnumHeader.RESTAURANT_ID);
   console.log(restaurantId, 'restaurantId 3131')
   if (!restaurantId) {
@@ -223,8 +231,10 @@ export const ownerProcedure = t.procedure
 
 
 
+
+
 export type TPublicProcedureCtx = Parameters<Parameters<(typeof publicProcedure)['query']>[0]>[0]['ctx']
 export type TProtectedProcedureCtx = Parameters<Parameters<(typeof protectedProcedure)['query']>[0]>[0]['ctx']
 export type TAdminProcedureCtx = Parameters<Parameters<(typeof adminProcedure)['query']>[0]>[0]['ctx']
 export type TOwnerProcedureCtx = Parameters<Parameters<(typeof ownerProcedure)['query']>[0]>[0]['ctx']
-
+export type TClientProcedureCtx = Parameters<Parameters<(typeof clientProcedure)['query']>[0]>[0]['ctx']
