@@ -175,38 +175,45 @@ export const getMonthAvailabilityByGuestCount = async ({
     const { restaurantId } = ctx
     const language = ctx.userPrefrences.language
 
+    // ... existing code ...
+
+    // GMT+3'e göre bugünün tarihini al
     const todayLocal = getLocalTime(new Date());
     todayLocal.setHours(0, 0, 0, 0);
 
-    console.log(new Date().toISOString(), 'new Date().toISOString()')
-    console.log(new Date().toString(), 'new Date().toString()')
-    console.log(new Date().toLocaleDateString(), 'new Date().toLocaleDateString()')
+    // GMT+3'e göre bugünün ayını al
+    const currentMonth = todayLocal.getMonth();
 
+    // Seçilen ayın ilk gününü GMT+3'e göre ayarla
+    const firstDate = getLocalTime(monthDate);
+    firstDate.setDate(1);
+    firstDate.setHours(0, 0, 0, 0);
 
-    const today = new Date(todayLocal.toISOString())
+    // Seçilen ayın son gününü GMT+3'e göre ayarla
+    const endOfMonthDay = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0);
+    const endOfMonthDayLocal = getLocalTime(endOfMonthDay);
+    endOfMonthDayLocal.setHours(23, 59, 59, 999);
 
-    const currentMonth = today.getUTCMonth();
+    // Restoran günlerini al (zaten GMT+3'e göre)
+    const daysData = await restaurantEntities.getRestaurantMealDaysByMealId({
+        restaurantId: restaurantId,
+        mealId: input.mealId
+    });
 
-    const firstDate = monthDate
-
-    const endOfMonthDay = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0)
-
-
-    const daysData = await restaurantEntities.getRestaurantMealDaysByMealId({ restaurantId: restaurantId, mealId: input.mealId })
     const inActiveMealDays = daysData
         .filter((r) => !r.isOpen)
-        .map((r) => EnumDaysNumeric[r.day] as number)
+        .map((r) => EnumDaysNumeric[r.day] as number);
 
-    let monthDays = getMonthDays(firstDate, endOfMonthDay)
-        .filter((day) => !inActiveMealDays.includes(getLocalTime(day).getDay()))
+    // Ayın günlerini GMT+3'e göre filtrele
+    let monthDays = getMonthDays(firstDate, endOfMonthDayLocal)
+        .filter((day) => !inActiveMealDays.includes(getLocalTime(day).getDay()));
 
-
-    // If the requested month is the current month, filter days starting from today
-    if (monthDate.getUTCMonth() === currentMonth && monthDate.getUTCFullYear() === today.getUTCFullYear()) {
-        monthDays = monthDays.filter(day => day >= today)
+    // Eğer seçilen ay bu aysa, bugünden önceki günleri filtrele
+    if (firstDate.getMonth() === currentMonth && firstDate.getFullYear() === todayLocal.getFullYear()) {
+        monthDays = monthDays.filter(day => getLocalTime(day) >= todayLocal);
     }
-    console.log(monthDate, 'monthDate')
-    console.log(monthDays.length, 'monthDays.length')
+
+    // ... existing code ...
 
     const promises = monthDays.map(async (day) => {
         //without holding
