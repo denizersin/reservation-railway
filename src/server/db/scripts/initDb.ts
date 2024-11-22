@@ -7,6 +7,7 @@ import { exit } from "process";
 import * as schema from "../schema";
 import { tblCountry, tblLanguage, tblMeal } from "../schema/predefined";
 import { predefinedData } from "@/server/data/db/predefined";
+import { HOLDING_RESERVATION_GUEST_ID } from "@/server/utils/server-constants";
 const connection = await mysql.createConnection({
     uri: env.DATABASE_URL,
 });
@@ -57,6 +58,17 @@ const initFunctions = [
                 })
             })
         )
+
+        await db.insert(schema.tblGuest).values({
+            id: HOLDING_RESERVATION_GUEST_ID,
+            name: 'Holding',
+            email: 'holding@example.com',
+            phone: '1234567890',
+            languageId: 1,
+            phoneCode: '+90',
+            restaurantId: 1,
+            surname: 'Reservation',
+        })
 
 
 

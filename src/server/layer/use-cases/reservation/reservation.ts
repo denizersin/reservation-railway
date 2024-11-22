@@ -2,12 +2,12 @@ import { db } from "@/server/db";
 import { tblReservationLog, tblReservationNote, tblReservationNotification, tblReservationTag } from "@/server/db/schema";
 import { tblReservation } from "@/server/db/schema/reservation";
 import { TUseCaseOwnerLayer, TUseCasePublicLayer } from "@/server/types/types";
-import {  TTransaction } from "@/server/utils/db-utils";
+import { TTransaction } from "@/server/utils/db-utils";
 import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
 import { format } from 'date-fns';
-import { asc, between, eq } from "drizzle-orm";
+import { and, asc, between, eq } from "drizzle-orm";
 import { ReservationEntities } from "../../entities/reservation";
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
 import { restaurantEntities } from "../../entities/restaurant";
@@ -29,14 +29,14 @@ export const createReservation = async ({
     const { reservationData, data } = input
 
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
-    
+
     //set reservation time to utc
     const hour = localHourToUtcHour(reservationData.hour)
 
-    console.log(reservationData.reservationDate,'resdate')
-    
-    
-    const restaurantSettings = await restaurantEntities.getRestaurantSettings({restaurantId})
+    console.log(reservationData.reservationDate, 'resdate')
+
+
+    const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
 
     const hasPrepayment = reservationData.prepaymentTypeId === EnumReservationPrepaymentNumeric.prepayment
     const prePaymentAmount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount
@@ -403,7 +403,7 @@ export const updateReservationTime = async ({
 
     if (!reservation) throw new Error('Reservation not found')
 
-   
+
     const isDateChanged = format(reservation.reservationDate, 'dd-MM-yyyy') !== format(data.reservationDate, 'dd-MM-yyyy')
 
     const isTimeChanged = reservation.hour !== hour
@@ -538,5 +538,19 @@ export const updateReservationNote = async ({
             reservationId
         })
     }
+
+}
+
+export const syncHoldingReservations = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<object>) => {
+    const reservationId = ctx.restaurantId
+
+    await db.delete(tblReservation).where(and(
+        eq(tblReservation.restaurantId, reservationId),
+        eq(tblReservation.isHolding, true)
+    )
+    )
 
 }

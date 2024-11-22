@@ -10,5 +10,6 @@ export const reservationUseCases = {
     ...reservationStatus,
     ...queries,
     ...clientQueries,
-    ...publicReservationUseCases
+    ...publicReservationUseCases,
+    
 }

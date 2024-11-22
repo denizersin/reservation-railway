@@ -173,7 +173,7 @@ export const AreaSelect = ({
                                                 }
                                             }}
                                             className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
-                                            <div className="">{item.name}</div>
+                                            <div className="text-base font-medium text-primary">{item.name}</div>
                                             <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                         </SheetClose>
                                     </div>
@@ -224,7 +224,7 @@ export const AreaSelect = ({
                                             'cursor-pointer hover:bg-muted': isAvailable,
                                             'opacity-50 cursor-not-allowed': !isAvailable
                                         })}>
-                                        <div className="">{item.room.name}</div>
+                                        <div className="text-base font-medium">{item.room.name}</div>
                                         <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                     </PopoverClose>
                                 </div>

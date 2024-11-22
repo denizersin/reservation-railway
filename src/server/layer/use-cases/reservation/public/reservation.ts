@@ -1,4 +1,4 @@
-import { tblReservation, tblRoom, tblTable, TGuestSelect, TTable } from "@/server/db/schema";
+import { tblReservation, tblRoom, tblTable, TGuestSelect, TReservationSelect, TTable } from "@/server/db/schema";
 import { ReservationLogEntities } from "@/server/layer/entities/reservation/reservation-log";
 import { TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, localHourToUtcHour } from "@/server/utils/server-utils";
@@ -12,7 +12,7 @@ import TClientReservationActionValidator from "@/shared/validators/front/reserva
 import { db } from "@/server/db";
 import { TRPCError } from "@trpc/server";
 import { cookies } from "next/headers";
-import { EnumCookieName, OCCUPIED_TABLE_TIMEOUT } from "@/server/utils/server-constants";
+import { EnumCookieName, HOLDING_RESERVATION_GUEST_ID, HOLDING_TIMEOUT, OCCUPIED_TABLE_TIMEOUT } from "@/server/utils/server-constants";
 import { RoomEntities } from "@/server/layer/entities/room";
 import TReservatoinClientValidator from "@/shared/validators/front/reservation";
 import { and, eq, sql } from "drizzle-orm";
@@ -57,34 +57,34 @@ export const createPublicReservation = async ({
     if (!guest) throw new Error('Guest not Found or Created')
     //--------------------------------
 
+    let avaliableTable: TTable | undefined = undefined
 
     const occupiedTableIdValue = cookies().get(EnumCookieName.OCCUPIED_TABLE_ID)?.value
 
-    const isHourAavailable = await ReservationEntities.queryHourAvaliability({
-        date: reservationData.date,
-        mealId,
-        restaurantId,
-        utcHour: localHourToUtcHour(time),
-        guestCount,
-    })
-
-    if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
-
-    let avaliableTable: TTable | undefined = undefined
-
     if (occupiedTableIdValue) {
+        const result = await ReservationEntities.getReservationHoldingByTableId({ holdedTableId: Number(occupiedTableIdValue) })
+        if (result?.reservation) {
 
-        const isTableAvaliable = await ReservationEntities.queryTableAvailability({
-            restaurantId,
+            //create reservation from holding 
+            await createReservationFromHolding({ input: { ...input, holdedReservation: result.reservation, table: result.table, guest: guest }, ctx })
+
+            return
+        }
+    }
+
+
+    else {
+
+        const isHourAavailable = await ReservationEntities.queryHourAvaliability({
             date: reservationData.date,
             mealId,
-            tableId: Number(occupiedTableIdValue)
+            restaurantId,
+            utcHour: localHourToUtcHour(time),
+            guestCount,
         })
 
-        if (isTableAvaliable) {
-            avaliableTable = await RoomEntities.getTableById({ tableId: Number(occupiedTableIdValue) })
-        }
-    } else {
+        if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
+
         avaliableTable = await ReservationEntities.getAvaliableTable({
             restaurantId,
             date: reservationData.date,
@@ -97,11 +97,6 @@ export const createPublicReservation = async ({
 
 
     if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
-
-    //create reservation
-
-
-
 
 
 
@@ -225,6 +220,157 @@ export const createPublicReservation = async ({
 
 }
 
+export const createReservationFromHolding = async ({
+    input,
+    ctx
+}: TUseCasePublicLayer<
+    TClientFormValidator.TCreateReservationSchema & {
+        holdedReservation: TReservationSelect,
+        table: TTable,
+        guest: TGuestSelect
+    }
+>) => {
+
+    const { holdedReservation, table, guest, userInfo, reservationData } = input
+    const { restaurantId } = ctx
+    const { mealId, time, guestCount } = reservationData
+
+    const { email, phone, phoneCode, name, surname, reservationTags } = userInfo
+    const utcHour = localHourToUtcHour(time)
+
+
+    const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
+
+    const prePaymentAmount = restaurantSettings.prePayemntPricePerGuest * guestCount
+
+    await db.transaction(async (trx) => {
+        const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
+
+        //assume this as created reservation
+
+        await ReservationEntities.updateReservation({
+            reservationId: holdedReservation.id,
+            data: {
+                guestCount,
+                hour: utcHour,
+                guestId: guest.id,
+                isSendEmail: true,
+                isSendSms: true,
+                mealId,
+                prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+                reservationDate: reservationData.date,
+                reservationStatusId: EnumReservationStatusNumeric.reservation,
+                restaurantId,
+                roomId: table.roomId,
+                waitingSessionId: newUnclaimedWaitingSessionId,
+
+                isHolding: false,
+                holdExpiredAt: null,
+                holdedAt: null,
+            },
+            trx
+        })
+
+
+        await ReservationEntities.updateUnClaimedReservationWaitingSession({
+            data: {
+                reservationId: holdedReservation.id,
+            },
+            waitingSessionId: newUnclaimedWaitingSessionId,
+            trx,
+        })
+
+
+        if (userInfo.specialRequests) {
+            await ReservationEntities.createReservationNote({
+                reservationId: holdedReservation.id,
+                note: userInfo.specialRequests,
+                trx
+            })
+        }
+
+        if (reservationTags && reservationTags.length > 0) {
+            await ReservationEntities.createReservationTags({
+                reservationId: holdedReservation.id,
+                reservationTagIds: reservationTags,
+                trx
+            })
+        }
+
+
+        //--------------------------------
+        //create prepayment
+        const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
+            data: {
+                reservationId: holdedReservation.id,
+                amount: prePaymentAmount,
+                isDefaultAmount: true,
+                createdBy: 'System'
+            },
+            trx
+        })
+
+        await ReservationEntities.updateReservation({
+            data: {
+                currentPrepaymentId: newPrepaymentId,
+                reservationStatusId: EnumReservationStatusNumeric.prepayment,
+            },
+            reservationId: holdedReservation.id,
+            trx
+        })
+
+        //--------------------------------
+
+
+
+    })
+        .catch((err) => {
+            console.log(err, 'Error while creating reservation from holding')
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Error while creating reservation from holding' })
+        })
+
+
+
+    //-----------Reservation Created Log and Notification---------------------
+    await ReservationLogEntities.createLog({
+        message: `Reservation created`,
+        reservationId: holdedReservation.id,
+        owner: 'Guest',
+    })
+    await notificationUseCases.handleReservationCreated({
+        reservationId: holdedReservation.id,
+        withEmail: holdedReservation.isSendEmail,
+        withSms: holdedReservation.isSendSms,
+        ctx
+    })
+    await ReservationLogEntities.createLog({
+        message: `Reservation created notification sent`,
+        reservationId: holdedReservation.id,
+        owner: 'Guest',
+    })
+    //--------------------------------
+
+
+    //-----------Prepayment Notification and log---------------------
+    await notificationUseCases.handlePrePayment({
+        reservationId: holdedReservation.id,
+        withEmail: holdedReservation.isSendEmail,
+        withSms: holdedReservation.isSendSms,
+        ctx
+    })
+
+    await ReservationLogEntities.createLog({
+        message: `Asked for prepayment`,
+        reservationId: holdedReservation.id,
+        owner: 'Guest',
+    })
+    //--------------------------------
+
+    return holdedReservation.id
+
+}
+
+
 export const occupyTable = async ({
     input,
     ctx
@@ -233,6 +379,15 @@ export const occupyTable = async ({
 
     const { restaurantId } = ctx
 
+
+
+    const holdedTableId = cookies().get(EnumCookieName.OCCUPIED_TABLE_ID)?.value
+
+    if (holdedTableId) {
+        await ReservationEntities.deleteHoldedReservationByOccupiedTableId({ holdedTableId: Number(holdedTableId) })
+    }
+
+    //get avaliable table with query hour limitation
     const avaliableTable = await ReservationEntities.getAvaliableTable({
         restaurantId,
         date: date,
@@ -242,37 +397,35 @@ export const occupyTable = async ({
     })
     if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
 
-    const isHourAavailable = await ReservationEntities.queryHourAvaliability({
-        date,
-        mealId,
-        restaurantId,
-        utcHour: localHourToUtcHour(time),
-        guestCount,
-    })
-
-    if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
-
 
     cookies().set(EnumCookieName.OCCUPIED_TABLE_ID, avaliableTable.id.toString())
 
-    await ReservationEntities.createReservationHolding({
-        reservationHoldingData: {
-            holdedTableId: avaliableTable.id,
-            holdedAt: new Date(),
-            holdingDate: date,
-            guestCount,
-            roomId: avaliableTable.roomId,
-            mealId,
-            restaurantId,
-        }
+    await ReservationEntities.createReservation({
+        guestCount,
+        hour: localHourToUtcHour(time),
+        reservationDate: date,
+        reservationStatusId: EnumReservationStatusNumeric.holding,
+        waitingSessionId: 1,
+        guestId: HOLDING_RESERVATION_GUEST_ID,
+        isSendEmail: false,
+        isSendSms: false,
+        tableIds: [avaliableTable.id],
+        mealId,
+        prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+        restaurantId,
+        roomId: avaliableTable.roomId,
+        isHolding: true,
+        holdedAt: new Date(),
+        holdExpiredAt: new Date(Date.now() + HOLDING_TIMEOUT),
     })
 
 
+    //!TODO: BUNUN ICIN CRON JOB KULLANILABILIR
     setTimeout(async () => {
         console.log('occupied table timeout id:', avaliableTable.id)
-        const holding = await ReservationEntities.getReservationByHoldingTableId({ holdedTableId: avaliableTable.id })
+        const holding = await ReservationEntities.getReservationHoldingByTableId({ holdedTableId: avaliableTable.id })
         if (holding) {
-            await ReservationEntities.deleteReservationHoldingById({ id: holding.id })
+            await ReservationEntities.deleteHoldedReservationByOccupiedTableId({ holdedTableId: avaliableTable.id })
         }
 
     }, OCCUPIED_TABLE_TIMEOUT)

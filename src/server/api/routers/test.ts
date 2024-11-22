@@ -1,5 +1,5 @@
 import { predefinedEntities } from "@/server/layer/entities/predefined";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
 import { z } from "zod";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
@@ -18,12 +18,20 @@ export const testRouter = createTRPCRouter({
 
     sendMail: publicProcedure
         .input(z.object({
-  
+
         }))
         .mutation(async ({ input }) => {
 
 
 
-        })
+        }),
+
+    syncHoldingReservation: ownerProcedure
+        .input(z.object({}))
+        .mutation(async (opts) => {
+            const result = await reservationUseCases.syncHoldingReservations(opts)
+            return result
+        }),
+
 });
 

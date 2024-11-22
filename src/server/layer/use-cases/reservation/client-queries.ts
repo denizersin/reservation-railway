@@ -178,7 +178,6 @@ export const getMonthAvailabilityByGuestCount = async ({
     const todayLocal = getLocalTime(new Date());
     todayLocal.setHours(0, 0, 0, 0);
 
-    console.log(todayLocal, 'todayLocal')
 
     const today=new Date(todayLocal.toISOString())
     
@@ -207,9 +206,9 @@ export const getMonthAvailabilityByGuestCount = async ({
 
     const promises = monthDays.map(async (day) => {
         //without holding
-        // const tableStatuses = await getStatusWithLimitation({ date: day, mealId, restaurantId, guestCount })
+        const tableStatuses = await getStatusWithLimitation({ date: day, mealId, restaurantId, guestCount })
 
-        const tableStatuses = await getStatusWithLimitationWithHolding({ date: day, mealId, restaurantId, guestCount })
+        // const tableStatuses = await getStatusWithLimitationWithHolding({ date: day, mealId, restaurantId, guestCount })
         return tableStatuses
     })
 

@@ -1,19 +1,22 @@
-import { db } from '@/server/db'
+"use client"
+import { Button } from '@/components/custom/button'
+import { api } from '@/server/trpc/react'
 import { GeneralSettings } from './general-setting'
-import { restaurantEntities } from '@/server/layer/entities/restaurant'
-import { jwtEntities } from '@/server/layer/entities/jwt'
-import { eq } from 'drizzle-orm'
-import { tblRestaurant } from '@/server/db/schema/restaurant'
-import MaxWidthWrapper from '@/components/layout/max-width-wrapper'
 
 type Props = {}
 
-const Page = async (props: Props) => {
+const Page =  (props: Props) => {
 
-  
+    const {
+        mutate: syncHoldingReservationMutation,
+        isPending: isSyncHoldingReservationPending
+    } = api.test.syncHoldingReservation.useMutation()
 
     return (
-        <GeneralSettings/>
+        <>
+            <GeneralSettings />
+            <Button className='my-6' loading={isSyncHoldingReservationPending} onClick={() => syncHoldingReservationMutation({})}>Sync Holding Reservations</Button>
+        </>
     )
 }
 

@@ -8,7 +8,7 @@ type Props = {
     children: React.ReactNode
 }
 
-const Layout = (props: Props) => {
+const ReservationPageLayoutProvider = (props: Props) => {
 
     const pathname = usePathname()
     const router = useRouter()
@@ -35,4 +35,4 @@ const Layout = (props: Props) => {
     )
 }
 
-export default Layout
+export default ReservationPageLayoutProvider

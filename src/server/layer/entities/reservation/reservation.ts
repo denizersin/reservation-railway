@@ -40,7 +40,7 @@ export const updateReservation = async ({
     reservationId,
     trx = db
 }: {
-    data: Partial<TReservationSelect>,
+    data: Partial<TReservationSelect> ,
     reservationId: number,
     trx?: TTransaction
 }) => {

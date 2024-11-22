@@ -68,7 +68,7 @@ export const TableStatuesRowCard = ({
         </DropdownMenu>
     )
 
-    const isHolding = Boolean(statusTableRow.reservationHolding)
+    const isHolding = Boolean(statusTableRow.reservation?.isHolding)
 
 
     return (
@@ -88,7 +88,7 @@ export const TableStatuesRowCard = ({
 
                 </div>
                 <div className="text-sm flex">
-                    <div>{isReserved ? statusTableRow.guest?.name : '-'}</div>
+                    <div>{(isReserved && !isHolding) ? statusTableRow.guest?.name : '-'}</div>
                 </div>
                 <div className="flex items-center text-xs mt-2">
                     <Clock className="w-3 h-3 mr-1" /> {statusTableRow.reservation?.hour}

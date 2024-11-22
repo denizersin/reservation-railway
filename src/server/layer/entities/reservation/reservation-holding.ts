@@ -1,21 +1,50 @@
 import { db } from "@/server/db";
-import { tblReservationHolding, TReservationHoldingInsert } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { tblReservation, tblReservationHolding, tblReservationTable, TReservationHoldingInsert } from "@/server/db/schema";
+import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
+import { and, eq } from "drizzle-orm";
+import { RoomEntities } from "../room";
 
-export const createReservationHolding = async ({ reservationHoldingData }: {
-    reservationHoldingData: TReservationHoldingInsert
-}) => {
-    const [result] = await db.insert(tblReservationHolding).values(reservationHoldingData).$returningId();
-    return result?.id
-}
 
-export const deleteReservationHoldingById = async ({ id }: { id: number }) => {
-    await db.delete(tblReservationHolding).where(eq(tblReservationHolding.id, id));
-}
 
-export const getReservationByHoldingTableId = async ({ holdedTableId }: { holdedTableId: number }) => {
-    const result = await db.query.tblReservationHolding.findFirst({
-        where: eq(tblReservationHolding.holdedTableId, holdedTableId)
+export const getReservationHoldingByTableId = async ({ holdedTableId }: { holdedTableId: number }) => {
+
+    const resrvationTable = await db.query.tblReservationTable.findFirst({
+        where: and(eq(tblReservationTable.tableId, holdedTableId))
     })
-    return result
+
+    if (!resrvationTable) return undefined
+
+    const result = await db.query.tblReservation.findFirst({
+        where: and(
+            eq(tblReservation.id, resrvationTable.reservationId),
+            eq(tblReservation.reservationStatusId, EnumReservationStatusNumeric.holding)
+        )
+    })
+
+    const table = await RoomEntities.getTableById({ tableId: resrvationTable.tableId })
+
+    return {
+        reservation: result,
+        table: table
+    }
+}
+
+export const deleteHoldedReservationById = async ({ reservationId }: { reservationId: number }) => {
+    try {
+        await db.delete(tblReservation).where(eq(tblReservationHolding.id, reservationId))
+    } catch (error) {
+        console.log('deleteHoldedRese')
+        console.log(error)
+    }
+}
+
+export const deleteHoldedReservationByOccupiedTableId = async ({ holdedTableId }: { holdedTableId: number }) => {
+
+    const resrvationTable = await db.query.tblReservationTable.findFirst({
+        where: and(eq(tblReservationTable.tableId, holdedTableId))
+    })
+
+    if (!resrvationTable) return undefined
+
+    await db.delete(tblReservation).where(eq(tblReservation.id, resrvationTable.reservationId))
 }

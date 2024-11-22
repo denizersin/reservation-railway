@@ -134,9 +134,9 @@ export const TimeSelect = ({
                     })
                 }
             </div>
-            <div className="text-sm font-semibold my-2 mb-4">
+            {/* <div className="text-sm font-semibold my-2 mb-4">
                 We have tables available on other days too
-            </div>
+            </div> */}
 
 
         </div>

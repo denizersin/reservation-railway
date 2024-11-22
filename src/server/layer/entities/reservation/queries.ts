@@ -26,14 +26,10 @@ export function getLimitationStatuesQuery({ date, mealId, restaurantId }: { date
             room: tblReservationLimitation.roomId,
             maxTable: tblReservationLimitation.maxTableCount,
             maxGuest: tblReservationLimitation.maxGuestCount,
-            // totalTable: count(tblReservation.id).as('totalTable'),
-            totalTable: sql`count(${tblReservation.id})`.as('totalTable'),
-            // totalGuest: sum(tblReservation.guestCount).as('totalGuest'),
-            totalGuest: sql<number>`cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('totalGuest'),
-            // avaliableGuest: sql`${tblReservationLimitation.maxGuestCount} - ${sum(tblReservation.guestCount)}`.as('avaliableGuest'),
-            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('availableGuest'),
-
-            avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - ${(count(tblReservation.id))}`.as('avaliableTable'),
+            totalTable: sql`COALESCE(count(${tblReservation.id}), 0)`.as('totalTable'),
+            totalGuest: sql<number>`COALESCE(cast(${sum(tblReservation.guestCount)} as SIGNED), 0)`.as('totalGuest'),
+            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - COALESCE(cast(${sum(tblReservation.guestCount)} as SIGNED), 0)`.as('availableGuest'),
+            avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - COALESCE(count(${tblReservation.id}), 0)`.as('avaliableTable'),
         })
         .from(tblReservationLimitation)
         .leftJoin(tblReservation,
@@ -80,14 +76,10 @@ export async function getLimitationStatusByHour({ date, mealId, restaurantId, ut
             room: tblReservationLimitation.roomId,
             maxTable: tblReservationLimitation.maxTableCount,
             maxGuest: tblReservationLimitation.maxGuestCount,
-            // totalTable: count(tblReservation.id).as('totalTable'),
-            totalTable: sql`count(${tblReservation.id})`.as('totalTable'),
-            // totalGuest: sum(tblReservation.guestCount).as('totalGuest'),
-            totalGuest: sql<number>`cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('totalGuest'),
-            // avaliableGuest: sql`${tblReservationLimitation.maxGuestCount} - ${sum(tblReservation.guestCount)}`.as('avaliableGuest'),
-            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('availableGuest'),
-
-            avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - ${(count(tblReservation.id))}`.as('avaliableTable'),
+            totalTable: sql`COALESCE(count(${tblReservation.id}), 0)`.as('totalTable'),
+            totalGuest: sql<number>`COALESCE(cast(${sum(tblReservation.guestCount)} as SIGNED), 0)`.as('totalGuest'),
+            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - COALESCE(cast(${sum(tblReservation.guestCount)} as SIGNED), 0)`.as('availableGuest'),
+            avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - COALESCE(count(${tblReservation.id}), 0)`.as('avaliableTable'),
         })
         .from(tblReservationLimitation)
         .leftJoin(tblReservation,
@@ -143,13 +135,6 @@ export const getAvaliableTable = async ({
     })
 
 
-    const limitationStatus = await ReservationEntities.getLimitationStatusByHour({
-        restaurantId,
-        mealId,
-        date,
-        utcHour
-    })
-
 
     const getReservationTables = () => db
         .select({
@@ -187,13 +172,13 @@ export const getAvaliableTable = async ({
             isNull(tblReservation.id)
         ))
 
+    console.log(TEST, 'TEST')
 
     //return most appropriate table for guest count
 
     // guest count:3  tables: 2-4 2-5 return 2-4
 
     let mostAppropriateTable: TTable | undefined = undefined
-
     TEST.forEach(r => {
         if (r.table?.id) {
             const table = r.table
@@ -202,6 +187,7 @@ export const getAvaliableTable = async ({
 
             if (!mostAppropriateTable) {
                 mostAppropriateTable = table
+                return;
             }
 
             if (isTableAvaliable && table.maxCapacity < mostAppropriateTable.maxCapacity) {
@@ -210,6 +196,15 @@ export const getAvaliableTable = async ({
 
         }
     })
+
+    const isHourAavailable = await queryHourAvaliability({
+        date,
+        mealId,
+        restaurantId,
+        utcHour,
+        guestCount,
+    })
+    if (!isHourAavailable) return undefined
 
 
     return mostAppropriateTable as TTable | undefined
@@ -295,14 +290,10 @@ export async function queryHourAvaliability({ date, mealId, restaurantId, utcHou
             room: tblReservationLimitation.roomId,
             maxTable: tblReservationLimitation.maxTableCount,
             maxGuest: tblReservationLimitation.maxGuestCount,
-            // totalTable: count(tblReservation.id).as('totalTable'),
-            totalTable: sql`count(${tblReservation.id})`.as('totalTable'),
-            // totalGuest: sum(tblReservation.guestCount).as('totalGuest'),
-            totalGuest: sql<number>`cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('totalGuest'),
-            // avaliableGuest: sql`${tblReservationLimitation.maxGuestCount} - ${sum(tblReservation.guestCount)}`.as('avaliableGuest'),
-            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('availableGuest'),
-
-            avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - ${(count(tblReservation.id))}`.as('avaliableTable'),
+            totalTable: sql`COALESCE(count(${tblReservation.id}), 0)`.as('totalTable'),
+            totalGuest: sql<number>`COALESCE(cast(${sum(tblReservation.guestCount)} as SIGNED), 0)`.as('totalGuest'),
+            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - COALESCE(cast(${sum(tblReservation.guestCount)} as SIGNED), 0)`.as('availableGuest'),
+            avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - COALESCE(count(${tblReservation.id}), 0)`.as('avaliableTable'),
         })
         .from(tblReservationLimitation)
         .leftJoin(tblReservation,
@@ -334,6 +325,8 @@ export async function queryHourAvaliability({ date, mealId, restaurantId, utcHou
         )
         .groupBy(tblReservationLimitation.id)
     const limitationStatus = result[0]
+
+    console.log(limitationStatus, 'limitationStatus')
 
     const isAvaliable = !limitationStatus ||
         (limitationStatus.avaliableTable > 0 &&

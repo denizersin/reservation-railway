@@ -51,6 +51,12 @@ export const tblReservation = mysqlTable('reservation', {
 
     prePaymentTypeId: int('prepayment_type_id').notNull(),
 
+    //holding
+    isHolding: boolean('is_held').notNull().default(false),
+    holdedAt: timestamp('holded_at'),
+    holdExpiredAt: timestamp('hold_expired_at'),
+
+
 
     reservationDate: timestamp('reservation_date').notNull(),
     guestNote: text('guest_note'),
