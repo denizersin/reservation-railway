@@ -339,6 +339,7 @@ export const ReservationGridStatus = ({
                                             onCrud={() => {
                                                 onSucessCrudTable()
                                             }}
+                                            disabled={Boolean(r.reservation?.isHolding)}
 
                                         />
                                     </div>

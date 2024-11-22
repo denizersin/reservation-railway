@@ -144,20 +144,20 @@ export const AreaSelect = ({
                         <SheetTitle className='mb-3'>Select number of guests</SheetTitle>
                         <SheetDescription>
                             {
-                                areas.map((item) => {
+                                avaliableRooms.map((item) => {
 
-                                    const isAvailable = item.isAvailable
+                                    const isAvailable = item.isAvailableForTime
                                     return <div
 
-                                        key={item.id}
+                                        key={item.room.id}
                                         className={cn('flex items-center gap-2 py-3 border-b ', {
-                                            'bg-muted': currentArea?.room.id === item.id,
+                                            'bg-muted': currentArea?.room.id === item.room.id,
                                             'cursor-pointer hover:bg-muted': isAvailable,
                                             'opacity-50 cursor-not-allowed': !isAvailable
                                         })}>
                                         <div
                                             onClick={() => {
-                                                handleShowImage(item.name)
+                                                handleShowImage(item.room.name)
                                             }}
                                             className="c flex flex-col items-center gap-y-2 p-1">
                                             <IconImage className="size-4 text-front-primary" />
@@ -168,12 +168,12 @@ export const AreaSelect = ({
                                         <SheetClose
                                             onClick={() => {
                                                 if (isAvailable) {
-                                                    setAreaId(item.id)
-                                                    setAreaName(item.name)
+                                                    setAreaId(item.room.id)
+                                                    setAreaName(item.room.name)
                                                 }
                                             }}
                                             className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
-                                            <div className="text-base font-medium text-primary">{item.name}</div>
+                                            <div className="text-base font-medium text-primary">{item.room.name}</div>
                                             <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                         </SheetClose>
                                     </div>

@@ -128,10 +128,11 @@ export const GridStatusTableRowCard = ({
                 // 'bg-foreground text-background': isReserved,
                 // 'cursor-pointer hover:bg-muted': isAvailable,
                 // 'bg-gray-300 cursor-pointer hover:bg-muted': (!isAvailable && !isReserved),
+                '!bg-orange-300': Boolean(statusTableRow.reservation?.isHolding)
             }, className)}>
             <CardContent className="p-4 flex flex-col gap-y-1 text-xs">
                 <div className="r r1 flex justify-between">
-                    <div className="text-sm font-bold flex-1 text-center">{statusTableRow.table?.no}</div>
+                    <div className="text-sm font-bold flex-1 text-center">{statusTableRow.table?.no}2</div>
                     {optionDropdown}
                 </div>
                 <div className=" flex">
