@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic'
 // New context type
 type ReservationsContextType = {
     date: Date;
-    queryDate: string;
+    queryDate: Date;
     setDate: (date: Date) => void;
 }
 
@@ -32,10 +32,7 @@ const page = (props: {}) => {
     const queryDate = React.useMemo(() => {
         const newDate = new Date(date)
         newDate.setHours(0, 0, 0, 0)
-        console.log('date-change')
-        console.log(newDate.toISOString(), 'newDate')
-        // return '10-10-2021'
-        return newDate.toISOString()
+        return newDate
     }, [date])
 
     console.log(queryDate, 'queryDate22')

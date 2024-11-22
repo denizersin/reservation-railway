@@ -44,11 +44,12 @@ async function initDb() {
     try {
 
 
-        const result = await db.query.tblReservation.findMany({
-            where: eq(schema.tblReservation.restaurantId, 1)
+        const result = await db.query.tblGuest.findMany({
+            where: eq(schema.tblGuest.id, 1)
         })
 
-        console.log(result.length)
+        console.log(result)
+        console.log(result[0]?.createdAt)
 
 
     } catch (error) {
@@ -59,8 +60,8 @@ async function initDb() {
     }
 }
 
-// initDb()
+initDb()
 
 
 
-console.log(env.DATABASE_URL)
+// console.log(env.DATABASE_URL)

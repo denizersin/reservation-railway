@@ -92,7 +92,6 @@ export const RoomTablesList = (props: Props) => {
                             <TableRow>
                                 <TableHead>Durum</TableHead>
                                 <TableHead>Masa No </TableHead>
-                                <TableHead>Kapasite</TableHead>
                                 <TableHead>Min Kapasite</TableHead>
                                 <TableHead>Max Kapasite</TableHead>
                                 <TableHead>Sira</TableHead>

@@ -4,6 +4,7 @@ import { is, relations } from "drizzle-orm";
 import { boolean, index, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
 import { restaurant } from '../scripts/seedData';
 import { tblRestaurant } from './restaurant';
+import { tblReservationHolding } from './reservation/reservation-holding';
 
 
 //room table
@@ -71,8 +72,6 @@ export const tblTable = mysqlTable('table', {
     shape: mysqlEnum('shape', getEnumValues(EnumTableShape)).notNull().default(EnumTableShape.rectangle),
     isActive: boolean('is_active').notNull().default(true),
     
-    isOccupied: boolean('is_occupied').notNull().default(false),
-    occupiedAt: timestamp('occupied_at'),
 
     x: int('x').default(0),
     y: int('y').default(0),
@@ -85,6 +84,7 @@ export const tblTable = mysqlTable('table', {
 }));
 export const tableRelations = relations(tblTable, ({ one, many }) => ({
     room: one(tblRoom, { fields: [tblTable.roomId], references: [tblRoom.id] }),
+    reservationHolding: one(tblReservationHolding, { fields: [tblTable.id], references: [tblReservationHolding.holdedTableId] }),
 }));
 
 

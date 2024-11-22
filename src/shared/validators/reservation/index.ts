@@ -6,7 +6,7 @@ import { baseNotificationOptionsSchema } from "..";
 
 
 const getTableStatues = z.object({
-    date: z.string(),
+    date: z.date(),
     mealId: z.number().int().positive(),
 })
 
@@ -53,7 +53,7 @@ const updateReservationTable = z.object({
 
 
 const getReservations = z.object({
-    date: z.string(),
+    date: z.date(),
     status: z.enum(getEnumValues(EnumReservationStatus)).optional(),
     existenceStatus: z.enum(getEnumValues(EnumReservationExistanceStatus)).optional(),
     search: z.string().optional(),

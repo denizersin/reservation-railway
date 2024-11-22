@@ -127,7 +127,7 @@ export const setDefaultsToRestaurant = async ({
                 mealId: dinner.id,
                 restaurantId: restaurantId,
                 day: day,
-                isOpen: [0, 1].includes(index) ? false : true
+                isOpen: [0, 6].includes(index) ? false : true
             }))
         )
 

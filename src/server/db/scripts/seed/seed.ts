@@ -7,7 +7,7 @@ import { TOwnerProcedureCtx } from "@/server/api/trpc";
 import { guestEntities } from "@/server/layer/entities/guest";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
-import { getRandom, localHourToUtcHour } from "@/server/utils/server-utils";
+import { getRandom } from "@/server/utils/server-utils";
 import { languagesData } from "@/shared/data/predefined";
 import { EnumGender, EnumLanguage, EnumMealNumeric, EnumReservationPrepaymentNumeric, EnumTheme, EnumUserRole, EnumVipLevel } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
@@ -74,13 +74,18 @@ const seedFunctions = [
 
     async function createGuests() {
 
+        const brthdate=new Date();
+        brthdate.setHours(0,0);
+
+        console.log(brthdate, 'brthdate')
+
         for (let i = 1; i < guestCount; i++) {
             const createdAt = new Date()
             createdAt.setMinutes(getRandom(0, 59))
             const newGuest = await guestEntities.createGuest({
                 guestData: {
                     name: `Guest ${i}`,
-                    birthDate: new Date(),
+                    birthDate: brthdate,
                     countryId: 1,
                     email: `guest${i}@example.com`,
                     gender: EnumGender.male,
@@ -92,7 +97,8 @@ const seedFunctions = [
                     tagIds: [],
                     vipLevel: EnumVipLevel.goodSpender,
                     isSendReviewNotifs: false,
-                    createdAt: createdAt
+                    createdAt: new Date(),
+                    updatedAt: new Date()
                 }
             })
         }
@@ -222,7 +228,7 @@ const seedFunctions = [
 
 
         seedDatas.hours.map(async (h) => {
-            let hour = localHourToUtcHour(h)
+            let hour = h
             await restaurantEntities.createMealHours({
                 restaurantId: 1,
                 mealHours: [

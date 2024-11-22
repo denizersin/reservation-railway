@@ -14,7 +14,7 @@ import { z } from "zod";
 import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 import { TOAST_MESSAGE_HEADER_KEY } from "@/shared/constants";
 import { NextResponse } from "next/server";
-import { clientQueryValidator } from "@/shared/validators/front/reservation";
+import { reservatoinClientValidator } from "@/shared/validators/front/reservation";
 import { getRandom, localHourToUtcHour } from "@/server/utils/server-utils";
 import { clientFormValidator } from "@/shared/validators/front/create";
 import { clientReservationActionValidator } from "@/shared/validators/front/reservation-actions";
@@ -359,12 +359,12 @@ export const reservationRouter = createTRPCRouter({
 
 
     getMonthAvailability: publicProcedure
-        .input(clientQueryValidator.monthAvailabilityQuerySchema)
+        .input(reservatoinClientValidator.monthAvailabilityQuerySchema)
         .query(async (opts) => {
             return await reservationUseCases.getMonthAvailability(opts)
         }),
     getMonthAvailabilityByGuestCount: publicProcedure
-        .input(clientQueryValidator.monthAvailabilityByGuestCountQuerySchema)
+        .input(reservatoinClientValidator.monthAvailabilityByGuestCountQuerySchema)
         .query(async (opts) => {
             return await reservationUseCases.getMonthAvailabilityByGuestCount(opts)
         }),
@@ -399,6 +399,11 @@ export const reservationRouter = createTRPCRouter({
     occupyTable: publicProcedure
         .input(clientFormValidator.occupyTableSchema)
         .mutation(async (opts) => {
-            // await reservationUseCases.occupyTable(opts)
+            await reservationUseCases.occupyTable(opts)
+        }),
+
+    getGuestCountFilterValues: publicProcedure
+        .query(async (opts) => {
+            return await reservationUseCases.getGuestCountFilterValues(opts)
         }),
 });

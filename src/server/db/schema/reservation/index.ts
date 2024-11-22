@@ -16,6 +16,7 @@ import { tblReservationTag } from './tag';
 import { tblInvoice } from './invoice';
 
 
+
 export const tblReservation = mysqlTable('reservation', {
     id: int('id').autoincrement().primaryKey(),
     restaurantId: int('restaurant_id').notNull(),

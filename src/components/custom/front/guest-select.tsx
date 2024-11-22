@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import {
   Sheet,
   SheetClose,
@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { PopoverClose } from '@radix-ui/react-popover'
 import { cn } from '@/lib/utils'
 import { MonthAvailabilityContext } from '@/app/(app)/reservation/page'
+import { api } from '@/server/trpc/react'
 
 
 type Props = {
@@ -53,7 +54,12 @@ export const GuestSelect = ({
     setSelectedDate
   }=useContext(MonthAvailabilityContext)
 
-  const items: Item[] = new Array(4).fill(0).map((_, i) => ({ id: i + 2, count: i + 2 }))
+  const { data: guestCountFilterValues } = api.reservation.getGuestCountFilterValues.useQuery()
+
+  const items: Item[] = useMemo(() => {
+    if (!guestCountFilterValues) return []
+    return new Array(guestCountFilterValues.max - guestCountFilterValues.min +1).fill(0).map((_, i) => ({ id: i + guestCountFilterValues.min, count: i + guestCountFilterValues.min }))
+  }, [guestCountFilterValues])
 
 
   const TriggerElement = <div className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>

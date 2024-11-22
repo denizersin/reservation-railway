@@ -54,7 +54,7 @@ export const ReservationGridStatus = ({
     const queryDate = useMemo(() => {
         const date = new Date(reservation.reservationDate)
         date.setHours(0, 0, 0, 0)
-        return date.toISOString()
+        return date
     }, [reservation.reservationDate])
     const { data: availableTableData } = api.reservation.getTableStatues.useQuery({
         date: queryDate,

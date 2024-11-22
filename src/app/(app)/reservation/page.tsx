@@ -60,7 +60,7 @@ export default function RootPage() {
 
     const [date, setDate] = React.useState<Date | undefined>(undefined)
     const [month, setMonth] = React.useState<Date>(today)
-    const [guestCount, setGuestCount] = React.useState<number>(2)
+    const [guestCount, setGuestCount] = React.useState<number>(0)
     const [time, setTime] = React.useState<string | undefined>(undefined)
     const [areaId, setAreaId] = React.useState<number | undefined>(undefined)
     const [areaName, setAreaName] = React.useState<string | undefined>(undefined)
@@ -75,7 +75,7 @@ export default function RootPage() {
 
         const isValid = date && areaId && guestCount && time
         if (!isValid) return
-
+        date.setHours(Number(time?.split(':')[0]), Number(time?.split(':')[1]), 0)
         occupyTable({
             date: date!,
             time: time!,
@@ -121,6 +121,8 @@ export default function RootPage() {
         guestCount: guestCount,
         monthDate: month
 
+    }, {
+        enabled: !!guestCount
     })
 
     // const { data: monthAvailabilityByGuestCountData, isLoading: isLoadingMonthAvailabilityByGuestCount } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({

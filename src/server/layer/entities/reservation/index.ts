@@ -4,11 +4,15 @@ import * as reservationNote from './reservation-note'
 import * as reservationTag from './reservation-tag'
 import * as prepayment from './prepayment'
 import * as confirmationRequest from './confirmation-request'
+import * as queries from './queries'
+import * as reservationHolding from './reservation-holding'
 export const ReservationEntities = {
     ...entities,
     ...waitingSession,
     ...reservationNote,
     ...reservationTag,
     ...prepayment,
-    ...confirmationRequest
+    ...confirmationRequest,
+    ...queries,
+    ...reservationHolding
 }

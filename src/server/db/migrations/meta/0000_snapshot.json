@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "8ff4c5a7-f896-407f-a1f9-c67cc0c70a23",
+  "id": "0f2dcf6a-4562-4ded-9033-c95ace429e1b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -2028,21 +2028,6 @@
           "autoincrement": false,
           "default": true
         },
-        "is_occupied": {
-          "name": "is_occupied",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "occupied_at": {
-          "name": "occupied_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "x": {
           "name": "x",
           "type": "int",
@@ -3417,6 +3402,95 @@
         }
       },
       "uniqueConstraints": {}
+    },
+    "reservation_holding": {
+      "name": "reservation_holding",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "holded_table_id": {
+          "name": "holded_table_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "holded_at": {
+          "name": "holded_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "holding_date": {
+          "name": "holding_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "guest_count": {
+          "name": "guest_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "meal_id": {
+          "name": "meal_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "reservation_holding_id": {
+          "name": "reservation_holding_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_table_id": {
+          "name": "unique_table_id",
+          "columns": [
+            "holded_table_id",
+            "holding_date"
+          ]
+        }
+      }
     },
     "meal_day": {
       "name": "meal_day",

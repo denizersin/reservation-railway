@@ -129,10 +129,10 @@ export const reservationTags = [
 // }] as unknown as TGuestInsert[]
 
 const hours = [
-    "18:00",
-    "18:30",
-    "18:45",
-    "19:00",
+    "15:00",
+    "15:30",
+    "15:45",
+    "16:00",
 ]
 
 

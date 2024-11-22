@@ -21,17 +21,17 @@ const avaliableHoursByDateQuerySchema = z.object({
 
 
 
-export const clientQueryValidator = {
+
+export const reservatoinClientValidator = {
     monthAvailabilityQuerySchema,
     monthAvailabilityByGuestCountQuerySchema,
     avaliableHoursByDateQuerySchema,
-
 }
 
-namespace TClientQueryValidator {
+namespace TReservatoinClientValidator {
     export type TMonthAvailabilityQuery = z.infer<typeof monthAvailabilityQuerySchema>
     export type TMonthAvailabilityByGuestCountQuery = z.infer<typeof monthAvailabilityByGuestCountQuerySchema>
     export type TAvaliableHoursByDateQuery = z.infer<typeof avaliableHoursByDateQuerySchema>
 }
 
-export default TClientQueryValidator
+export default TReservatoinClientValidator

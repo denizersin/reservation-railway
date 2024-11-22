@@ -1,7 +1,7 @@
 export const DEFAULT_UTC_OFFSET = 3 
 
 
-export const OCCUPIED_TABLE_TIMEOUT = 10 * 60 * 1000 // 10 minutes
+export const OCCUPIED_TABLE_TIMEOUT = 4 * 60 * 1000 // 10 minutes
 
 
 
@@ -11,3 +11,4 @@ export enum EnumCookieName {
     TOKEN = 'token',
     LANGUAGE = 'language'
 }
+

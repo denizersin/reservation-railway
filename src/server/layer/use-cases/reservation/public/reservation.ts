@@ -1,4 +1,4 @@
-import { tblReservation, TGuestSelect, TTable } from "@/server/db/schema";
+import { tblReservation, tblRoom, tblTable, TGuestSelect, TTable } from "@/server/db/schema";
 import { ReservationLogEntities } from "@/server/layer/entities/reservation/reservation-log";
 import { TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, localHourToUtcHour } from "@/server/utils/server-utils";
@@ -14,6 +14,8 @@ import { TRPCError } from "@trpc/server";
 import { cookies } from "next/headers";
 import { EnumCookieName, OCCUPIED_TABLE_TIMEOUT } from "@/server/utils/server-constants";
 import { RoomEntities } from "@/server/layer/entities/room";
+import TReservatoinClientValidator from "@/shared/validators/front/reservation";
+import { and, eq, sql } from "drizzle-orm";
 
 export const createPublicReservation = async ({
     input,
@@ -27,6 +29,9 @@ export const createPublicReservation = async ({
     const { mealId, time, guestCount } = reservationData
 
     const { email, phone, phoneCode, name, surname } = userInfo
+
+    const utcHour = localHourToUtcHour(time)
+
 
     const { reservationTags } = userInfo
 
@@ -55,6 +60,16 @@ export const createPublicReservation = async ({
 
     const occupiedTableIdValue = cookies().get(EnumCookieName.OCCUPIED_TABLE_ID)?.value
 
+    const isHourAavailable = await ReservationEntities.queryHourAvaliability({
+        date: reservationData.date,
+        mealId,
+        restaurantId,
+        utcHour: localHourToUtcHour(time),
+        guestCount,
+    })
+
+    if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
+
     let avaliableTable: TTable | undefined = undefined
 
     if (occupiedTableIdValue) {
@@ -73,7 +88,7 @@ export const createPublicReservation = async ({
         avaliableTable = await ReservationEntities.getAvaliableTable({
             restaurantId,
             date: reservationData.date,
-            time,
+            utcHour,
             guestCount,
             mealId
         })
@@ -81,13 +96,11 @@ export const createPublicReservation = async ({
 
 
 
-    if (!avaliableTable) throw new Error('No Avaliable Table')
+    if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
 
     //create reservation
 
-    const hour = localHourToUtcHour(time)
 
-    reservationData.date.setUTCHours(Number(time.split(':')[0]), Number(time.split(':')[1]), 0)
 
 
 
@@ -104,7 +117,7 @@ export const createPublicReservation = async ({
 
         const newReservation = await ReservationEntities.createReservation({
             guestCount,
-            hour,
+            hour: utcHour,
             guestId: guest.id,
             isSendEmail: true,
             isSendSms: true,
@@ -223,28 +236,45 @@ export const occupyTable = async ({
     const avaliableTable = await ReservationEntities.getAvaliableTable({
         restaurantId,
         date: date,
-        time,
+        utcHour: localHourToUtcHour(time),
         guestCount,
         mealId
     })
     if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
 
-    cookies().set(EnumCookieName.OCCUPIED_TABLE_ID, avaliableTable.id.toString())
-
-    await RoomEntities.updateTable({
-        id: avaliableTable.id,
-        isOccupied: true,
-        occupiedAt: new Date(),
+    const isHourAavailable = await ReservationEntities.queryHourAvaliability({
+        date,
+        mealId,
+        restaurantId,
+        utcHour: localHourToUtcHour(time),
+        guestCount,
     })
 
-    setTimeout(async() => {
+    if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
+
+
+    cookies().set(EnumCookieName.OCCUPIED_TABLE_ID, avaliableTable.id.toString())
+
+    await ReservationEntities.createReservationHolding({
+        reservationHoldingData: {
+            holdedTableId: avaliableTable.id,
+            holdedAt: new Date(),
+            holdingDate: date,
+            guestCount,
+            roomId: avaliableTable.roomId,
+            mealId,
+            restaurantId,
+        }
+    })
+
+
+    setTimeout(async () => {
         console.log('occupied table timeout id:', avaliableTable.id)
-        cookies().delete(EnumCookieName.OCCUPIED_TABLE_ID)
-        await RoomEntities.updateTable({
-            id: avaliableTable.id,
-            isOccupied: false,
-            occupiedAt: null,
-        })
+        const holding = await ReservationEntities.getReservationByHoldingTableId({ holdedTableId: avaliableTable.id })
+        if (holding) {
+            await ReservationEntities.deleteReservationHoldingById({ id: holding.id })
+        }
+
     }, OCCUPIED_TABLE_TIMEOUT)
 
 
@@ -476,4 +506,41 @@ export const confirmPublicReservation = async ({
 
 
 
+}
+
+export const getGuestCountFilterValues = async ({
+    input,
+    ctx
+}: TUseCasePublicLayer<undefined>) => {
+
+    const { restaurantId } = ctx
+
+    const minQuery = await db.select({
+        value: sql`min(${tblTable.minCapacity})`.mapWith(tblTable.minCapacity)
+    }).from(tblRoom)
+        .leftJoin(tblTable, eq(tblRoom.id, tblTable.roomId))
+        .where(and(
+            eq(tblRoom.restaurantId, restaurantId),
+            eq(tblTable.isActive, true),
+            eq(tblRoom.isActive, true),
+            eq(tblRoom.isWaitingRoom, false)
+        ))
+
+
+    const maxQuery = await db.select({
+        value: sql`max(${tblTable.maxCapacity})`.mapWith(tblTable.maxCapacity)
+    }).from(tblRoom)
+        .leftJoin(tblTable, eq(tblRoom.id, tblTable.roomId))
+        .where(and(
+            eq(tblRoom.restaurantId, restaurantId),
+            eq(tblTable.isActive, true),
+            eq(tblRoom.isActive, true),
+            eq(tblRoom.isWaitingRoom, false)
+        ))
+
+    const min = minQuery[0]?.value!
+    const max = maxQuery[0]?.value!
+    if (Number.isNaN(min) || Number.isNaN(max)) throw new Error('Guest Count Filter Values Not Found')
+
+    return { min, max }
 }

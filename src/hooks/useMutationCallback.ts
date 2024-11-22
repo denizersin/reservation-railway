@@ -18,7 +18,7 @@ export const useMutationCallback = () => {
                 })
             })
             queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.guest.getAllGuests)
+                queryKey: getQueryKey(api.guest.getGuestsPagination)
             })
 
         },
@@ -40,11 +40,11 @@ export const useMutationCallback = () => {
                 })
             })
 
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2, {
-                    date: queryDate
-                })
-            })
+            // queryClient.invalidateQueries({
+            //     queryKey: getQueryKey(api.reservation.getAllAvailableReservation2, {
+            //         date: queryDate
+            //     })
+            // })
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.reservation.getTableStatues, {
                     date: queryDate
@@ -55,19 +55,16 @@ export const useMutationCallback = () => {
         },
         onSuccessCreateReservation: (date: Date) => {
 
-            const createdQueryDate = new Date(date)
-            createdQueryDate.setHours(0, 0, 0, 0)
 
-
-            queryClient.invalidateQueries({
-                queryKey: getQueryKey(api.reservation.getAllAvailableReservation2, {
-                    date: createdQueryDate.toISOString()
-                })
-            })
+            // queryClient.invalidateQueries({
+            //     queryKey: getQueryKey(api.reservation.getAllAvailableReservation2, {
+            //         date,
+            //     })
+            // })
 
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.reservation.getTableStatues, {
-                    date: createdQueryDate.toISOString()
+                    date,
                 })
             })
         },

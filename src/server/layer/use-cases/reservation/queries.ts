@@ -1,6 +1,6 @@
 import { groupByWithKeyFn } from "@/lib/utils";
 import { db } from "@/server/db";
-import { tblGuest, tblRoomTranslation } from "@/server/db/schema";
+import { tblGuest, tblReservationHolding, tblRoomTranslation } from "@/server/db/schema";
 import { tblReservation, tblReservationTable, tblWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
@@ -10,60 +10,9 @@ import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } f
 import { EnumReservationExistanceStatusNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
 import { and, asc, between, count, desc, eq, isNotNull, ne, sql, sum } from "drizzle-orm";
-
-export function getLimitationStatus({ date, mealId, restaurantId }: { date: Date, mealId: number, restaurantId: number }) {
-
-    const { start, end } = getStartAndEndOfDay({
-        date:
-            getLocalTime(date)
-    })
+import { ReservationEntities } from "../../entities/reservation";
 
 
-    return db
-        .select({
-            limitationId: tblReservationLimitation.id,
-            hour: tblReservationLimitation.hour,
-            meal: tblReservationLimitation.mealId,
-            room: tblReservationLimitation.roomId,
-            maxTable: tblReservationLimitation.maxTableCount,
-            maxGuest: tblReservationLimitation.maxGuestCount,
-            // totalTable: count(tblReservation.id).as('totalTable'),
-            totalTable: sql`count(${tblReservation.id})`.as('totalTable'),
-            // totalGuest: sum(tblReservation.guestCount).as('totalGuest'),
-            totalGuest: sql<number>`cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('totalGuest'),
-            // avaliableGuest: sql`${tblReservationLimitation.maxGuestCount} - ${sum(tblReservation.guestCount)}`.as('avaliableGuest'),
-            avaliableGuest: sql<number>`${tblReservationLimitation.maxGuestCount} - cast(${sum(tblReservation.guestCount)} as SIGNED)`.as('availableGuest'),
-
-            avaliableTable: sql<number>`${tblReservationLimitation.maxTableCount} - ${(count(tblReservation.id))}`.as('avaliableTable'),
-        })
-        .from(tblReservationLimitation)
-        .leftJoin(tblReservation,
-            and(
-                eq(tblReservationLimitation.restaurantId, tblReservation.restaurantId),
-
-
-                eq(tblReservation.roomId, tblReservationLimitation.roomId),
-                eq(tblReservationLimitation.mealId, tblReservation.mealId),
-
-                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
-
-                //equal
-                between(tblReservation.hour, tblReservationLimitation.minHour, tblReservationLimitation.maxHour),
-
-                between(tblReservation.reservationDate, start, end),
-
-                eq(tblReservation.hour, tblReservationLimitation.hour),
-            )
-        )
-        .where(
-            and(
-                eq(tblReservationLimitation.restaurantId, restaurantId),
-                eq(tblReservationLimitation.mealId, mealId),
-                eq(tblReservationLimitation.isActive, true),
-            )
-        )
-        .groupBy(tblReservationLimitation.id)
-}
 
 export const getAllAvailableReservations = async ({
     input,
@@ -76,7 +25,7 @@ export const getAllAvailableReservations = async ({
             getLocalTime((new Date(input.date)))
     })
 
-    const limitationStatus = await getLimitationStatus({
+    const limitationStatus = await ReservationEntities.getLimitationStatuesQuery({
         date: getLocalTime(new Date(input.date)),
         mealId: input.mealId,
         restaurantId
@@ -273,11 +222,12 @@ export const getAllAvailableReservations2 = async ({
     const { session: { user: { restaurantId } } } = ctx
     const { start, end } = getStartAndEndOfDay({
         date:
-            getLocalTime((new Date(input.date)))
+            getLocalTime((input.date))
     })
 
-    const limitationStatus = await getLimitationStatus({
-        date: getLocalTime(new Date(input.date)),
+    
+    const limitationStatus = await ReservationEntities.getLimitationStatuesQuery({
+        date: input.date,
         mealId: input.mealId,
         restaurantId
     })
@@ -314,7 +264,8 @@ export const getAllAvailableReservations2 = async ({
             table: tblTable,
             room: tblRoom,
             guest: tblGuest,
-            waitingSession: tblWaitingTableSession
+            waitingSession: tblWaitingTableSession,
+            reservationHolding: tblReservationHolding
         })
         .from(tblRoom)
         .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
@@ -323,6 +274,10 @@ export const getAllAvailableReservations2 = async ({
             eq(tblReservation.id, reservationTables.RESERVATION_ID),
         ))
         .leftJoin(tblReservationTable, eq(tblReservationTable.id, reservationTables.RESERVATION_TABLE_ID))
+        .leftJoin(tblReservationHolding, and(
+            eq(tblReservationHolding.holdedTableId, tblTable.id),
+            between(tblReservationHolding.holdingDate, start, end)
+        ))
         .leftJoin(tblGuest, eq(tblGuest.id, tblReservation.guestId))
         .leftJoin(tblWaitingTableSession, and(isNotNull(tblReservation.id), eq(tblWaitingTableSession.reservationId, tblReservation.id)))
         .where(and(
@@ -386,6 +341,8 @@ export const getReservations = async ({
         date:
             getLocalTime(date)
     })
+    console.log(input.date, 'input.date')
+    console.log(start, end, 'start end getReservations')
     const whereConditions = [];
 
 
@@ -454,6 +411,12 @@ export const getReservations = async ({
     return reservations
 
 }
+
+
+
+
+
+
 
 
 

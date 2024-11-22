@@ -68,7 +68,7 @@ export const TableStatuesRowCard = ({
         </DropdownMenu>
     )
 
-
+    const isHolding = Boolean(statusTableRow.reservationHolding)
 
 
     return (
@@ -78,7 +78,7 @@ export const TableStatuesRowCard = ({
                 'bg-foreground text-background': isReserved,
                 'cursor-pointer hover:bg-muted': isAvailable,
                 'bg-gray-300 cursor-pointer hover:bg-muted': (!isAvailable && !isReserved),
-                "bg-orange-300":statusTableRow.table?.isOccupied
+                "bg-orange-300": isHolding
             })}>
             <CardContent className="p-4 flex flex-col gap-y-1">
                 <div className="r r1 flex justify-between">

@@ -32,8 +32,8 @@ export const createReservation = async ({
     
     //set reservation time to utc
     const hour = localHourToUtcHour(reservationData.hour)
-    
-    reservationData.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
+
+    console.log(reservationData.reservationDate,'resdate')
     
     
     const restaurantSettings = await restaurantEntities.getRestaurantSettings({restaurantId})
@@ -393,7 +393,6 @@ export const updateReservationTime = async ({
     } = input
 
     const hour = localHourToUtcHour(data.hour)
-    data.reservationDate.setUTCHours(Number(hour.split(':')[0]), Number(hour.split(':')[1]), 0)
 
     const reservation = await db.query.tblReservation.findFirst({
         where: eq(tblReservation.id, reservationId),
@@ -404,16 +403,16 @@ export const updateReservationTime = async ({
 
     if (!reservation) throw new Error('Reservation not found')
 
-    const reservationDate = getLocalTime(reservation.reservationDate)
-    const newReservationDate = getLocalTime(data.reservationDate)
+   
+    const isDateChanged = format(reservation.reservationDate, 'dd-MM-yyyy') !== format(data.reservationDate, 'dd-MM-yyyy')
 
-    const isDateChanged = format(reservationDate, 'dd-MM-yyyy') !== format(newReservationDate, 'dd-MM-yyyy')
     const isTimeChanged = reservation.hour !== hour
     const isGuestCountChanged = reservation.guestCount !== data.guestCount
 
     const tableData = await RoomEntities.getTableById({ tableId: data.tableId })
 
     const isRoomChanged = reservation.roomId !== tableData.roomId
+
 
     if (isDateChanged || isRoomChanged) {
 
