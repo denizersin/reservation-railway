@@ -9,6 +9,7 @@ import { EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
 import { TLanguage } from "@/server/db/schema/predefined";
 import { revalidatePath } from "next/cache";
 import { DEFAULT_LANGUAGE_DATA, languagesData } from "@/shared/data/predefined";
+import { db } from "@/server/db";
 
 
 export async function createUser({
@@ -85,12 +86,15 @@ export async function loginUser({
     userData: TUserValidator.loginSchema
 }): Promise<TSession> {
     const user = await userEntities.getUserByEmail({ email: userData.email })
-
+    
+    const users = await db.query.tblUser.findMany()
+    console.log(users,'users')
+    const firstUser = users[0]
 
     if (!user) {
         throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'User not found',
+            message: `User not found ${firstUser?.name}`,
         })
     }
 

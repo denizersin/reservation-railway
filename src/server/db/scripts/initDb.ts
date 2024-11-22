@@ -82,6 +82,8 @@ async function initDb() {
         for (const func of initFunctions) {
             await func()
         }
+
+        console.log('initlaiozon end')
     }
     catch (error) {
         console.error('Error initializing database:', error)

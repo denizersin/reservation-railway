@@ -14,6 +14,8 @@ export default async function RoleRequiredPage({
 
     const session = await jwtEntities.getServerSession();
 
+    console.log('session321', session)
+
 
     if (!session || !roles.includes(session.user.userRole)) {
         redirect(redirectPath);

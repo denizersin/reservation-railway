@@ -25,6 +25,8 @@ export default async function OwnerLayout({
 
     const session = (await jwtEntities.getServerSession())!
 
+    console.log(session,'sessoin123')
+
     const currentRestaurant = (await db.query.tblRestaurant.findFirst({
         where: eq(tblRestaurant.ownerId, session.user.userId)
     }))!

@@ -33,8 +33,6 @@ export const createReservation = async ({
     //set reservation time to utc
     const hour = localHourToUtcHour(reservationData.hour)
 
-    console.log(reservationData.reservationDate, 'resdate')
-
 
     const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
 

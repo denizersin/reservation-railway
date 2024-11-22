@@ -6,6 +6,8 @@ import * as schema from "../schema/index";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { eq, isNotNull } from "drizzle-orm";
 import { ReservationEntities } from "@/server/layer/entities/reservation";
+import { userEntities } from "@/server/layer/entities/user";
+import { exit } from "process";
 
 
 const connection = await mysql.createConnection({
@@ -45,19 +47,25 @@ async function initDb() {
     try {
 
 
-        const limitationquery =await ReservationEntities.getLimitationStatuesQuery({
-            date: new Date(),
-            mealId: 3,
-            restaurantId: 1
-        })
+        // const limitationquery =await ReservationEntities.getLimitationStatuesQuery({
+        //     date: new Date(),
+        //     mealId: 3,
+        //     restaurantId: 1
+        // })
 
-        console.log(limitationquery, 'limitationquery')
+        // console.log(limitationquery, 'limitationquery')
+
+        const users = await db.query.tblRestaurant.findMany()
+
+        console.log(users, 'users')
 
     } catch (error) {
         console.error('Error initializing database:', error)
     }
     finally {
         await connection.end()
+        console.log('exit')
+        exit();
     }
 }
 
