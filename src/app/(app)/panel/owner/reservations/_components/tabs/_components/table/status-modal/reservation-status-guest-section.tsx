@@ -29,7 +29,11 @@ export const ReservationStatusGuestSection = ({
         window.open(`https://www.google.com/search?q=${guest.name} ${guest.surname}`, '_blank')
     }
 
-    
+    const goToReservationStatus = () => {
+        // router.(`/reservation/status/${reservation.id}`)
+        window.open(`/reservation/status/${reservation.id}`, '_blank')
+    }
+
 
 
     return (
@@ -56,11 +60,16 @@ export const ReservationStatusGuestSection = ({
             <div>
                 reservation Id: {reservation.id}
             </div>
+            <div>
+                <Button
+                    className='text-blue-500'
+                    onClick={goToReservationStatus} variant='link'>Go Reservation Status </Button>
+            </div>
 
             <GuestCrudModal
                 open={openGuestUpdateModal}
                 setOpen={setOpenGuestUpdateModal}
-                
+
                 // guestData={guest}
                 guestId={guest.id}
             />
