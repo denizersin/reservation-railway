@@ -42,27 +42,21 @@ export const createReservation = async ({
 
     const reservation = await db.transaction(async (trx) => {
 
-        const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
         const newReservation = await ReservationEntities.createReservation({
-            ...reservationData,
-            hour,
-            restaurantId,
-            waitingSessionId: newUnclaimedWaitingSessionId,
-            reservationStatusId: restaurantSettings.newReservationStatusId,
-            prePaymentTypeId: reservationData.prepaymentTypeId,
-            tableIds: data.tableIds,
-
-            //!TODO: split this to two different functions
-            createdOwnerId: ctx.session.user.userId,
-            isCreatedByOwner: true,
-        })
-
-        await ReservationEntities.updateUnClaimedReservationWaitingSession({
             data: {
-                reservationId: newReservation.id,
+
+                ...reservationData,
+                hour,
+                restaurantId,
+                reservationStatusId: restaurantSettings.newReservationStatusId,
+                prePaymentTypeId: reservationData.prepaymentTypeId,
+
+                //!TODO: split this to two different functions
+                createdOwnerId: ctx.session.user.userId,
+                isCreatedByOwner: true,
             },
-            waitingSessionId: newUnclaimedWaitingSessionId,
-            trx,
+            tableIds: data.tableIds,
+            trx
         })
 
         if (data.reservationNote) {
@@ -547,7 +541,7 @@ export const syncHoldingReservations = async ({
 
     await db.delete(tblReservation).where(and(
         eq(tblReservation.restaurantId, reservationId),
-        eq(tblReservation.isHolding, true)
+        eq(tblReservation.reservationStatusId, EnumReservationStatusNumeric.holding)
     )
     )
 

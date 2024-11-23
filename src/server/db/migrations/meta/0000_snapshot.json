@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "d12ca72c-62eb-4320-9c8a-f401948aba9f",
+  "id": "8b8e18c0-0673-4208-bcfe-2b860e8c99a5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -2444,14 +2444,6 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "is_held": {
-          "name": "is_held",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
         },
         "holded_at": {
           "name": "holded_at",

@@ -52,7 +52,6 @@ export const tblReservation = mysqlTable('reservation', {
     prePaymentTypeId: int('prepayment_type_id').notNull(),
 
     //holding
-    isHolding: boolean('is_held').notNull().default(false),
     holdedAt: timestamp('holded_at'),
     holdExpiredAt: timestamp('hold_expired_at'),
 
@@ -175,9 +174,7 @@ type ReservationInsert = typeof tblReservation.$inferInsert;
 
 export type TReservation = TReservationSelect
 
-export type TReservationInsert = ReservationInsert & {
-    tableIds: number[]
-}
+export type TReservationInsert = ReservationInsert
 
 type ReservationUpdate = TReservationSelect & {
     tableIds: number[]

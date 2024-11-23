@@ -7,7 +7,7 @@ import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
 import { GuestSelect } from "@/components/custom/front/guest-select";
 import HeadBanner from "@/components/custom/front/head-banner";
 import { TimeSelect } from "@/components/custom/front/time-select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom/button";
 import { useReservationStates } from "@/hooks/front/useReservatoinStates";
 import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
 import { getNext3Months } from "@/lib/utils";
@@ -48,7 +48,7 @@ export default function RootPage() {
 
 
 
-    const { mutate: occupyTable, isSuccess: isOccupiedTableSuccess } = api.reservation.occupyTable.useMutation({})
+    const { mutate: holdTable, isSuccess: isOccupiedTableSuccess, isPending: isOccupiedTableLoading } = api.reservation.holdTable.useMutation({})
 
     // void api.post.getLatest.prefetch();
     const router = useRouter();
@@ -77,7 +77,7 @@ export default function RootPage() {
         const isValid = date && areaId && guestCount && time
         if (!isValid) return
         date.setHours(Number(time?.split(':')[0]), Number(time?.split(':')[1]), 0)
-        occupyTable({
+        holdTable({
             date: date!,
             time: time!,
             guestCount: guestCount,
@@ -188,7 +188,7 @@ export default function RootPage() {
                             <TimeSelect time={time} setTime={setTime} />
                             <AreaSelect areaId={areaId} setAreaId={setAreaId} />
                             <div className="px-2 md:px-0">
-                                <Button onClick={handleContinue} className="bg-front-primary text-white w-full h-[45px] rounded-sm mt-6">Continue</Button>
+                                <Button loading={isOccupiedTableLoading} onClick={handleContinue} className="bg-front-primary text-white w-full h-[45px] rounded-sm mt-6">Continue</Button>
                                 <FrontCard className="mt-6">
                                     <FrontCard.Title className="">Are you a large group?</FrontCard.Title>
                                     <div className="font-light text-sm ">To ensure a smooth experience for all our guests, a

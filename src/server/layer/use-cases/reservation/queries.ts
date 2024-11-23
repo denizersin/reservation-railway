@@ -275,7 +275,7 @@ export const getAllAvailableReservations2 = async ({
         ))
         .leftJoin(tblReservationTable, eq(tblReservationTable.id, reservationTables.RESERVATION_TABLE_ID))
         .leftJoin(tblReservationHolding, and(
-            eq(tblReservationHolding.holdedTableId, tblTable.id),
+            eq(tblReservationHolding.holdedReservationTableId, tblTable.id),
             between(tblReservationHolding.holdingDate, start, end)
         ))
         .leftJoin(tblGuest, eq(tblGuest.id, tblReservation.guestId))

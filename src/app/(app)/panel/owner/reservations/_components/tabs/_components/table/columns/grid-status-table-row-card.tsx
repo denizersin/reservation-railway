@@ -19,6 +19,7 @@ import { api } from '@/server/trpc/react'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { StatusTableRowWithRelation } from './reservation-grid-status'
 import { useMutationCallback } from '@/hooks/useMutationCallback'
+import { EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
 
 type Props = {
     statusTableRow: StatusTableRowWithRelation,
@@ -120,7 +121,7 @@ export const GridStatusTableRowCard = ({
 
 
 
-
+    const isHolding = statusTableRow.reservation?.reservationStatusId === EnumReservationStatusNumeric.holding
     return (
         <Card
             onClick={(() => !disabled && onClcikTable(statusTableRow))}
@@ -128,7 +129,7 @@ export const GridStatusTableRowCard = ({
                 // 'bg-foreground text-background': isReserved,
                 // 'cursor-pointer hover:bg-muted': isAvailable,
                 // 'bg-gray-300 cursor-pointer hover:bg-muted': (!isAvailable && !isReserved),
-                '!bg-orange-300': Boolean(statusTableRow.reservation?.isHolding)
+                '!bg-orange-300': isHolding
             }, className)}>
             <CardContent className="p-4 flex flex-col gap-y-1 text-xs">
                 <div className="r r1 flex justify-between">

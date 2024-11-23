@@ -141,6 +141,7 @@ export default function ReservationSummaryPage() {
 
             <div className="flex gap-x-3 w-full h-[45px] mt-4 mb-4">
                 <Button
+                    loading={isCancelingPublicReservation}
                     onClick={() => cancelReservationModalRef.current.closeModal?.()}
                     variant={'outline'} className="rounded-sm flex-1 h-full border-front-primary text-sm">No Cancel</Button>
                 <Button

@@ -41,7 +41,7 @@ export default function ReservationConfirmationPage() {
                     date={reservationStatusData?.reservationDate!}
                     time={reservationStatusData?.hour!}
                 />
-                <Button onClick={handleConfirmation} className="bg-front-primary rounded-sm w-full text-sm mt-4 h-[45px]">
+                <Button loading={isPending} onClick={handleConfirmation} className="bg-front-primary rounded-sm w-full text-sm mt-4 h-[45px]">
                     Will you be able to attend?
                 </Button>
             </div>

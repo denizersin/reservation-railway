@@ -497,7 +497,7 @@ function getStatusWithLimitationWithHolding({
                 eq(tblReservation.mealId, mealId),
             )),
         db.select({
-            tableId: tblReservationHolding.holdedTableId
+            tableId: tblReservationHolding.holdedReservationTableId
         })
             .from(tblReservationHolding)
             .where(and(

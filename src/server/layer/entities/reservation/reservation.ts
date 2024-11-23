@@ -16,18 +16,35 @@ import { ReservationEntities } from ".";
 
 export const createReservation = async ({
     tableIds,
-    ...data
-}: TReservationInsert) => {
-    const newReservation = await db.insert(tblReservation).values({
+    data,
+    trx = db
+}: {
+    data: Omit<TReservationInsert, 'waitingSessionId'>,
+    tableIds: number[],
+    trx?: TTransaction
+}) => {
+
+    const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
+
+    const newReservation = await trx.insert(tblReservation).values({
         ...data,
+        waitingSessionId: newUnclaimedWaitingSessionId
     }).$returningId()
 
     const reservationId = newReservation[0]?.id!
-    await db.insert(tblReservationTable).values(tableIds.map(tableId => ({
+    await trx.insert(tblReservationTable).values(tableIds.map(tableId => ({
         reservationId: reservationId,
         tableId: tableId,
 
     })))
+
+    await ReservationEntities.updateUnClaimedReservationWaitingSession({
+        waitingSessionId: newUnclaimedWaitingSessionId,
+        data: {
+            reservationId: reservationId,
+        },
+        trx
+    })
 
     const reservation = await db.query.tblReservation.findFirst({
         where: eq(tblReservation.id, reservationId),
@@ -40,7 +57,7 @@ export const updateReservation = async ({
     reservationId,
     trx = db
 }: {
-    data: Partial<TReservationSelect> ,
+    data: Partial<TReservationSelect>,
     reservationId: number,
     trx?: TTransaction
 }) => {

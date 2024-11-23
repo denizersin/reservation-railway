@@ -4,7 +4,7 @@ import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
 import HeadBanner from "@/components/custom/front/head-banner"
 import { MultiSelect } from "@/components/custom/multi-select"
 import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/responsive-modal"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/custom/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     Form,
@@ -129,6 +129,7 @@ export default function UserInfo() {
 
     const {
         mutate: createReservation,
+        isPending: isCreateReservationLoading
     } = api.reservation.createReservation.useMutation({
         onSuccess: ({ newReservationId }) => {
             toast({
@@ -663,7 +664,7 @@ export default function UserInfo() {
                             </div>
                         </div>
 
-                        <Button type="submit" className="w-full">
+                        <Button loading={isCreateReservationLoading} type="submit" className="w-full">
                             Complete My Reservation
                         </Button>
                     </form>

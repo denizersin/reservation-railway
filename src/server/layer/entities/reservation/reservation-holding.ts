@@ -3,13 +3,15 @@ import { tblReservation, tblReservationHolding, tblReservationTable, TReservatio
 import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import { and, eq } from "drizzle-orm";
 import { RoomEntities } from "../room";
+import { ReservationEntities } from ".";
+import { TRPCError } from "@trpc/server";
 
 
 
-export const getReservationHoldingByTableId = async ({ holdedTableId }: { holdedTableId: number }) => {
+export const getReservationHoldingByTableId = async ({ holdedReservationTableId }: { holdedReservationTableId: number }) => {
 
     const resrvationTable = await db.query.tblReservationTable.findFirst({
-        where: and(eq(tblReservationTable.tableId, holdedTableId))
+        where: and(eq(tblReservationTable.tableId, holdedReservationTableId))
     })
 
     if (!resrvationTable) return undefined
@@ -29,22 +31,19 @@ export const getReservationHoldingByTableId = async ({ holdedTableId }: { holded
     }
 }
 
-export const deleteHoldedReservationById = async ({ reservationId }: { reservationId: number }) => {
-    try {
-        await db.delete(tblReservation).where(eq(tblReservationHolding.id, reservationId))
-    } catch (error) {
-        console.log('deleteHoldedRese')
-        console.log(error)
-    }
+
+
+//delete holding reservation by holding reservation id
+export const deleteHoldedReservationById = async ({ holdedReservationId }: { holdedReservationId: number }) => {
+    await db.delete(tblReservation).where(and(
+        eq(tblReservation.id, holdedReservationId),
+        eq(tblReservation.reservationStatusId, EnumReservationStatusNumeric.holding)
+    ))
 }
 
-export const deleteHoldedReservationByOccupiedTableId = async ({ holdedTableId }: { holdedTableId: number }) => {
-
-    const resrvationTable = await db.query.tblReservationTable.findFirst({
-        where: and(eq(tblReservationTable.tableId, holdedTableId))
+export const getHoldedReservationById = async ({ holdedReservationId }: { holdedReservationId: number }) => {
+    return await db.query.tblReservation.findFirst({
+        where: and(eq(tblReservation.id, holdedReservationId), eq(tblReservation.reservationStatusId, EnumReservationStatusNumeric.holding))
+        
     })
-
-    if (!resrvationTable) return undefined
-
-    await db.delete(tblReservation).where(eq(tblReservation.id, resrvationTable.reservationId))
 }

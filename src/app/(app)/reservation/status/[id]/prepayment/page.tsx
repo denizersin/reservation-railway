@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import HeadBanner from "@/components/custom/front/head-banner";
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom/button";
 import { FrontCard } from "@/components/custom/front/card";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -256,7 +256,9 @@ export default function Page() {
                             />
                         </div>
 
-                        <Button type="submit" className="w-full">
+                        <Button
+                            loading={ isMakingPrepayment}
+                            type="submit" className="w-full">
                             Start Prepayment (3D)
                         </Button>
                     </form>

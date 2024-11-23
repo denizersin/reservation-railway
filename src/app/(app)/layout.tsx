@@ -26,6 +26,7 @@ export default function RootLayout({
         <NextTopLoader
           // color="bla"
           showSpinner={false}
+          zIndex={1000}
         />
         <Providers>{children}</Providers>
       </body>

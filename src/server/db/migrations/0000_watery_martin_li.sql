@@ -381,7 +381,6 @@ CREATE TABLE `reservation` (
 	`canceled_by` varchar(255),
 	`canceled_at` timestamp,
 	`prepayment_type_id` int NOT NULL,
-	`is_held` boolean NOT NULL DEFAULT false,
 	`holded_at` timestamp,
 	`hold_expired_at` timestamp,
 	`reservation_date` timestamp NOT NULL,

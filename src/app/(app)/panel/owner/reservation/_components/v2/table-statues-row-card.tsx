@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TTableStatuesRow } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
+import { EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
 import { CircleCheck, Clock, EllipsisVertical, Users } from 'lucide-react'
 
 type Props = {
@@ -68,7 +69,7 @@ export const TableStatuesRowCard = ({
         </DropdownMenu>
     )
 
-    const isHolding = Boolean(statusTableRow.reservation?.isHolding)
+    const isHolding = statusTableRow.reservation?.reservationStatusId === EnumReservationStatusNumeric.holding
 
 
     return (

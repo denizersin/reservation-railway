@@ -5,7 +5,7 @@ import { tblTable } from '..';
 
 export const tblReservationHolding = mysqlTable('reservation_holding', {
     id: int('id').autoincrement().primaryKey(),
-    holdedTableId: int('holded_table_id').notNull(),
+    holdedReservationTableId: int('holded_table_id').notNull(),
     holdedAt: timestamp('holded_at').defaultNow().notNull(),
     holdingDate: timestamp('holding_date').notNull(),
     guestCount: int('guest_count').notNull(),
@@ -14,11 +14,11 @@ export const tblReservationHolding = mysqlTable('reservation_holding', {
     restaurantId: int('restaurant_id').notNull(),
     mealId: int('meal_id').notNull(),
 }, (t) => ({
-    unq: unique('unique_table_id').on(t.holdedTableId, t.holdingDate),
+    unq: unique('unique_table_id').on(t.holdedReservationTableId, t.holdingDate),
 }));
 
 export const tblReservationHoldingRelations = relations(tblReservationHolding, ({ one }) => ({
-    table: one(tblTable, { fields: [tblReservationHolding.holdedTableId], references: [tblTable.id] }),
+    table: one(tblTable, { fields: [tblReservationHolding.holdedReservationTableId], references: [tblTable.id] }),
 }));
 
 export type TReservationHolding = typeof tblReservationHolding.$inferSelect

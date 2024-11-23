@@ -48,7 +48,7 @@ const createReservationSchema = z.object({
 })
 
 
-const occupyTableSchema = z.object({
+const holdTableSchema = z.object({
     mealId: z.number().int().positive(),
     date: z.date(),
     time: z.string(),
@@ -63,7 +63,7 @@ export const clientFormValidator = {
     userInfoFormSchema,
     reservationDataFormSchema,
     createReservationSchema,
-    occupyTableSchema,
+    holdTableSchema,
 }
 
 
@@ -71,7 +71,7 @@ namespace TClientFormValidator {
     export type TUserInfoForm = z.infer<typeof userInfoFormSchema>
     export type TReservationDataForm = z.infer<typeof reservationDataFormSchema>
     export type TCreateReservationSchema = z.infer<typeof createReservationSchema>
-    export type TOccupyTableSchema = z.infer<typeof occupyTableSchema>
+    export type TholdTableSchema = z.infer<typeof holdTableSchema>
 }
 
 export default TClientFormValidator

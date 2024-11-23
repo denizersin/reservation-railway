@@ -84,13 +84,12 @@ export const tblTable = mysqlTable('table', {
 }));
 export const tableRelations = relations(tblTable, ({ one, many }) => ({
     room: one(tblRoom, { fields: [tblTable.roomId], references: [tblRoom.id] }),
-    reservationHolding: one(tblReservationHolding, { fields: [tblTable.id], references: [tblReservationHolding.holdedTableId] }),
+    reservationHolding: one(tblReservationHolding, { fields: [tblTable.id], references: [tblReservationHolding.holdedReservationTableId] }),
 }));
 
 
 export type TTable = typeof tblTable.$inferSelect
 export type TTableInsert = typeof tblTable.$inferInsert
-
 
 
 

@@ -10,8 +10,9 @@ export const HOLDING_RESERVATION_GUEST_ID = 1
 
 
 export enum EnumCookieName {
-    OCCUPIED_TABLE_ID = 'holdedTableId',
+    OCCUPIED_TABLE_ID = 'holdedReservationTableId',
     TOKEN = 'token',
-    LANGUAGE = 'language'
+    LANGUAGE = 'language',
+    HOLDED_RESERVATION_ID = 'holdingReservationId'
 }
 

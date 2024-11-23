@@ -3,7 +3,7 @@ import { groupTableStatues, TReservationRow, TTableStatuesRow } from '@/lib/rese
 import { cn, groupByWithKeyFn } from '@/lib/utils';
 import { TRoomWithTranslations, TTable } from '@/server/db/schema';
 import { api } from '@/server/trpc/react';
-import { EnumTableShape } from '@/shared/enums/predefined-enums';
+import { EnumReservationStatusNumeric, EnumTableShape } from '@/shared/enums/predefined-enums';
 import { useEffect, useMemo, useState } from 'react';
 import { ArcherContainer, ArcherElement, } from 'react-archer';
 import { RelationType } from 'react-archer/lib/types';
@@ -306,6 +306,7 @@ export const ReservationGridStatus = ({
                         const isCurrentReservationTable = r.isCurrentReservation
                         const isDeSelected = deSelectedRows.some((r) => r.table?.id === table?.id)
                         const isSelected = selectedRows.some((r) => r.table?.id === table?.id)
+                        const isHolding = r.reservation?.reservationStatusId === EnumReservationStatusNumeric.holding
                         return (
                             <div
                                 key={layout.i}
@@ -339,7 +340,7 @@ export const ReservationGridStatus = ({
                                             onCrud={() => {
                                                 onSucessCrudTable()
                                             }}
-                                            disabled={Boolean(r.reservation?.isHolding)}
+                                            disabled={isHolding}
 
                                         />
                                     </div>
