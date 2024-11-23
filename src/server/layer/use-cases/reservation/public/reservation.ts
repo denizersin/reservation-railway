@@ -564,7 +564,7 @@ export const handleSuccessPrepaymentPublicReservation = async ({
         throw new Error('Prepayment not found While Success Callback!')
     }
 
-    db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
 
         await ReservationEntities.updateReservationPrepayment({
             data: {
