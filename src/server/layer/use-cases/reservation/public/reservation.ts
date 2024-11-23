@@ -61,6 +61,8 @@ export const createPublicReservation = async ({
 
     const occupiedTableIdValue = cookies().get(EnumCookieName.OCCUPIED_TABLE_ID)?.value
 
+    console.log(occupiedTableIdValue, 'occupiedTableIdValue')
+
     if (occupiedTableIdValue) {
         const result = await ReservationEntities.getReservationHoldingByTableId({ holdedTableId: Number(occupiedTableIdValue) })
         if (result?.reservation) {
@@ -84,7 +86,7 @@ export const createPublicReservation = async ({
             roomId: reservationData.roomId
         })
 
-        if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
+        if (!isHourAavailable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table22' })
 
         avaliableTable = await ReservationEntities.getAvaliableTable({
             restaurantId,
@@ -98,7 +100,7 @@ export const createPublicReservation = async ({
 
 
 
-    if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table' })
+    if (!avaliableTable) throw new TRPCError({ code: 'NOT_FOUND', message: 'No Avaliable Table33' })
 
 
 
