@@ -9,7 +9,7 @@ const FrontMaxWidthWrapper = ({
     children: ReactNode
 }) => {
     return (
-        <div className={cn('mx-auto w-full max-w-[630px] ', className)}>
+        <div className={cn('mx-auto w-full max-w-[630px] max-sm:px-3 ', className)}>
             {children}
         </div>
     )

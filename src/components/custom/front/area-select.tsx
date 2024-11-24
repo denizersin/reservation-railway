@@ -66,7 +66,7 @@ export const AreaSelect = ({
             name: 'Area 2',
             image: <Image
                 className='max-w-full'
-                src={'/tt-back.png'} alt='area 2'
+                src={'/chef-table.png'} alt='area 2'
                 width={1264}
                 height={904}
             />,
@@ -126,9 +126,9 @@ export const AreaSelect = ({
     const [currentImage, setCurrentImage] = useState<string | undefined>(undefined)
 
 
-    const handleShowImage = (image: string) => {
+    const handleShowImage = (imageIndex: number) => {
         setShowImage(true)
-        setCurrentImage(image)
+        setCurrentImage(areas[imageIndex]?.name)
     }
 
 
@@ -144,7 +144,7 @@ export const AreaSelect = ({
                         <SheetTitle className='mb-3'>Select number of guests</SheetTitle>
                         <SheetDescription>
                             {
-                                avaliableRooms.map((item) => {
+                                avaliableRooms.map((item,index) => {
 
                                     const isAvailable = item.isAvailableForTime
                                     return <div
@@ -157,7 +157,7 @@ export const AreaSelect = ({
                                         })}>
                                         <div
                                             onClick={() => {
-                                                handleShowImage(item.room.name)
+                                                handleShowImage(index)
                                             }}
                                             className="c flex flex-col items-center gap-y-2 p-1">
                                             <IconImage className="size-4 text-front-primary" />
@@ -192,7 +192,7 @@ export const AreaSelect = ({
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] flex flex-col p-4 ">
                         {
-                            avaliableRooms.map((item) => {
+                            avaliableRooms.map((item,index) => {
 
                                 const isAvailable = item.isAvailableForTime
                                 return <div
@@ -205,7 +205,7 @@ export const AreaSelect = ({
                                     })}>
                                     <div
                                         onClick={() => {
-                                            handleShowImage(item.room.name)
+                                            handleShowImage(index)
                                         }}
                                         className="c flex flex-col items-center gap-y-2 p-1">
                                         <IconImage className="size-4 text-front-primary" />

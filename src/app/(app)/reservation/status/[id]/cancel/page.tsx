@@ -3,8 +3,8 @@ import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
 import HeadBanner from "@/components/custom/front/head-banner";
 import { IconSuccess } from "@/components/svgs";
 import { useRouter } from "next/navigation";
-import { SummaryCard } from "../../../summary/[id]/page";
 import { useReservationStatusContext } from "../layout";
+import { SummaryCard } from "../../../_components/summary-card";
 
 export default function ReservationCancelPage() {
 

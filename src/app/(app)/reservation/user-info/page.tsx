@@ -83,6 +83,7 @@ export default function UserInfo() {
 
     function onSubmit(values: TclientValidator.TUserInfoForm) {
 
+
         const reservationData = getReservationState()
         const userInfoData = values
 
@@ -120,9 +121,12 @@ export default function UserInfo() {
                 title: 'Reservation created successfully',
                 description: 'You can now see your reservation in the summary page to confirm your reservation please pay the prepayment',
             })
-            router.push(`/reservation/summary/${newReservationId}`);
+            router.push(`/reservation/status/${newReservationId}`);
         }
     })
+
+    console.log(form.formState.errors,'err')
+    console.log(form.getValues(),'values')
 
 
 

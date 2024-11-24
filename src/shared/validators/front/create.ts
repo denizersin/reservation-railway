@@ -1,3 +1,4 @@
+import { blockedAllergens } from "@/shared/data";
 import { z } from "zod";
 
 const userInfoFormSchema = z.object({
@@ -7,7 +8,14 @@ const userInfoFormSchema = z.object({
     phoneCode: z.string(),
     phone: z.string().min(10, "Phone number must be at least 10 digits"),
     allergenWarning: z.boolean(),
-    guestNote: z.string().optional(),
+    guestNote: z.string().optional().refine((val) => {
+        if (val) {
+            return !(blockedAllergens.tr.includes(val.toLocaleLowerCase()) || blockedAllergens.en.includes(val.toLocaleLowerCase()))
+        }
+        return true
+    }, {
+        message: "We are not accepting this allergen",
+    }),
     reservationTags: z.array(z.number().int().positive()).optional(),
 
     allergenAccuracyConsent: z.boolean().refine((val) => val === true, {

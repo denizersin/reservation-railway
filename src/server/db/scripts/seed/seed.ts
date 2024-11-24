@@ -74,8 +74,8 @@ const seedFunctions = [
 
     async function createGuests() {
 
-        const brthdate=new Date();
-        brthdate.setHours(0,0);
+        const brthdate = new Date();
+        brthdate.setHours(0, 0);
 
         console.log(brthdate, 'brthdate')
 
@@ -348,7 +348,7 @@ const seedFunctions = [
             session: {
                 user: {
                     restaurantId: 1,
-                    userId: 2, //owner
+                    userId: 3, //owner
                     userRole: EnumUserRole.owner
                 },
             },
@@ -366,7 +366,6 @@ const seedFunctions = [
         firstReservationDate.setDate(firstReservationDate.getDate() + 2)
 
         for (let i = 0; i < reservationCreateionCount; i++) {
-            const randomGuest = guests[getRandom(0, guests.length - 1)]
             const newDate = new Date(firstReservationDate)
             newDate.setDate(firstReservationDate.getDate() + i)
             const getNewDateYear = newDate.getFullYear()
@@ -377,6 +376,8 @@ const seedFunctions = [
                 const tableId = table.id
                 const hour = dinnerMealHours[getRandom(0, dinnerMealHours.length - 1)]!
                 newDate.setHours(Number(hour.split(':')[0]!), Number(hour.split(':')[1]!))
+                const randomGuest = guests[getRandom(2, guests.length - 1)]
+
                 const input: TReservationValidator.createReservation = {
                     data: {
                         reservationTagIds: [],
@@ -421,7 +422,7 @@ async function seed() {
     for (const fn of seedFunctions) {
         await fn()
     }
-    
+
     await connection.end()
     exit()
 }
