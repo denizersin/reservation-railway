@@ -129,7 +129,7 @@ const GuestsList = (props: Props) => {
         <Card className="w-full my-5">
             <CardHeader className="flex flex-row items-center  gap-2 ">
                 <CardTitle className="">Guests</CardTitle>
-                <Button variant="outline" onClick={() => router.push('/owner/guests/companies')}>Guest Companies</Button>
+                <Button variant="outline" onClick={() => router.push('/panel/owner/guests/companies')}>Guest Companies</Button>
                 <div className="mb-2 flex flex-col items-start justify-start gap-2 ml-auto">
                     <Button className="ml-auto" onClick={handleAddNewGuest}>Add New Guest</Button>
                     <div className="flex gap-2">
@@ -168,7 +168,7 @@ const GuestsList = (props: Props) => {
                                 <TableCell>{guest.phone}</TableCell>
                                 <TableCell>{guest.company?.companyName}</TableCell>
                                 <TableCell>{guest.isVip ? 'Yes' : 'No'}</TableCell>
-                                <TableCell>{new Date(guest.birthDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{guest.birthDate ? new Date(guest.birthDate).toLocaleDateString() : ''}</TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu
                                         modal={false}

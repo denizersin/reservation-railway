@@ -7,28 +7,15 @@ const userInfoFormSchema = z.object({
     phoneCode: z.string(),
     phone: z.string().min(10, "Phone number must be at least 10 digits"),
     allergenWarning: z.boolean(),
-    specialRequests: z.string().optional(),
+    guestNote: z.string().optional(),
     reservationTags: z.array(z.number().int().positive()).optional(),
-    invoiceRequired: z.boolean(),
 
-    // Invoice related fields
-    invoiceType: z.enum(["individual", "corporate"]).optional(),
-    invoiceFirstName: z.string().optional(),
-    invoiceLastName: z.string().optional(),
-    invoicePhoneCode: z.string().optional(),
-    invoicePhone: z.string().optional(),
-    city: z.string().optional(),
-    district: z.string().optional(),
-    neighbourhood: z.string().optional(),
-    address: z.string().optional(),
-    tin: z.string().optional(),
-    taxOffice: z.string().optional(),
-    companyName: z.string().optional(),
-    isEInvoiceTaxpayer: z.boolean().optional(),
     allergenAccuracyConsent: z.boolean().refine((val) => val === true, {
         message: "You must accept the accuracy of allergen information",
     }),
-    marketingConsent: z.boolean().optional(),
+    marketingConsent: z.boolean().refine((val) => val === true, {
+        message: "You must accept the marketing consent",
+    }),
 })
 
 
@@ -57,21 +44,71 @@ const holdTableSchema = z.object({
 
 })
 
+const prePaymentFormSchema = z.object({
+    card_number: z.string().min(16, "Card number must be 16 digits"),
+    expiry_date: z.string().regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Invalid expiry date (MM/YY)"),
+    cvc: z.string().min(3, "CVC must be 3 digits"),
+
+    invoice: z.object({
+        invoiceRequired: z.boolean().optional(),
+        invoiceType: z.enum(["individual", "corporate"]).optional(),
+        invoiceFirstName: z.string().optional(),
+        invoiceLastName: z.string().optional(),
+        invoicePhoneCode: z.string().optional(),
+        invoicePhone: z.string().optional(),
+        city: z.string().optional(),
+        district: z.string().optional(),
+        neighbourhood: z.string().optional(),
+        address: z.string().optional(),
+        tin: z.string().optional(),
+        taxOffice: z.string().optional(),
+        companyName: z.string().optional(),
+        isEInvoiceTaxpayer: z.boolean().optional(),
+    }),
 
 
-export const clientFormValidator = {
+
+    cancellation_policy_consent: z.boolean().refine((val) => val === true, {
+        message: "You must accept the cancellation policy",
+    }),
+    preliminary_form_consent: z.boolean().refine((val) => val === true, {
+        message: "You must accept the preliminary information form",
+    }),
+    distance_sales_consent: z.boolean().refine((val) => val === true, {
+        message: "You must accept the distance sales agreement",
+    }),
+})
+
+
+const waitlistFormSchema = userInfoFormSchema;
+
+const createWaitlistSchema = z.object({
+    guestCount: z.number().int().positive(),
+    mealId: z.number().int().positive(),
+    waitlistDate: z.date(),
+    waitlistUserInfo: waitlistFormSchema
+})
+
+
+export const clientValidator = {
     userInfoFormSchema,
     reservationDataFormSchema,
     createReservationSchema,
     holdTableSchema,
+    createWaitlistSchema,
+    waitlistFormSchema,
+    prePaymentFormSchema
 }
 
 
-namespace TClientFormValidator {
+namespace TclientValidator {
     export type TUserInfoForm = z.infer<typeof userInfoFormSchema>
     export type TReservationDataForm = z.infer<typeof reservationDataFormSchema>
     export type TCreateReservationSchema = z.infer<typeof createReservationSchema>
     export type TholdTableSchema = z.infer<typeof holdTableSchema>
+    export type TCreateWaitlistSchema = z.infer<typeof createWaitlistSchema>
+    export type TWaitlistForm = z.infer<typeof waitlistFormSchema>
+    export type TPrePaymentForm = z.infer<typeof prePaymentFormSchema>
 }
 
-export default TClientFormValidator
+export default TclientValidator

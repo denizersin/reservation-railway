@@ -7,6 +7,7 @@ import { languageRouter } from "./routers/language";
 import { roomRouter } from "./routers/room";
 import { guestRouter } from "./routers/guest";
 import { testRouter } from "./routers/test";
+import { waitlistRouter } from "./routers/waitlist";
 
 
 /**
@@ -22,7 +23,8 @@ export const appRouter = createTRPCRouter({
   language: languageRouter,
   room:roomRouter,
   guest:guestRouter,
-  test:testRouter
+  test:testRouter,
+  waitlist: waitlistRouter
 
 });
 

@@ -361,7 +361,9 @@ const seedFunctions = [
 
 
         const reservationCreateionCount = reservationCount / roomTables.length
+        //add two day
         const firstReservationDate = new Date()
+        firstReservationDate.setDate(firstReservationDate.getDate() + 2)
 
         for (let i = 0; i < reservationCreateionCount; i++) {
             const randomGuest = guests[getRandom(0, guests.length - 1)]

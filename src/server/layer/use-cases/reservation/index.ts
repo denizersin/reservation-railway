@@ -4,6 +4,7 @@ import * as reservationStatus from './status'
 import * as queries from './queries'
 import * as clientQueries from './client-queries'
 import * as publicReservationUseCases from './public/reservation'
+import * as waitlistUseCases from './waitlist'
 export const reservationUseCases = {
     ...usecase,
     ...waitingSession,
@@ -11,5 +12,5 @@ export const reservationUseCases = {
     ...queries,
     ...clientQueries,
     ...publicReservationUseCases,
-    
+    ...waitlistUseCases
 }

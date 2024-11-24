@@ -1,67 +1,73 @@
 "use client"
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import Link from "next/link"
-import HeadBanner from "@/components/custom/front/head-banner"
+import { Button } from "@/components/custom/button"
+import { FrontCard } from "@/components/custom/front/card"
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { TermsConditionsCard } from "../../_components/terms-conditions-card"
+import HeadBanner from "@/components/custom/front/head-banner"
+import { MultiSelect } from "@/components/custom/multi-select"
 import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/responsive-modal"
-import { useRef } from "react"
-import { CookieContent } from "../../_components/cookie-content"
-import { useRouter } from "next/navigation"
-import { IconArrowLeft } from "@/components/svgs"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { useReservationStates } from "@/hooks/front/useReservatoinStates"
+import { useReservationTagsSelectData } from "@/hooks/predefined/predfined"
+import { useToast } from "@/hooks/use-toast"
+import { api } from "@/server/trpc/react"
+import { EnumMealNumeric } from "@/shared/enums/predefined-enums"
+import TclientValidator, { clientValidator } from "@/shared/validators/front/create"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation"
+import { RefObject, useRef } from "react"
+import { useForm } from "react-hook-form"
+import { CookieContent } from "../../_components/cookie-content"
+import { ReservationStatusHeader } from "../../_components/reservation-status-header"
+export type UserInfoImperativeModalRefs = RefObject<{
+    openCookieModal?: () => void
+}>
 
-// Define the form schema with Zod
-const waitlistFormSchema = z.object({
-    firstName: z.string().min(2, "First name must be at least 2 characters"),
-    lastName: z.string().min(2, "Last name must be at least 2 characters"),
-    phoneCountry: z.string(),
-    email: z.string().email("Please enter a valid email address"),
-    acceptAllergens: z.boolean().refine(val => val === true, {
-        message: "You must accept the allergens information"
-    }),
-    acceptMarketing: z.boolean().optional(),
-})
 
-export type WaitlistFormValues = z.infer<typeof waitlistFormSchema>
 
-export default function ReservationWaitlistJoinPage() {
-    const form = useForm<WaitlistFormValues>({
-        resolver: zodResolver(waitlistFormSchema),
-        defaultValues: {
-            firstName: "",
-            lastName: "",
-            phoneCountry: "tr",
-            email: "",
-            acceptAllergens: false,
-            acceptMarketing: false,
+
+export default function UserInfo() {
+
+    const { getWaitlistFormValues, getWaitlistReservationState, updateWaitlistFormValues } = useReservationStates()
+
+    const waitlistFormValues = getWaitlistFormValues()
+
+    const form = useForm<TclientValidator.TWaitlistForm>({
+        resolver: zodResolver(clientValidator.waitlistFormSchema),
+        defaultValues: waitlistFormValues || {
+            name: "erdem",
+            surname: "yilmaz",
+            email: "erdem@gmail.com",
+            phoneCode: "+90",
+            phone: "5321234567",
+            allergenWarning: false,
+            guestNote: "",
+            reservationTags: [],
+            allergenAccuracyConsent: true,
+            marketingConsent: true,
         },
     })
 
-    const { updateWaitlistFormValues } = useReservationStates()
 
-    async function onSubmit(data: WaitlistFormValues) {
+    const { selectData: reservationTagsSelectData, isLoading: reservationTagsIsLoading } = useReservationTagsSelectData()
 
-
-        router.push('/reservation/waitlist/success')
-        updateWaitlistFormValues(form.getValues())
-        // Here you would typically:
-        // 1. Call your tRPC mutation
-        // 2. Handle success (redirect to success page)
-        // 3. Handle errors
-
-    }
-
-    const cookieModalRef = useRef<ResponsiveModalHandleRef>({})
 
     const router = useRouter()
 
@@ -70,154 +76,293 @@ export default function ReservationWaitlistJoinPage() {
     }
 
 
+    const cookieModalRef = useRef<ResponsiveModalHandleRef>({})
+
+
+
+    function onSubmit(values: TclientValidator.TWaitlistForm) {
+
+        const waitlistData = getWaitlistReservationState()
+        const userInfoData = values
+
+        console.log(waitlistData, 'waitlistData')
+
+
+        const newDate = waitlistData?.date!
+        newDate.setHours(0, 0, 0);
+
+
+        createWaitlist({
+            guestCount: waitlistData?.guestCount!,
+            waitlistDate: newDate,
+            mealId: EnumMealNumeric.dinner,
+            waitlistUserInfo: values
+        })
+
+        updateWaitlistFormValues(values)
+    }
+
+
+    const { toast } = useToast();
+
+
+
+    const {
+        mutate: createWaitlist,
+        isPending: isCreateWaitlistLoading
+    } = api.waitlist.createWaitlist.useMutation({
+        onSuccess: ({ waitlistId }) => {
+            toast({
+                title: 'Waitlist created successfully',
+                description: 'We will inform you when a table is available',
+            })
+            router.push(`/reservation/waitlist/status/${waitlistId}`);
+        }
+    })
+
+
 
 
     return (
-        <div className='relative h-full overflow-hidden bg-background flex text-front-primary'>
-            <div className="main h-screen overflow-y-scroll flex-1">
-                <HeadBanner showHoldingSection={false} />
+        <div>
+            <HeadBanner showHoldingSection={false} />
 
+            <FrontMaxWidthWrapper className=" px-2 md:px-6 pb-12">
+                <ReservationStatusHeader onGoBack={onGoBack} />
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>First Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="First name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-
-
-                <FrontMaxWidthWrapper className=" pb-10">
-                    <div className="flex items-center mb-8">
-                        <IconArrowLeft onClick={onGoBack} className="size-5 mr-2 text-front-primary cursor-pointer" />
-                        <div className="text-lg flex-1 font-bold flex justify-center items-center">
-                            Join The Waitlist
+                            <FormField
+                                control={form.control}
+                                name="surname"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Last name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
-                    </div>
 
-
-                    <Form {...form} >
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto text-front-primary text-sm">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="firstName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>First Name</FormLabel>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="phoneCode"
+                                render={({ field }) => (
+                                    <FormItem >
+                                        <FormLabel>Code</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                        >
                                             <FormControl>
-                                                <Input placeholder="First Name" {...field} />
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select" />
+                                                </SelectTrigger>
                                             </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                            <SelectContent>
+                                                <SelectItem value="+90">Turkey (+90)</SelectItem>
+                                                <SelectItem value="+1">USA (+1)</SelectItem>
+                                                <SelectItem value="+44">UK (+44)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                                <FormField
-                                    control={form.control}
-                                    name="lastName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Last Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Last Name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+                            <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                    <FormItem className="flex-1">
+                                        <FormLabel>Phone Number</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Phone number" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="phoneCountry"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Phone</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select country code" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="tr">Turkey(+90)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Email" type="email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Email" type="email" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <TermsConditionsCard />
-
-
-
-                            <div className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="acceptAllergens"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                            <FormControl>
-                                                <Checkbox
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                />
-                                            </FormControl>
-                                            <div className="space-y-1 leading-none">
-                                                <FormLabel className="">
-                                                    I accept the accuracy of the information I have given about allergens.
-                                                </FormLabel>
-                                                <FormMessage />
+                        <FormField
+                            control={form.control}
+                            name="allergenWarning"
+                            render={({ field }) => (
+                                <FormItem className="space-y-3">
+                                    <FormLabel>Allergen Warning</FormLabel>
+                                    <FormControl>
+                                        <RadioGroup
+                                            onValueChange={(value) => field.onChange(value === "true")}
+                                            defaultValue={field.value ? "true" : "false"}
+                                            className="flex space-x-4"
+                                        >
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="true" id="yes" />
+                                                <label htmlFor="yes">Yes</label>
                                             </div>
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="acceptMarketing"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                            <FormControl>
-                                                <Checkbox
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                />
-                                            </FormControl>
-                                            <div className="space-y-1 leading-none">
-                                                <FormLabel className="text-front-primary">
-                                                    I expressly consent to the sending of special offers and campaign information by TURK FATIH TUTAK within the scope of the{" "}
-                                                    <Link href="#" className="underline">Commercial Electronic Message Approval Text</Link>.
-                                                </FormLabel>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="false" id="no" />
+                                                <label htmlFor="no">No</label>
                                             </div>
-                                        </FormItem>
-                                    )}
-                                />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+
+                        <FrontCard className="mt-6">
+                            <FrontCard.Title className="">Information about allergies</FrontCard.Title>
+                            <div className="font-light text-sm ">
+                                Due to our daily micro seasonal changes on our menu, we use onion, garlic and dairy (lactose) in our dishes. Therefore, we cannot remove any of these products. We are not able to accommodate vegan, and gluten free allergies.
                             </div>
+                        </FrontCard>
 
 
-                            <Button
-                                type="submit"
-                                className="w-full bg-front-primary text-white h-[45px] rounded-sm"
-                                disabled={form.formState.isSubmitting}
-                            >
-                                {form.formState.isSubmitting ? "Submitting..." : "Waitlist"}
-                            </Button>
-                        </form>
-                    </Form>
-                </FrontMaxWidthWrapper>
-            </div>
+
+                        <FormField
+                            control={form.control}
+                            name="guestNote"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Special Requests</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            placeholder="You can enter special requests or allergen information..."
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="reservationTags"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tag your reservation</FormLabel>
+                                    <div className="flex space-x-4">
+                                        <MultiSelect
+                                            options={reservationTagsSelectData}
+                                            onValueChange={vals => field.onChange(vals.map(Number))}
+                                            value={field.value?.map(String)}
+                                        />
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="allergenAccuracyConsent"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>
+                                                I accept the accuracy of the information I have given about allergens.
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="marketingConsent"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel className="text-sm font-normal">
+                                                I expressly consent to the sending of special offers and campaign information by TURK FATIH TUTAK within the scope of the{" "}
+                                                <a href="#" className="underline">
+                                                    Commercial Electronic Message Approval Text
+                                                </a>
+                                                .
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="text-sm">
+                                By clicking Complete My Reservation, you are deemed to have accepted{" "}
+                                <span className="underline">
+                                    Seatwise Terms of Use and Privacy Policy
+                                </span>
+                                . You can reach the Information text on the{" "}
+                                <span className="underline">
+                                    Protection and Processing of Personal Data
+                                </span>{" "}
+                                here and the{" "}
+                                <span
+                                    onClick={() => {
+                                        cookieModalRef.current.openModal?.()
+                                    }}
+                                    className="underline cursor-pointer">
+                                    Cookie Policy
+                                </span>{" "}
+                                text here.
+                            </div>
+                        </div>
+
+                        <Button loading={isCreateWaitlistLoading} type="submit" className="w-full">
+                            Complete My Reservation
+                        </Button>
+                    </form>
+                </Form>
+            </FrontMaxWidthWrapper>
+
 
             <ResponsiveModal
                 modalContentClassName="h-[80vh] w-[60vw] max-w-[60vw]  flex flex-col"
@@ -226,6 +371,9 @@ export default function ReservationWaitlistJoinPage() {
             >
                 <CookieContent />
             </ResponsiveModal>
+
+
+
         </div>
     )
 }

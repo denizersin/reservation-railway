@@ -1,7 +1,6 @@
 "use client";
 
-import { WaitlistFormValues } from "@/app/(app)/reservation/waitlist/join/page";
-import TClientFormValidator from "@/shared/validators/front/create";
+import TclientValidator from "@/shared/validators/front/create";
 import { useCallback, useEffect, useState } from "react";
 import useClientLocalStorage from "../useClientLocalStorage";
 
@@ -43,7 +42,7 @@ export const useReservationStates = () => {
     }, [])
 
     // Reservation User Info Form Values
-    const getReservationUserInfoFormValues = useCallback((): TClientFormValidator.TUserInfoForm | null => {
+    const getReservationUserInfoFormValues = useCallback((): TclientValidator.TUserInfoForm | null => {
         const values = localStorage?.getItem?.('reservationUserInfoFormValues')
         if (values) {
             return JSON.parse(values)
@@ -51,7 +50,7 @@ export const useReservationStates = () => {
         return null
     }, [])
 
-    const updateReservationUserInfoFormValues = useCallback((values: TClientFormValidator.TUserInfoForm) => {
+    const updateReservationUserInfoFormValues = useCallback((values: TclientValidator.TUserInfoForm) => {
         localStorage?.setItem('reservationUserInfoFormValues', JSON.stringify(values))
     }, [])
 
@@ -63,7 +62,9 @@ export const useReservationStates = () => {
     const getWaitlistReservationState = useCallback((): WaitlistReservationState | null => {
         const state = localStorage?.getItem?.('waitlistReservationState')
         if (state) {
-            return JSON.parse(state)
+            const parsedState = JSON.parse(state)
+            parsedState.date = new Date(parsedState.date)
+            return parsedState
         }
         return null
     }, [])
@@ -77,7 +78,7 @@ export const useReservationStates = () => {
     }, [])
 
     // Waitlist Form Values
-    const getWaitlistFormValues = useCallback((): WaitlistFormValues | null => {
+    const getWaitlistFormValues = useCallback((): TclientValidator.TWaitlistForm | null => {
         const values = localStorage?.getItem?.('waitlistFormValues')
         if (values) {
             return JSON.parse(values)
@@ -85,7 +86,7 @@ export const useReservationStates = () => {
         return null
     }, [])
 
-    const updateWaitlistFormValues = useCallback((values: WaitlistFormValues) => {
+    const updateWaitlistFormValues = useCallback((values: TclientValidator.TWaitlistForm) => {
         localStorage?.setItem('waitlistFormValues', JSON.stringify(values))
     }, [])
 

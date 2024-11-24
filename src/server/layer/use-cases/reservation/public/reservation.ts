@@ -4,8 +4,8 @@ import { ReservationLogEntities } from "@/server/layer/entities/reservation/rese
 import { TUseCaseClientLayer } from "@/server/types/types";
 import { EnumCookieName, HOLDING_RESERVATION_GUEST_ID, HOLDING_TIMEOUT, OCCUPIED_TABLE_TIMEOUT } from "@/server/utils/server-constants";
 import { localHourToUtcHour } from "@/server/utils/server-utils";
-import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
-import TClientFormValidator from "@/shared/validators/front/create";
+import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumWaitlistStatus } from "@/shared/enums/predefined-enums";
+import TclientValidator from "@/shared/validators/front/create";
 import TClientReservationActionValidator from "@/shared/validators/front/reservation-actions";
 import { TRPCError } from "@trpc/server";
 import { and, eq, sql } from "drizzle-orm";
@@ -14,11 +14,12 @@ import { guestEntities } from "../../../entities/guest";
 import { ReservationEntities } from "../../../entities/reservation";
 import { restaurantEntities } from "../../../entities/restaurant";
 import { notificationUseCases } from "../notification";
+import { waitlistEntities } from "@/server/layer/entities/waitlist";
 
 export const createPublicReservation = async ({
     input,
     ctx
-}: TUseCaseClientLayer<TClientFormValidator.TCreateReservationSchema>) => {
+}: TUseCaseClientLayer<TclientValidator.TCreateReservationSchema>) => {
 
     const { userInfo, reservationData } = input
 
@@ -137,10 +138,10 @@ export const createPublicReservation = async ({
             trx,
         })
 
-        if (userInfo.specialRequests) {
+        if (userInfo.guestNote) {
             await ReservationEntities.createReservationNote({
                 reservationId: newReservation.id,
-                note: userInfo.specialRequests,
+                note: userInfo.guestNote,
                 trx
             })
         }
@@ -225,7 +226,7 @@ export const createReservationFromHolding = async ({
     input,
     ctx
 }: TUseCaseClientLayer<
-    TClientFormValidator.TCreateReservationSchema & {
+    TclientValidator.TCreateReservationSchema & {
         holdedReservation: TReservationSelect,
         guest: TGuestSelect
     }
@@ -269,10 +270,10 @@ export const createReservationFromHolding = async ({
 
 
 
-        if (userInfo.specialRequests) {
+        if (userInfo.guestNote) {
             await ReservationEntities.createReservationNote({
                 reservationId: holdedReservation.id,
-                note: userInfo.specialRequests,
+                note: userInfo.guestNote,
                 trx
             })
         }
@@ -362,7 +363,7 @@ export const createReservationFromHolding = async ({
 export const holdTable = async ({
     input,
     ctx
-}: TUseCaseClientLayer<TClientFormValidator.TholdTableSchema>) => {
+}: TUseCaseClientLayer<TclientValidator.TholdTableSchema>) => {
     const { date, time, guestCount, mealId, roomId } = input
 
     const { restaurantId } = ctx
@@ -426,6 +427,10 @@ export const holdTable = async ({
 
 
 }
+
+
+
+
 
 
 export const getReservationStatusData = async ({

@@ -55,7 +55,7 @@ export default function RootPage() {
 
     const next3Months = useMemo(() => getNext3Months(), [])
 
-    const { getReservationState, updateReservationState, clearReservationState } = useReservationStates()
+    const { getReservationState, updateReservationState, clearReservationState,updateWaitlistReservationState } = useReservationStates()
 
     const [today, setToday] = useState(next3Months[0]!)
 
@@ -94,7 +94,11 @@ export default function RootPage() {
     }, [isOccupiedTableSuccess])
 
 
-    function onClickAddWaitList() {
+    function onClickAddWaitList(waitlistDate: Date) {
+        updateWaitlistReservationState({
+            date: waitlistDate,
+            guestCount: guestCount,
+        })
         router.push('/reservation/waitlist')
     }
 

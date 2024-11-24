@@ -32,7 +32,7 @@ export const tblReservation = mysqlTable('reservation', {
     linkedReservationId: int('linked_reservation_id'),
     waitingSessionId: int('waiting_session_id').notNull(),
     invoiceId: int('invoice_id'),
-
+    invoiceRequired: boolean('invoice_required').notNull().default(false),
     //if exists, it means that the reservation is created by restaurant owner
     createdOwnerId: int('created_owner_id'),
     isCreatedByOwner: boolean('is_created_by_owner').notNull().default(false),
@@ -55,6 +55,7 @@ export const tblReservation = mysqlTable('reservation', {
     holdedAt: timestamp('holded_at'),
     holdExpiredAt: timestamp('hold_expired_at'),
 
+    isCameFromWaitlist: boolean('is_came_from_waitlist').notNull().default(false),
 
 
     reservationDate: timestamp('reservation_date').notNull(),

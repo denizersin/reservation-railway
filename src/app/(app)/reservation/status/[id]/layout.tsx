@@ -2,7 +2,7 @@
 import { useShowLoadingModal } from "@/hooks/useShowLoadingModal"
 import { api, RouterOutputs } from "@/server/trpc/react"
 import { EnumReservationStatus } from "@/shared/enums/predefined-enums"
-import { useRouter, useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 
 import React, { createContext, useContext, useEffect } from 'react'
 
@@ -51,19 +51,19 @@ const Layout = (props: Props) => {
         const isSuccess = isConfirmed || isCompleted
 
         if (isCanceled) {
-            router.push(`/reservation/status/${reservationId}/cancel`)
+            router.replace(`/reservation/status/${reservationId}/cancel`)
         }
         else if (isPrepayment) {
-            router.push(`/reservation/status/${reservationId}/prepayment`)
+            router.replace(`/reservation/status/${reservationId}/prepayment`)
         }
         else if (isSuccess) {
-            router.push(`/reservation/status/${reservationId}/success`)
+            router.replace(`/reservation/status/${reservationId}/success`)
         }
         else if (isConfirmation) {
-            router.push(`/reservation/status/${reservationId}/confirmation`)
+            router.replace(`/reservation/status/${reservationId}/confirmation`)
         }
         else if (isReservation) {
-            router.push(`/reservation/status/${reservationId}/reservation`)
+            router.replace(`/reservation/status/${reservationId}/reservation`)
         }
 
 

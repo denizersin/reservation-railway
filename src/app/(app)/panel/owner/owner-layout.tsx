@@ -54,10 +54,10 @@ export default async function OwnerLayout({
                 />
                 <MaxWidthWrapper className="max-w-screen-2xl md:px-10 main h-screen overflow-y-scroll flex-1">
                     <div className="flex pt-5 pb-5">
-                        <TopNav links={topNav} />
+                        {/* <TopNav links={topNav} /> */}
 
                         <div className='ml-auto flex items-center space-x-4'>
-                            <Search />
+                            {/* <Search /> */}
                             <ThemeSwitch />
                             <LanguageDropDown/>
                             <UserNav />

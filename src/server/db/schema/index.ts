@@ -20,6 +20,8 @@ export *  from './reservation/reservation-status';
 export *  from './reservation/confirmation-request';
 export *  from './reservation/reservation-holding';
 
+export *  from './waitlist';
+
 export *  from './guest';
 
 

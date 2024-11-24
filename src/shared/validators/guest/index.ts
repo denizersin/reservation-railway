@@ -131,9 +131,13 @@ export const guestCompanyPaginationSchema = basePaginationQuerySchema
 
 
 export const createGuestCompanySchema = z.object({
-    companyName: z.string().max(256),
+    companyName: z.string().max(256).min(2),
     phone: z.string().max(256).optional(),
-    email: z.string().email().max(256).optional(),
+    email: z.union( [
+        z.literal( '' ),
+        z.undefined(),
+        z.string().email(),
+    ] ).optional()
 })
 
 export const updateGuestCompanySchema = z.object({

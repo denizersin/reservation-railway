@@ -6,6 +6,10 @@ import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/re
 import { IconCalendar, IconGuests, IconLocation, IconSuccess, IconWarning } from "@/components/svgs";
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
+import { api } from "@/server/trpc/react";
+import { useWaitlistStatusContext } from "../layout";
 
 export default function WaitlistSuccessPage() {
 
@@ -15,8 +19,19 @@ export default function WaitlistSuccessPage() {
 
     const router = useRouter()
 
+    const { waitlistStatusData } = useWaitlistStatusContext()
+
+    const { mutate: cancelWaitlist, isPending: isCancelingWaitlist } = api.waitlist.cancelWaitlist.useMutation({
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getQueryKey(api.waitlist.getWaitlistStatusData) })
+        }
+    })
+
+    const queryClient = useQueryClient()
+
     const onClickLeaveWaitlist = () => {
-        router.push('/reservation/waitlist/cancel')
+        if (!waitlistStatusData) return
+        cancelWaitlist({ waitlistId: waitlistStatusData.id })
     }
 
     return <div>
@@ -48,8 +63,8 @@ export default function WaitlistSuccessPage() {
                             <IconCalendar className="size-8" />
                         </div>
                         <div className="c">
-                            <div className="text-sm font-bold">FRIDAY</div>
-                            <div className="text-xs">20 SEP 2024</div>
+                            <div className="text-sm font-bold">{waitlistStatusData?.waitlistDate.toLocaleDateString('tr-TR', { weekday: 'long' })}</div>
+                            <div className="text-xs">{waitlistStatusData?.waitlistDate.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long' })}</div>
                         </div>
                     </div>
 
@@ -59,7 +74,7 @@ export default function WaitlistSuccessPage() {
                         </div>
                         <div className="c">
                             <div className="text-sm font-bold">GUESTS</div>
-                            <div className="text-xs">2</div>
+                            <div className="text-xs">{waitlistStatusData?.guestCount}</div>
                         </div>
                     </div>
 
@@ -67,7 +82,7 @@ export default function WaitlistSuccessPage() {
 
                 <Button
                     onClick={() => cancelWaitlistModalRef.current.openModal?.()}
-                variant={'outline'} className=" border-destructive w-full h-[45px] mt-6 text-destructive hover:text-destructive hover:bg-gray-50">
+                    variant={'outline'} className=" border-destructive w-full h-[45px] mt-6 text-destructive hover:text-destructive hover:bg-gray-50">
                     Leave The  Waitinglist
                 </Button>
 

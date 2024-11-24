@@ -8,7 +8,7 @@ import { userEntities } from "@/server/layer/entities/user";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { reservationLimitationUseCases } from "@/server/layer/use-cases/reservation-limitation.ts";
 import { localHourToUtcHour } from "@/server/utils/server-utils";
-import { clientFormValidator } from "@/shared/validators/front/create";
+import { clientValidator } from "@/shared/validators/front/create";
 import { reservatoinClientValidator } from "@/shared/validators/front/reservation";
 import { clientReservationActionValidator } from "@/shared/validators/front/reservation-actions";
 import { reservationValidator } from "@/shared/validators/reservation";
@@ -16,6 +16,7 @@ import { limitationValidator } from "@/shared/validators/reservation-limitation/
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { clientProcedure, createTRPCRouter, ownerProcedure } from "../trpc";
+import { waitlistValidators } from "@/shared/validators/waitlist/waitlist";
 
 
 
@@ -368,7 +369,7 @@ export const reservationRouter = createTRPCRouter({
         }),
 
     createReservation: clientProcedure
-        .input(clientFormValidator.createReservationSchema)
+        .input(clientValidator.createReservationSchema)
         .mutation(async (opts) => {
             const newReservationId = await reservationUseCases.createPublicReservation(opts)
             return { newReservationId }
@@ -395,7 +396,7 @@ export const reservationRouter = createTRPCRouter({
             await reservationUseCases.confirmPublicReservation(opts)
         }),
     holdTable: clientProcedure
-        .input(clientFormValidator.holdTableSchema)
+        .input(clientValidator.holdTableSchema)
         .mutation(async (opts) => {
             await reservationUseCases.holdTable(opts)
         }),
@@ -405,5 +406,5 @@ export const reservationRouter = createTRPCRouter({
             return await reservationUseCases.getGuestCountFilterValues(opts)
         }),
 
-        
+
 });

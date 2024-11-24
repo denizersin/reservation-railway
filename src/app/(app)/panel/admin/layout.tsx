@@ -30,9 +30,9 @@ export default function Layout({
                 />
                 <MaxWidthWrapper className="max-w-screen-2xl md:px-10 main h-screen overflow-y-scroll flex-1">
                     <div className="flex py-8">
-                        <TopNav links={topNav} />
+                        {/* <TopNav links={topNav} /> */}
                         <div className='ml-auto flex items-center space-x-4'>
-                            <Search />
+                            {/* <Search /> */}
                             <ThemeSwitch />
                             <UserNav />
                         </div>

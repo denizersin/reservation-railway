@@ -6,29 +6,57 @@ import { GuestSelect } from "@/components/custom/front/guest-select";
 import HeadBanner from "@/components/custom/front/head-banner";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ReservationStatusHeader } from "../_components/reservation-status-header";
+import { useReservationStates } from "@/hooks/front/useReservatoinStates";
 
 export default function ReservationWaitlistPage() {
 
     const [date, setDate] = useState<Date | undefined>(new Date())
-    const [guestCount, setGuestCount] = useState<number>(1)
+    const [guestCount, setGuestCount] = useState<number>(0)
 
+
+
+
+    const { getWaitlistReservationState, updateWaitlistReservationState } = useReservationStates()
 
     const router = useRouter()
 
     function handleContinue() {
+
+        if (!guestCount || !date) return
+
+        date.setHours(0, 0, 0);
+        updateWaitlistReservationState({
+            date: date!,
+            guestCount: guestCount!,
+        })
         console.log('continue')
         router.push('/reservation/waitlist/join')
     }
 
+    useEffect(() => {
+        const waitlistState = getWaitlistReservationState()
+        setDate(waitlistState?.date)
+        setGuestCount(waitlistState?.guestCount || 0)
+    }, [])
+    
+
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper className="">
-            <GuestSelect disabled={true} guestCount={guestCount} setGuestCount={setGuestCount} />
+            <ReservationStatusHeader
+                guestCount={guestCount}
+                date={date}
+                time={undefined}
+                onGoBack={() => router.back()}
+                showBackButton={true}
+            />
+            <GuestSelect guestCount={guestCount} setGuestCount={setGuestCount} />
             <DateSelect date={date!} setDate={setDate} isWaitlistSelect={true} />
 
             <div className="px-2 md:px-0">
-              <Button onClick={handleContinue} className="bg-front-primary text-white w-full h-[45px] rounded-sm mt-6">Continue</Button>
+                <Button onClick={handleContinue} className="bg-front-primary text-white w-full h-[45px] rounded-sm mt-6">Continue</Button>
 
                 <FrontCard className="mt-6">
                     <FrontCard.Title className="">Are you a large group?</FrontCard.Title>

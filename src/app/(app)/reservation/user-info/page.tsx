@@ -1,10 +1,10 @@
 "use client"
+import { Button } from "@/components/custom/button"
 import { FrontCard } from "@/components/custom/front/card"
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
 import HeadBanner from "@/components/custom/front/head-banner"
 import { MultiSelect } from "@/components/custom/multi-select"
 import { ResponsiveModal, ResponsiveModalHandleRef } from "@/components/modal/responsive-modal"
-import { Button } from "@/components/custom/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     Form,
@@ -23,14 +23,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { useReservationStates } from "@/hooks/front/useReservatoinStates"
 import { useReservationTagsSelectData } from "@/hooks/predefined/predfined"
 import { useToast } from "@/hooks/use-toast"
 import { api } from "@/server/trpc/react"
 import { EnumMealNumeric } from "@/shared/enums/predefined-enums"
-import TClientFormValidator, { clientFormValidator } from "@/shared/validators/front/create"
+import TclientValidator, { clientValidator } from "@/shared/validators/front/create"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { RefObject, useRef } from "react"
@@ -50,8 +49,8 @@ export default function UserInfo() {
 
     const reservationUserInfoFormValues = getReservationUserInfoFormValues()
 
-    const form = useForm<TClientFormValidator.TUserInfoForm>({
-        resolver: zodResolver(clientFormValidator.userInfoFormSchema),
+    const form = useForm<TclientValidator.TUserInfoForm>({
+        resolver: zodResolver(clientValidator.userInfoFormSchema),
         defaultValues: reservationUserInfoFormValues || {
             name: "erdem",
             surname: "yilmaz",
@@ -59,29 +58,14 @@ export default function UserInfo() {
             phoneCode: "+90",
             phone: "5321234567",
             allergenWarning: false,
-            specialRequests: "",
+            guestNote: "",
             reservationTags: [],
-            invoiceRequired: false,
-            invoiceType: "individual",
-            invoiceFirstName: "",
-            invoiceLastName: "",
-            invoicePhoneCode: "+90",
-            invoicePhone: "5321234567",
-            city: "",
-            district: "",
-            neighbourhood: "",
-            address: "",
-            tin: "",
-            taxOffice: "",
-            companyName: "",
-            isEInvoiceTaxpayer: false,
+
             allergenAccuracyConsent: true,
-            marketingConsent: false,
+            marketingConsent: true,
         },
     })
 
-    const invoiceRequired = form.watch("invoiceRequired")
-    const invoiceType = form.watch("invoiceType")
 
     const { selectData: reservationTagsSelectData, isLoading: reservationTagsIsLoading } = useReservationTagsSelectData()
 
@@ -97,7 +81,7 @@ export default function UserInfo() {
 
 
 
-    function onSubmit(values: TClientFormValidator.TUserInfoForm) {
+    function onSubmit(values: TclientValidator.TUserInfoForm) {
 
         const reservationData = getReservationState()
         const userInfoData = values
@@ -276,7 +260,7 @@ export default function UserInfo() {
 
                         <FormField
                             control={form.control}
-                            name="specialRequests"
+                            name="guestNote"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Special Requests</FormLabel>
@@ -309,291 +293,6 @@ export default function UserInfo() {
                             )}
                         />
 
-                        <FormField
-                            control={form.control}
-                            name="invoiceRequired"
-                            render={({ field }) => (
-                                <FormItem className="space-y-3">
-                                    <FormLabel>Will you request an invoice for this visit?</FormLabel>
-                                    <FormControl>
-                                        <RadioGroup
-                                            onValueChange={(value) => {
-                                                field.onChange(value === "true")
-                                                if (value === "false") {
-                                                    form.setValue("invoiceType", undefined)
-                                                }
-                                            }}
-                                            defaultValue={field.value ? "true" : "false"}
-                                            className="flex space-x-4"
-                                        >
-                                            <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="true" id="invoice-yes" />
-                                                <label htmlFor="invoice-yes">Yes</label>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="false" id="invoice-no" />
-                                                <label htmlFor="invoice-no">No</label>
-                                            </div>
-                                        </RadioGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        {invoiceRequired && (
-                            <div className="space-y-6 border rounded-lg p-4">
-                                <FormField
-                                    control={form.control}
-                                    name="invoiceType"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Tabs
-                                                    defaultValue={field.value}
-                                                    className="w-full justify-center flex"
-                                                    onValueChange={field.onChange}
-                                                >
-                                                    <TabsList className="grid grid-cols-2 w-max h-max rounded-full p-1.5">
-                                                        <TabsTrigger className="py-2.5 px-5 rounded-full data-[state=active]:bg-front-primary data-[state=active]:text-white" value="individual">
-                                                            Individual
-                                                        </TabsTrigger>
-                                                        <TabsTrigger className="py-2.5 px-5 rounded-full data-[state=active]:bg-front-primary data-[state=active]:text-white" value="corporate">
-                                                            Corporate
-                                                        </TabsTrigger>
-                                                    </TabsList>
-                                                </Tabs>
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="invoiceFirstName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>First Name</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="First name" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="invoiceLastName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Last Name</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Last name" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="invoicePhoneCode"
-                                        render={({ field }) => (
-                                            <FormItem className="">
-                                                <FormLabel>Code</FormLabel>
-                                                <Select
-                                                    onValueChange={field.onChange}
-                                                    defaultValue={field.value}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="+90">Turkey (+90)</SelectItem>
-                                                        <SelectItem value="+1">USA (+1)</SelectItem>
-                                                        <SelectItem value="+44">UK (+44)</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="invoicePhone"
-                                        render={({ field }) => (
-                                            <FormItem className="flex-1">
-                                                <FormLabel>Phone Number</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Phone number" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="city"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>City</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select city" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="istanbul">Istanbul</SelectItem>
-                                                        <SelectItem value="ankara">Ankara</SelectItem>
-                                                        <SelectItem value="izmir">Izmir</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="district"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>District</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select district" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="kadikoy">Kadıköy</SelectItem>
-                                                        <SelectItem value="besiktas">Beşiktaş</SelectItem>
-                                                        <SelectItem value="sisli">Şişli</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="neighbourhood"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Neighbourhood</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select neighbourhood" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="caferaga">Caferağa</SelectItem>
-                                                        <SelectItem value="moda">Moda</SelectItem>
-                                                        <SelectItem value="fenerbahce">Fenerbahçe</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <FormField
-                                    control={form.control}
-                                    name="address"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Address</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Enter your address" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {invoiceType === "corporate" && (
-                                    <>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="tin"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>TIN</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="Tax Identification Number" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="taxOffice"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Tax Office</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="Tax Office" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        <FormField
-                                            control={form.control}
-                                            name="companyName"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Company Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Company Name" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="isEInvoiceTaxpayer"
-                                            render={({ field }) => (
-                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                                    <FormControl>
-                                                        <Checkbox
-                                                            checked={field.value}
-                                                            onCheckedChange={field.onChange}
-                                                        />
-                                                    </FormControl>
-                                                    <div className="space-y-1 leading-none">
-                                                        <FormLabel>
-                                                            I am an e-invoice taxpayer
-                                                        </FormLabel>
-                                                    </div>
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </>
-                                )}
-                            </div>
-                        )}
 
 
                         <div className="space-y-4">

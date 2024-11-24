@@ -10,6 +10,7 @@ import { api } from '@/server/trpc/react'
 import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
 import React, { useState } from 'react'
 import { CreatePrepaymentModal } from './create-prepayment-modal'
+import { IconBellPlus, IconBellRinging2, IconCashRegister, IconCircleCheckFilled, IconCircleXFilled, IconHelpHexagonFilled } from '@tabler/icons-react'
 
 type Props = {
     reservation: TReservationRow
@@ -236,22 +237,31 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
         <div>
             <div className='flex flex-wrap gap-3 py-2 mt-4 mb-2'>
 
-                {canCancelPayemntRequest && (<Button onClick={handleCancelPrepayment} variant={'destructive'}>Cancel Prepayment</Button>)}
-                {canRequestForPrepayment && (<Button onClick={handleRequestForPrepayment}>Request for Prepayment</Button>)}
+                {canCancelPayemntRequest && (<Button onClick={handleCancelPrepayment} variant={'destructive'}>
+                    <IconCashRegister className='w-4 h-4 mr-2 text-white' />
+                    Cancel Prepayment
+                </Button>)}
+                {canRequestForPrepayment && (<Button variant={'outline'} onClick={handleRequestForPrepayment}>
+                    <IconCashRegister className='w-4 h-4 mr-2 text-primary' />
+                    Request for Prepayment</Button>)}
 
                 {
                     canNotifyPrepayment && (
                         <Button
                             onClick={handleNotifyPrepayment}
                             variant={'outline'}
-                        >Notify Prepayment</Button>
+                        >
+                            <IconBellPlus stroke={2} className='w-4 h-4 mr-2 text-primary' />
+                            Notify Prepayment</Button>
                     )
                 }
 
                 {canConfirmReservation && (
                     <Button
-                        className='bg-green-500 hover:bg-green-600'
-                        onClick={handleConfirmReservation}>Confirm Reservation</Button>
+                        className='bg-green-600 hover:bg-green-700'
+                        onClick={handleConfirmReservation}>
+                        <IconCircleCheckFilled stroke={2} className='w-4 h-4 mr-2 text-white' />
+                        Confirm Reservation</Button>
                 )}
 
 
@@ -268,18 +278,28 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
 
                 {
                     canRequestForConfirmation && (
-                        <Button onClick={handleRequestForConfirmation}>Request for Confirmation</Button>
+                        <Button
+                            variant={'outline'}
+                            onClick={handleRequestForConfirmation}>
+                            <IconHelpHexagonFilled stroke={2} className='w-4 h-4 mr-2 text-primary' />
+                            Request for Confirmation</Button>
                     )
                 }
                 {
                     isWaitingForConfirmation && (
-                        <Button onClick={handleCancelConfirmationRequest}>Cancel Confirmation Request</Button>
+                        <Button
+                            variant={'destructive'}
+                            onClick={handleCancelConfirmationRequest}>
+                            <IconHelpHexagonFilled stroke={2} className='w-4 h-4 mr-2 text-white' />
+                            Cancel Confirmation Request</Button>
                     )
                 }
 
                 {
                     canCancelReservation && (
-                        <Button variant={'destructive'} onClick={handleCancelReservation}>Cancel Reservation</Button>
+                        <Button variant={'destructive'} onClick={handleCancelReservation}>
+                            <IconCircleXFilled stroke={2} className='w-4 h-4 mr-2 text-white' />
+                            Cancel Reservation</Button>
                     )
                 }
 

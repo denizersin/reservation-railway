@@ -370,6 +370,7 @@ CREATE TABLE `reservation` (
 	`linked_reservation_id` int,
 	`waiting_session_id` int NOT NULL,
 	`invoice_id` int,
+	`invoice_required` boolean NOT NULL DEFAULT false,
 	`created_owner_id` int,
 	`is_created_by_owner` boolean NOT NULL DEFAULT false,
 	`is_checked_in` boolean NOT NULL DEFAULT false,
@@ -383,6 +384,7 @@ CREATE TABLE `reservation` (
 	`prepayment_type_id` int NOT NULL,
 	`holded_at` timestamp,
 	`hold_expired_at` timestamp,
+	`is_came_from_waitlist` boolean NOT NULL DEFAULT false,
 	`reservation_date` timestamp NOT NULL,
 	`guest_note` text,
 	`reservation_time` time NOT NULL,
@@ -535,6 +537,21 @@ CREATE TABLE `reservation_holding` (
 	`meal_id` int NOT NULL,
 	CONSTRAINT `reservation_holding_id` PRIMARY KEY(`id`),
 	CONSTRAINT `unique_table_id` UNIQUE(`holded_table_id`,`holding_date`)
+);
+--> statement-breakpoint
+CREATE TABLE `waitlist` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`status` enum('created','confirmed','cancelled') NOT NULL DEFAULT 'created',
+	`allergen_warning` boolean NOT NULL DEFAULT false,
+	`guest_note` text,
+	`reservation_tags` json NOT NULL,
+	`guest_id` int NOT NULL,
+	`meal_id` int NOT NULL,
+	`waitlist_date` timestamp NOT NULL,
+	`guest_count` int NOT NULL,
+	`assigned_reservation_id` int,
+	CONSTRAINT `waitlist_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `meal_day` (

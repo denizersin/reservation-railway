@@ -315,7 +315,7 @@ export const getMonthAvailabilityByGuestCount = async ({
 
 
 
-function getStatusWithLimitation({
+export function getStatusWithLimitation({
     date,
     mealId,
     restaurantId,

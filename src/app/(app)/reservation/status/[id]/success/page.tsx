@@ -15,8 +15,8 @@ import { useRef } from "react";
 import { DressCodeCard } from "../../../_components/dress-code-card";
 import { ReservationStatusHeader } from "../../../_components/reservation-status-header";
 import { TermsConditionsCard } from "../../../_components/terms-conditions-card";
-import { SummaryCard } from "../../../summary/[id]/page";
 import { useReservationStatusContext } from "../layout";
+import { SummaryCard } from "../../../_components/summary-card";
 
 export default function ReservationSummaryPage() {
 

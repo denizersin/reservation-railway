@@ -81,10 +81,10 @@ export const GuestSelect = ({
 
   const handleGuestCountChange = (count: number) => {
     setGuestCount(count)
-    setSelectedDate(undefined)
-    setSelectedTime(undefined)
-    setSelectedAreaId(undefined)
-    setAreaName('')
+    setSelectedDate?.(undefined)
+    setSelectedTime?.(undefined)
+    setSelectedAreaId?.(undefined)
+    setAreaName?.('')
 
   }
 

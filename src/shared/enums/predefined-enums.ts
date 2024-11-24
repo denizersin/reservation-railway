@@ -233,3 +233,16 @@ export enum EnumHeader{
     RESTAURANT_ID = 'restaurant_id',
     LANGUAGE = 'language',
 }
+
+
+export enum EnumWaitlistStatus {
+    created = 'created',
+    confirmed = 'confirmed',
+    cancelled = 'cancelled',
+}
+
+
+export enum EnumInvoiceType {
+    individual = 'individual',
+    corporate = 'corporate',
+}

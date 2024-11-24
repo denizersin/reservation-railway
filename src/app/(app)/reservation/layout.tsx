@@ -21,8 +21,10 @@ const ReservationPageLayoutProvider = (props: Props) => {
         clearReservationUserInfoFormValues()
         clearWaitlistReservationState()
 
+        const isWaitlistStatusPage = pathname.includes('waitlist/status')
+        const isReservationStatusPage = pathname.includes('reservation/status')
 
-        if (!pathname.includes('reservation/status')) {
+        if (!(isWaitlistStatusPage || isReservationStatusPage)) {
             router.push('/reservation')
         }
     }, [])

@@ -27,7 +27,7 @@ type Props = {
     date: Date | undefined
     setDate: (date: Date) => void
     isWaitlistSelect?: boolean
-    onClickAddWaitList?: () => void
+    onClickAddWaitList?: (date: Date) => void
 }
 
 
