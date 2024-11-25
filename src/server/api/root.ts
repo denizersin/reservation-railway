@@ -8,6 +8,7 @@ import { roomRouter } from "./routers/room";
 import { guestRouter } from "./routers/guest";
 import { testRouter } from "./routers/test";
 import { waitlistRouter } from "./routers/waitlist";
+import { restaurantSettingRouter } from "./routers/restaurant-setting";
 
 
 /**
@@ -24,8 +25,8 @@ export const appRouter = createTRPCRouter({
   room:roomRouter,
   guest:guestRouter,
   test:testRouter,
-  waitlist: waitlistRouter
-
+  waitlist: waitlistRouter,
+  restaurantSetting: restaurantSettingRouter
 });
 
 // export type definition of API

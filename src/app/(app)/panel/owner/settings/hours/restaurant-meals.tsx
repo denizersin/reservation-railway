@@ -9,6 +9,7 @@ import { api } from '@/server/trpc/react'
 import TRestaurantAssetsValidator, { restaurantAssetsValidator } from '@/shared/validators/restaurant/restauran-assets'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Props = {}
 
@@ -49,9 +50,14 @@ const RestaurantMeals = (props: Props) => {
   if (isLoading) return <div>Loading...</div>
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
+    <Card>
+      <CardHeader>
+        <CardTitle>Restaurant Meals</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
           control={form.control}
           name="mealIds"
           render={() => (
@@ -102,7 +108,9 @@ const RestaurantMeals = (props: Props) => {
           Save Changes
         </Button>
       </form>
-    </Form>
+        </Form>
+      </CardContent>
+    </Card>
   )
 }
 

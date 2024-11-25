@@ -2,14 +2,13 @@ import { db } from '@/server/db';
 import { tblMeal } from '@/server/db/schema/predefined';
 import { tblRestaurant, tblRestaurantLanguage, tblRestaurantTranslations, TRestaurantInsert, TRestaurantLanguages } from '@/server/db/schema/restaurant';
 import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals, TMealHoursAdd, TRestaurantMealDaysCrud } from '@/server/db/schema/restaurant-assets';
-import { tblRestaurantGeneralSetting } from '@/server/db/schema/restaurant-general-setting';
 import { formatTimeWithoutSeconds, getEnumValues, utcHourToLocalHour } from '@/server/utils/server-utils';
-import { EnumDays, EnumLanguage, EnumMeals, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { EnumDays, EnumLanguage, EnumMeals, EnumReservationStatus, EnumReviewSendDay, EnumReviewSendType } from '@/shared/enums/predefined-enums';
 import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
 import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
 import { restaurantSettingEntities } from '../restaurant-setting';
-import { tblRoom, tblRoomTranslation } from '@/server/db/schema';
+import { tblRestaurantGeneralSetting, tblRestaurantReviewSettings, tblRoom, tblRoomTranslation } from '@/server/db/schema';
 
 export const createRestaurant = async ({
     restaurant,
@@ -130,6 +129,15 @@ export const setDefaultsToRestaurant = async ({
                 isOpen: [0, 6].includes(index) ? false : true
             }))
         )
+
+        //review settings
+        await db.insert(tblRestaurantReviewSettings).values({
+            restaurantId: restaurantId,
+            isReviewEnabled: true,
+            reviewSendTime: '14:00',
+            reviewSendType: EnumReviewSendType.SMS_AND_EMAIL,
+            reviewSendDay: EnumReviewSendDay.CHECK_OUT_DAY
+        })
 
     }
     catch (e) {

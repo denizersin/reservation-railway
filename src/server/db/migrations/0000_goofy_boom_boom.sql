@@ -126,18 +126,6 @@ CREATE TABLE `restaurant_translation` (
 	CONSTRAINT `restaurant_translation_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `restaurant_general_setting` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
-	`is_auto_check_out` boolean NOT NULL,
-	`new_reservation_state_id` int NOT NULL DEFAULT 2,
-	`default_language_id` int NOT NULL,
-	`default_country_id` int NOT NULL,
-	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
-	`prepayment_price_per_guest` int NOT NULL,
-	CONSTRAINT `restaurant_general_setting_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
 CREATE TABLE `country` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`name` varchar(50) NOT NULL,
@@ -285,6 +273,7 @@ CREATE TABLE `waitlist_message` (
 	`added_to_waitlist_message` text,
 	`added_to_waitlist_walkin_message` text,
 	`called_from_waitlist_message` text,
+	`cancel_waitlist_message` text,
 	CONSTRAINT `waitlist_message_id` PRIMARY KEY(`id`),
 	CONSTRAINT `unique_waitlist_message` UNIQUE(`restaurant_id`,`language_id`)
 );
@@ -356,6 +345,45 @@ CREATE TABLE `reservation_limitation` (
 	CONSTRAINT `reservation_limitation_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `restaurant_general_setting` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`is_auto_check_out` boolean NOT NULL,
+	`new_reservation_state_id` int NOT NULL DEFAULT 2,
+	`default_language_id` int NOT NULL,
+	`default_country_id` int NOT NULL,
+	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
+	`prepayment_price_per_guest` int NOT NULL,
+	CONSTRAINT `restaurant_general_setting_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_review` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`is_active` boolean NOT NULL DEFAULT true,
+	`order` int NOT NULL DEFAULT 0,
+	CONSTRAINT `restaurant_review_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_review_settings` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`is_review_enabled` boolean NOT NULL DEFAULT false,
+	`review_send_time` varchar(5) NOT NULL,
+	`review_send_type` enum('SMS','EMAIL','SMS_AND_EMAIL') NOT NULL DEFAULT 'SMS',
+	`review_send_day` enum('CHECK_OUT_DAY','NEXT_DAY') NOT NULL DEFAULT 'CHECK_OUT_DAY',
+	CONSTRAINT `restaurant_review_settings_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_review_translation` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_review_id` int NOT NULL,
+	`language_id` int NOT NULL,
+	`title` varchar(256) NOT NULL,
+	`description` varchar(256) NOT NULL,
+	CONSTRAINT `restaurant_review_translation_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `reservation` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
@@ -384,7 +412,8 @@ CREATE TABLE `reservation` (
 	`prepayment_type_id` int NOT NULL,
 	`holded_at` timestamp,
 	`hold_expired_at` timestamp,
-	`is_came_from_waitlist` boolean NOT NULL DEFAULT false,
+	`waitlist_id` int,
+	`allergen_warning` boolean NOT NULL DEFAULT false,
 	`reservation_date` timestamp NOT NULL,
 	`guest_note` text,
 	`reservation_time` time NOT NULL,
@@ -470,6 +499,17 @@ CREATE TABLE `reservation_notification` (
 	CONSTRAINT `reservation_notification_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `waitlist_notification` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`waitlist_id` int NOT NULL,
+	`type` enum('SMS','EMAIL') NOT NULL,
+	`notification_message_type` enum('Created Reservation From Waitlist','Cancel Waitlist','Added To Waitlist') NOT NULL,
+	`message` text NOT NULL,
+	`sent_at` timestamp,
+	`status` enum('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
+	CONSTRAINT `waitlist_notification_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `reservation_log` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`reservation_id` int NOT NULL,
@@ -551,6 +591,8 @@ CREATE TABLE `waitlist` (
 	`waitlist_date` timestamp NOT NULL,
 	`guest_count` int NOT NULL,
 	`assigned_reservation_id` int,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `waitlist_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint

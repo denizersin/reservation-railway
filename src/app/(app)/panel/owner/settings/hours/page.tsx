@@ -9,7 +9,7 @@ import RestaurantMeals from './restaurant-meals';
 const ReservationTimesTable = () => {
 
     return (
-        <div>
+        <div className='flex flex-col gap-4'>
             <RestaurantMealHours />
             <RestaurantMeals />
             <RestaurantMealDays />

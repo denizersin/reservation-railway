@@ -33,8 +33,8 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 1000
-const guestCount = 50000
+const reservationCount = 100
+const guestCount = 500
 
 const seedFunctions = [
     async function createUsers() {

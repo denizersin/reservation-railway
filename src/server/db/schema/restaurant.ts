@@ -2,7 +2,7 @@ import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumLanguage, EnumReservationStatus } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
 import { datetime, int, mysqlEnum, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
-import { tblRestaurantGeneralSetting } from './restaurant-general-setting';
+import { tblRestaurantGeneralSetting } from './restaurant-setting/restaurant-general-setting';
 import { tblUser } from './user';
 import { tblLanguage, TLanguage } from './predefined';
 import { tblRestaurantTag } from './restaurant-tags';

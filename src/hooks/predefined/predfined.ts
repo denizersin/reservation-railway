@@ -1,4 +1,5 @@
 import { api } from "@/server/trpc/react"
+import { MEAL_HOURS } from "@/shared/data/predefined"
 import { useMemo } from "react"
 
 export const useCountriesSelectData = () => {
@@ -15,6 +16,15 @@ export const useLanguagesSelectData = () => {
     const selectData = useMemo(() => data?.map((language) => ({
         label: language.name,
         value: String(language.id)
+    })) || [], [data])
+    return { selectData, isLoading }
+}
+
+export const useRestaurantLanguagesSelectData = () => {
+    const { data, isLoading } = api.restaurant.getRestaurantLanguages.useQuery()
+    const selectData = useMemo(() => data?.map((language) => ({
+        label: language.language.name,
+        value: String(language.languageId)
     })) || [], [data])
     return { selectData, isLoading }
 }
@@ -62,7 +72,7 @@ export const usePersonalSelectData = () => {
     const withNoneOption = useMemo(() => [
         {
             label: 'None',
-            value: "none" 
+            value: "none"
         },
         ...selectData
     ], [selectData])
@@ -79,3 +89,10 @@ export const useReservationTagsSelectData = () => {
     return { selectData, isLoading }
 }
 
+export const useHoursSelectData = () => {
+    const mealHoursToSelect = useMemo(() => MEAL_HOURS.map(hour => ({
+        value: hour,
+        label: hour,
+    })), [])
+    return { selectData: mealHoursToSelect, isLoading: false }
+}

@@ -10,6 +10,7 @@ import TRestaurantGeneralSettingValidator, { restaurantGeneralSettingValidator }
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect } from 'react'
 import { useForm } from "react-hook-form"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 
 
@@ -62,8 +63,13 @@ export const GeneralSettings = ({ }: Props) => {
 
 
     return (
-        <Form {...form} >
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-[500px]">
+        <Card className='mb-4'>
+            <CardHeader>
+                <CardTitle>General Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Form {...form} >
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-[500px]">
                 <FormField
                     control={form.control}
                     name="isAutoCheckOut"
@@ -131,6 +137,8 @@ export const GeneralSettings = ({ }: Props) => {
                     loading={updateGeneralSettingMutation.isPending}
                     type="submit">Save Changes</Button>
             </form>
-        </Form>
+                </Form>
+            </CardContent>
+        </Card>
     )
 }

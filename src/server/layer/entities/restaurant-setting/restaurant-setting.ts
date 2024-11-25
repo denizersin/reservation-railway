@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { tblRestaurantGeneralSetting, TUpdateGeneralSetting } from '@/server/db/schema/restaurant-general-setting';
+import { tblRestaurantGeneralSetting, TUpdateGeneralSetting } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const getGeneralSettings = async ({

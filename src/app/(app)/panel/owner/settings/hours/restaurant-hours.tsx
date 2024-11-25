@@ -127,7 +127,7 @@ export const RestaurantMealHours = (props: Props) => {
                                             <TableCell>{hourItem.hour}</TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu
-                                                modal={false}
+                                                    modal={false}
                                                 >
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" size="icon">

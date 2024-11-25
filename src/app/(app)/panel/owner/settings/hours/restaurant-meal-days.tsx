@@ -9,6 +9,7 @@ import type TRestaurantAssetsValidator from '@/shared/validators/restaurant/rest
 import { Button } from '@/components/ui/button'
 import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 
@@ -64,9 +65,14 @@ const RestaurantMealDays: React.FC = () => {
     console.log(form.getValues(), 'values')
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {fields.length > 0 && restaurantMeals?.map((restaurantMeal) => (
+        <Card>
+            <CardHeader>
+                <CardTitle>Restaurant Meal Days</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        {fields.length > 0 && restaurantMeals?.map((restaurantMeal) => (
                     <div key={restaurantMeal.id} className="space-y-4">
                         <h3 className="text-lg font-semibold">{restaurantMeal.meal.name}</h3>
                         {days.map((day) => {
@@ -115,7 +121,9 @@ const RestaurantMealDays: React.FC = () => {
                     {isPending ? 'Saving...' : 'Save'}
                 </Button>
             </form>
-        </Form>
+                </Form>
+            </CardContent>
+        </Card>
     )
 }
 
