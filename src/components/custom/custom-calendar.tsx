@@ -17,9 +17,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
 }
 
 type DateMapWithGuestCount = {
-    [key: string]: TMonthAvailabilityRow & {
-        isGuestCountAvailable: boolean
-    }
+    [key: string]: TMonthAvailabilityRow
 }
 function CustomCalendar({
     className,
@@ -37,14 +35,7 @@ function CustomCalendar({
         const newMap: DateMapWithGuestCount = {};
         monthAvailabilityData?.forEach((record) => {
             const date = record.date
-            newMap[format(date, 'dd-mm-yy')] = {
-                ...record,
-                isGuestCountAvailable: record.roomStatus.some(roomRecord => {
-                    return roomRecord.hourStatus.some(hourRecord => {
-                        return hourRecord.avaliableMinCapacity >= guestCount && hourRecord.avaliableMaxCapacity >= guestCount
-                    })
-                })
-            }
+            newMap[format(date, 'dd-mm-yy')] = record
         })
         return newMap
     }, [monthAvailabilityData,guestCount])
@@ -150,7 +141,7 @@ function CustomCalendar({
                     const isActiveDate = Boolean(dateData)
 
 
-                    const hasNotAvalibleTable = isActiveDate && !(dateData?.hasAvailableTable)
+                    const hasNotAvalibleTable = isActiveDate && !(dateData?.isDateHasAvaliableTable)
 
                     let isFullyDate = hasNotAvalibleTable
 

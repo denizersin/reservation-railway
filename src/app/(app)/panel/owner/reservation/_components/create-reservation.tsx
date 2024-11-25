@@ -9,8 +9,6 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useMutationCallback } from '@/hooks/useMutationCallback';
-import { TRestaurantMeal } from '@/server/db/schema/restaurant-assets';
-import { TRoomWithTranslations } from '@/server/db/schema/room';
 import { api } from '@/server/trpc/react';
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumReservationPrepaymentNumeric, EnumReservationPrepaymentType } from '@/shared/enums/predefined-enums';
@@ -32,9 +30,7 @@ export const CreateReservation = (props: Props) => {
     const [isCreateGuestModalOpen, setIsCreateGuestModalOpen] = useState(false)
 
 
-    const { data: meals } = api.restaurant.getRestaurantMeals.useQuery()
 
-    const { data: roomsData } = api.room.getRooms.useQuery({})
 
 
 
@@ -151,18 +147,7 @@ export const CreateReservation = (props: Props) => {
 
 
 
-    //turn them to reducer
-    useEffect(() => {
-        if (roomsData?.length) {
-            setSelectedRoomId(roomsData[0]?.id);
-        }
-    }, [roomsData])
 
-    useEffect(() => {
-        if (meals?.length) {
-            setSelectedMealId(meals[0]?.id);
-        }
-    }, [meals])
 
     useEffect(() => {
         setSelectedTableId(undefined)
@@ -186,19 +171,10 @@ export const CreateReservation = (props: Props) => {
     return (
         <div>
             <div className='flex'>
-                {/* <CustomComboSelect
-                    isFormSelect={false}
-                    data={guestToSelect}
-                    value={selectedGuestId?.toString()}
-                    onValueChange={(value) => setSelectedGuestId(Number(value))}
-                    
-                /> */}
-
                 <SearchableGuestSelect
                     value={selectedGuestId?.toString()}
                     onValueChange={(value) => setSelectedGuestId(Number(value))}
                     isFormSelect={false}
-
                 />
                 <Button variant={'link'} onClick={() => setIsCreateGuestModalOpen(true)}>Create Guest</Button>
             </div>

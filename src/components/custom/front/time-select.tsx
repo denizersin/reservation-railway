@@ -54,23 +54,20 @@ export const TimeSelect = ({
 
     const avaliableHours = useMemo(() => {
         if (!(selectedDate && monthAvailabilityData && guestCount)) return []
-
         const allHours: string[] = []
         console.log(selectedDate, 'selectedDate')
         const row = monthAvailabilityData?.find(r => format(r.date, 'dd-mm-yy') === format(selectedDate, 'dd-mm-yy'))
         const avaliables = row?.roomStatus.map(roomRecord => {
-            return roomRecord.hourStatus.map(hourRecord => {
+            return roomRecord.hours.filter(hourRecord => {
                 allHours.push(hourRecord.hour)
-                const isAvaliable = hourRecord.avaliableMinCapacity > 0 &&
-                    guestCount >= hourRecord.avaliableMinCapacity && guestCount <= hourRecord.avaliableMaxCapacity;
-                return isAvaliable ? hourRecord.hour : undefined
-
-            }).filter(Boolean)
+                return hourRecord.isAvaliable
+            }).map(h => h.hour)
         })
-
+        console.log(avaliables, 'avaliables')
         const r = avaliables?.flat().filter(Boolean) as string[]
 
         const uniqueAllHours = [...new Set(allHours)]
+        console.log(uniqueAllHours, 'uniqueAllHours')
 
 
         //remove duplicate
@@ -80,6 +77,7 @@ export const TimeSelect = ({
         }))
     }, [monthAvailabilityData, guestCount, selectedDate])
 
+    console.log(avaliableHours, 'avaliableHours')
 
 
 
@@ -118,7 +116,9 @@ export const TimeSelect = ({
 
                         const content = (
                             <div
-                                onClick={() => setTime(item.time)}
+                                onClick={() => {
+                                    if (isAvailable) setTime(item.time)
+                                }}
                                 className={cn(' px-4 py-2 cursor-pointer border rounded-full text-sm text-front-primary  ', {
                                     'bg-front-primary text-front-primary-foreground ': time === item.time,
                                     'opacity-50 cursor-not-allowed': !isAvailable,

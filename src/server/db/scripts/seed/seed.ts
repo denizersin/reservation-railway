@@ -33,8 +33,8 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 100
-const guestCount = 500
+const reservationCount = 2500
+const guestCount = 20000
 
 const seedFunctions = [
     async function createUsers() {
@@ -190,7 +190,7 @@ const seedFunctions = [
 
 
         await RoomEntities.createTables({
-            tables: new Array(10).fill(undefined).map((_, i) => ({
+            tables: new Array(40).fill(undefined).map((_, i) => ({
                 maxCapacity: 3,
                 minCapacity: 2,
                 no: 'R1-' + i.toString(),

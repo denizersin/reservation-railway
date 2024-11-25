@@ -84,22 +84,12 @@ export const getMonthAvailabilityByGuestCount = async ({
         monthDays = monthDays.filter(day => getLocalTime(day) >= todayLocal);
     }
 
-    // ... existing code ...
-    const sLimitation = performance.now();
-    const limitationStatus = await getLimitationStatuesQuery({
-        date: monthDate,
-        mealId,
-        restaurantId
-    })
-    console.log(limitationStatus, 'limitationStatus')
+
     const sLimitation2 = performance.now();
-    console.log(`limitation took ${sLimitation2 - sLimitation}ms`)
-    const total = 0;
-    const sTotal = performance.now();
     const promises = monthDays.map(async (day) => {
         //without holding
         const s1 = performance.now();
-        const tableStatuses = await getStatusWithLimitation({ date: day, mealId, restaurantId, guestCount })
+        const tableStatuses = await queryTableAvailabilities({ date: day, mealId, restaurantId, guestCount })
         const s2 = performance.now();
         console.log(` took ${s2 - s1}ms`)
 
@@ -108,86 +98,30 @@ export const getMonthAvailabilityByGuestCount = async ({
     })
 
     const result = await Promise.all(promises)
-    const sTotal2 = performance.now();
-    console.log(`total took ${sTotal2 - sTotal}ms`)
 
 
     type HourStatus = Awaited<ReturnType<typeof getStatusWithLimitation>>[0]
 
     const rooms = await restaurantEntities.getRestaurantRoomsWithTranslations({ restaurantId, languageId: language.id })
 
-    result.forEach((dayStatuses, index) => {
-        dayStatuses.forEach((r) => {
 
-            r.avaliableMinCapacity = r.avaliableMinCapacity ?? 0
-            r.avaliableMaxCapacity = r.avaliableMaxCapacity ?? 0
-
-
-            if (r.limitationId) {
-                const { avaliableGuest, avaliableMinCapacity, avaliableMaxCapacity } = r
-                r.avaliableMinCapacity = avaliableGuest >= avaliableMinCapacity ? avaliableMinCapacity : 0
-                r.avaliableMaxCapacity = avaliableGuest >= avaliableMaxCapacity ? avaliableMaxCapacity : avaliableGuest
-
-                if (r.avaliableTable <= 0) {
-                    r.avaliableMinCapacity = 0;
-                    r.avaliableMaxCapacity = 0
-
-                }
-            }
-        })
+    const newResult = result.map((r, index) => {
+        return {
+            date: monthDays[index]!,
+            roomStatus: r,
+            isDateHasAvaliableTable: r.some(a => a.isRoomHasAvaliableTable)
+        }
     })
 
-    type TReservationQueryResult = {
-        date: Date,
-        roomStatus: {
-            room: {
-                id: number,
-                name: string
-            },
-            hourStatus: HourStatus[]
-            hasAvailableTable: boolean
-        }[],
-        hasAvailableTable: boolean,
-
-    }
-
-    const newResult: TReservationQueryResult[] = []
-
-    //map took .07ms
-    result.forEach((dayStatuses, index) => {
-        const day = monthDays[index]
-        const grouped = groupByWithKeyFn(dayStatuses, (dayStatus) => dayStatus.room)
-        const roomStatuses = Object.entries(grouped).map(([roomId, hourStatuses]) => ({
-            room: {
-                id: Number(roomId),
-                name: rooms.find(a => a.id === Number(roomId))!.translations[0]?.name!
-            },
-            hourStatus: hourStatuses,
-            hasAvailableTable: hourStatuses.some(a => a.avaliableMinCapacity > 0)
-        }))
-        newResult.push({
-            date: day!,
-            roomStatus: roomStatuses,
-            hasAvailableTable: roomStatuses.some(a => a.hasAvailableTable)
-        })
-    })
-
-
-
-
-    newResult.forEach((r) => {
-        r.roomStatus.forEach((r) => {
-            r.hourStatus.forEach((r) => {
-                r.hour = utcHourToLocalHour(r.hour)
+    newResult.forEach(r => {
+        r.roomStatus.forEach(roo => {
+            roo.hours.forEach(h => {
+                h.hour = utcHourToLocalHour(h.hour)
             })
         })
     })
 
 
-
-
-
-    //get permanen limitation??
 
 
     return newResult
@@ -199,6 +133,10 @@ export const getMonthAvailabilityByGuestCount = async ({
 
 
 }
+
+
+
+
 
 
 
@@ -413,126 +351,6 @@ function getLimitationStatuesQuery({ date, mealId, restaurantId }: { date: Date,
 }
 
 
-export function getStatusWithLimitation2({
-    date,
-    mealId,
-    restaurantId,
-    guestCount
-}: {
-    date: Date,
-    mealId: number,
-    restaurantId: number,
-    guestCount: number
-}) {
-    const { start, end } = getStartAndEndOfDay({
-        date: getLocalTime(date)
-    })
-
-    const getReservationTables = () => db
-        .select({
-            RESERVATION_TABLE_ID: tblReservationTable.id,
-            RESERVATION_ID: tblReservationTable.reservationId,
-            TABLE_ID: tblReservationTable.tableId,
-        })
-        .from(tblReservation)
-        .leftJoin(tblReservationTable, eq(tblReservationTable.reservationId, tblReservation.id))
-        .where(
-            and(
-                eq(tblReservation.mealId, mealId),
-                between(tblReservation.reservationDate, start, end),
-                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel)
-
-            )
-        )
-
-    const reservationTables = getReservationTables().as('reservationTables')
-
-    // Uygun masaları bulan alt sorgu
-    const availableTables = db
-        .select({
-            hour: tblMealHours.hour,
-            roomId: tblRoom.id,
-            tableId: tblTable.id,
-            minCapacity: tblTable.minCapacity,
-            maxCapacity: tblTable.maxCapacity
-        })
-        .from(tblMealHours)
-        .innerJoin(tblRoom, and(
-            eq(tblRoom.restaurantId, tblMealHours.restaurantId),
-            eq(tblRoom.isActive, true),
-            eq(tblRoom.isWaitingRoom, false)
-        ))
-        .innerJoin(tblTable, and(
-            eq(tblTable.roomId, tblRoom.id),
-            eq(tblTable.isActive, true),
-            between(sql<number>`${guestCount}`, tblTable.minCapacity, tblTable.maxCapacity)
-        ))
-        .leftJoin(reservationTables, and(
-            eq(reservationTables.TABLE_ID, tblTable.id)
-        ))
-        .where(and(
-            isNull(reservationTables.RESERVATION_ID),
-            between(sql<number>`${guestCount}`, tblTable.minCapacity, tblTable.maxCapacity)
-        ))
-
-        .as('availableTables')
-
-    // Ana sorgu
-    return db
-        .select({
-            hour: tblMealHours.hour,
-            meal: tblMealHours.mealId,
-            room: tblRoom.id,
-            limitationId: sql<number>`MAX(${tblReservationLimitation.id})`.as('limitationId'),
-            maxTable: sql<number>`COALESCE(MAX(${tblReservationLimitation.maxTableCount}), COUNT(DISTINCT ${tblTable.id}))`,
-            maxGuest: sql<number>`CAST(COALESCE(MAX(${tblReservationLimitation.maxGuestCount}), SUM(${tblTable.maxCapacity})) AS SIGNED)`,
-            avaliableGuest: sql<number>`
-                CASE 
-                    WHEN MAX(${tblReservationLimitation.id}) IS NOT NULL THEN
-                        CAST(MAX(${tblReservationLimitation.maxGuestCount}) - COALESCE(SUM(${tblReservation.guestCount}), 0) AS SIGNED)
-                    ELSE
-                        CAST(COUNT(DISTINCT ${availableTables.tableId}) * ${guestCount} AS SIGNED)
-                END`,
-            avaliableTable: sql<number>`
-                CASE 
-                    WHEN MAX(${tblReservationLimitation.id}) IS NOT NULL THEN
-                        MAX(${tblReservationLimitation.maxTableCount}) - COALESCE(COUNT(DISTINCT ${tblReservation.id}), 0)
-                    ELSE
-                        COUNT(DISTINCT ${availableTables.tableId})
-                END`,
-        })
-        .from(tblMealHours)
-        .innerJoin(tblRoom, and(
-            eq(tblRoom.restaurantId, tblMealHours.restaurantId),
-            eq(tblRoom.isActive, true),
-            eq(tblRoom.isWaitingRoom, false)
-        ))
-        .leftJoin(availableTables, and(
-            eq(availableTables.hour, tblMealHours.hour),
-            eq(availableTables.roomId, tblRoom.id)
-        ))
-        .leftJoin(tblReservationLimitation, and(
-            eq(tblReservationLimitation.restaurantId, tblMealHours.restaurantId),
-            eq(tblReservationLimitation.mealId, tblMealHours.mealId),
-            eq(tblReservationLimitation.hour, tblMealHours.hour),
-            eq(tblReservationLimitation.roomId, tblRoom.id),
-            eq(tblReservationLimitation.isActive, true)
-        ))
-        .leftJoin(tblReservation, and(
-            eq(tblReservation.restaurantId, restaurantId),
-            eq(tblReservation.mealId, mealId),
-            between(tblReservation.reservationDate, start, end),
-            eq(tblReservation.hour, tblMealHours.hour),
-            eq(tblReservation.roomId, tblRoom.id),
-            ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel)
-        ))
-        .where(and(
-            eq(tblMealHours.restaurantId, restaurantId),
-            eq(tblMealHours.mealId, mealId),
-            eq(tblMealHours.isOpen, true)
-        ))
-        .groupBy(tblMealHours.hour, tblRoom.id)
-}
 
 
 
@@ -547,7 +365,7 @@ export const queryTableAvailabilities = async ({
     restaurantId: number,
     guestCount: number
 }) => {
-    //478k  40-50ms
+    //478k  40-50ms (40 table)
     const { start, end } = getStartAndEndOfDay({
         date: getLocalTime(date)
     })
@@ -616,8 +434,12 @@ export const queryTableAvailabilities = async ({
 
 
     const s1 = performance.now()
+    type TLimitationRow = typeof result[number]
+    type THourAvailibilty = TLimitationRow & {
+        avaliableTableIds: number[]
+        isAvaliable: boolean
+    }
     const groupByRoom = groupByWithKeyFn(result, (r) => r.room)
-
 
     const groupByRoomResult = Object.values(groupByRoom).map((rows) => {
         return rows.map((r) => {
@@ -662,13 +484,13 @@ export const queryTableAvailabilities = async ({
 
 
 
-        })
+        }) as THourAvailibilty[]
     })
 
 
     const mapped = groupByRoomResult.map((r) => {
         return {
-            room: r[0]?.room,
+            room: r[0]?.room!,
             hours: r,
             isRoomHasAvaliableTable: r.some(r => r.isAvaliable)
         }

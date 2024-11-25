@@ -84,14 +84,8 @@ export const AreaSelect = ({
 
         const row = monthAvailabilityData?.find(r => format(r.date, 'dd-mm-yy') === format(selectedDate, 'dd-mm-yy'))
 
-        const avaliableRooms = row?.roomStatus.map(roomRecord => {
-            const isRoomAvaliable = roomRecord.hourStatus.some(hourRecord => {
-                const isAvaliable = hourRecord.avaliableMinCapacity > 0 &&
-                    guestCount >= hourRecord.avaliableMinCapacity && guestCount <= hourRecord.avaliableMaxCapacity;
-
-                return isAvaliable && hourRecord.hour === selectedTime
-
-            })
+        const avaliableRooms = row?.roomStatus.map(roomRecord =>{
+            const isRoomAvaliable = roomRecord.hours.some(hourRecord => hourRecord.isAvaliable && hourRecord.hour === selectedTime)
             return {
                 ...roomRecord,
                 isAvailableForTime: isRoomAvaliable
@@ -101,7 +95,7 @@ export const AreaSelect = ({
     }, [monthAvailabilityData, guestCount, selectedTime])
 
     const currentArea = useMemo(() => {
-        return avaliableRooms.find(a => a.room.id === areaId)
+        return avaliableRooms.find(a => a.room === areaId)
     }, [avaliableRooms, areaId])
 
 
@@ -110,7 +104,7 @@ export const AreaSelect = ({
             <IconArrowLeft className="w-3 h-5" />
         </div>
         <div className="c flex flex-col items-center">
-            <div className="text-front-primary font-semibold mb-1">{currentArea?.room.name}</div>
+            <div className="text-front-primary font-semibold mb-1">{currentArea?.room}</div>
             <div className="flex items-center gap-2 text-gray-500">
                 <div className=""><IconSittingArea className="size-4 " /></div>
                 <div className="text-sm">Sitting Area</div>
@@ -149,9 +143,9 @@ export const AreaSelect = ({
                                     const isAvailable = item.isAvailableForTime
                                     return <div
 
-                                        key={item.room.id}
+                                        key={item.room}
                                         className={cn('flex items-center gap-2 py-3 border-b ', {
-                                            'bg-muted': currentArea?.room.id === item.room.id,
+                                            'bg-muted': currentArea?.room === item.room,
                                             'cursor-pointer hover:bg-muted': isAvailable,
                                             'opacity-50 cursor-not-allowed': !isAvailable
                                         })}>
@@ -168,12 +162,12 @@ export const AreaSelect = ({
                                         <SheetClose
                                             onClick={() => {
                                                 if (isAvailable) {
-                                                    setAreaId(item.room.id)
-                                                    setAreaName(item.room.name)
+                                                    setAreaId(item.room)
+                                                    setAreaName(item.room.toString())
                                                 }
                                             }}
                                             className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
-                                            <div className="text-base font-medium text-primary">{item.room.name}</div>
+                                            <div className="text-base font-medium text-primary">{item.room}</div>
                                             <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                         </SheetClose>
                                     </div>
@@ -197,9 +191,9 @@ export const AreaSelect = ({
                                 const isAvailable = item.isAvailableForTime
                                 return <div
 
-                                    key={item.room.id}
+                                    key={item.room}
                                     className={cn('flex items-center gap-2 py-3 border-b ', {
-                                        'bg-muted': currentArea?.room.id === item.room.id,
+                                        'bg-muted': currentArea?.room === item.room,
                                         'cursor-pointer hover:bg-muted': isAvailable,
                                         'opacity-50 cursor-not-allowed': !isAvailable
                                     })}>
@@ -216,15 +210,15 @@ export const AreaSelect = ({
                                     <PopoverClose
                                         onClick={() => {
                                             if (isAvailable) {
-                                                setAreaId(item.room.id)
-                                                setAreaName(item.room.name)
+                                                setAreaId(item.room)
+                                                setAreaName(item.room.toString())
                                             }
                                         }}
                                         className={cn('flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center ', {
                                             'cursor-pointer hover:bg-muted': isAvailable,
                                             'opacity-50 cursor-not-allowed': !isAvailable
                                         })}>
-                                        <div className="text-base font-medium">{item.room.name}</div>
+                                        <div className="text-base font-medium">{item.room}</div>
                                         <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                     </PopoverClose>
                                 </div>
