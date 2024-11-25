@@ -2,7 +2,7 @@ import { db } from "@/server/db";
 import { tblWaitlist, TWaitlist, TWaitlistInsert } from "@/server/db/schema/waitlist";
 import { getLocalTime, getStartAndEndOfDay } from "@/server/utils/server-utils";
 
-import { and, between, eq } from "drizzle-orm";
+import { and, between, eq, isNull } from "drizzle-orm";
 
 import { TRPCError } from "@trpc/server";
 import { getStatusWithLimitation } from "../../use-cases/reservation/client-queries";
@@ -41,7 +41,7 @@ export const updateWaitlist = async ({
     await db.update(tblWaitlist).set(data).where(eq(tblWaitlist.id, id))
 }
 
-export const getWailtistStatues = async ({ restaurantId, date }: {
+export const getWailtists = async ({ restaurantId, date }: {
     restaurantId: number
     date: Date
 }) => {
@@ -54,6 +54,7 @@ export const getWailtistStatues = async ({ restaurantId, date }: {
         where: and(
             between(tblWaitlist.waitlistDate, start, end),
             eq(tblWaitlist.restaurantId, restaurantId),
+            isNull(tblWaitlist.assignedReservationId)
         ),
         with: {
             guest: true
@@ -104,3 +105,23 @@ export const getWaitlistStatues = async ({ restaurantId, date }: { restaurantId:
 
 }
 
+
+
+export const getWaitlistMessageInstance = async ({ waitlistId }: { waitlistId: number }) => {
+    const waitlist = await db.query.tblWaitlist.findFirst({
+        where: eq(tblWaitlist.id, waitlistId),
+        with: {
+            guest: true,
+            restaurant: true,
+            notifications: true
+        }
+    })
+
+    if (!waitlist) {
+        throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Waitlist not found'
+        })
+    }
+    return waitlist
+}

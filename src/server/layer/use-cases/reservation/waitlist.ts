@@ -11,6 +11,9 @@ import { notificationUseCases } from "./notification";
 import TclientValidator from "@/shared/validators/front/create";
 import { TGuestSelect } from "@/server/db/schema";
 import { guestEntities } from "../../entities/guest";
+import { reservationUseCases } from ".";
+import { localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
+import { userEntities } from "../../entities/user";
 
 
 
@@ -57,6 +60,14 @@ export const createWaitlist = async ({
         guestNote: guestNote,
     })
 
+    // await notificationUseCases.handleAddedToWaitlist({
+    //     withEmail: true,
+    //     withSms: true,
+    //     ctx
+    // })
+
+
+
     return waitlistId
 
 }
@@ -82,64 +93,56 @@ export const createReservationFromWaitlist = async ({
     ctx
 }: TUseCaseOwnerLayer<TWaitlistValidator.CreateReservationFromWaitlist>) => {
 
-    const { waitlistId, tableId, hour, roomId } = input
+    const { session: { user: { restaurantId } } } = ctx
 
-    const { restaurantId } = ctx
 
-    const waitlist = await waitlistEntities.getWaitlistById({ waitlistId })
-    const reservationTagIds = waitlist.reservationTagIds?.map(Number) ?? []
-    const allergenWarning = waitlist.allergenWarning
-    const guestNote = waitlist.guestNote
+    const { reservationData, data } = input
+
+
+    //set reservation time to utc
+    const hour = localHourToUtcHour(reservationData.hour)
+
 
     const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
 
-    const prePaymentAmount = restaurantSettings.prePayemntPricePerGuest * waitlist.guestCount
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
+    const reservation = await db.transaction(async (trx) => {
 
-    await db.transaction(async (trx) => {
-
-
-        const reservation = await ReservationEntities.createReservation({
+        const newReservation = await ReservationEntities.createReservation({
             data: {
-                restaurantId,
-                roomId,
-                guestId: waitlist.guestId,
-                mealId: waitlist.mealId,
-                reservationDate: waitlist.waitlistDate,
+
+                ...reservationData,
                 hour,
-                guestCount: waitlist.guestCount,
-                reservationStatusId: EnumReservationStatusNumeric.prepayment,
+                restaurantId,
+                reservationStatusId: restaurantSettings.newReservationStatusId,
                 prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
-                isSendSms: true,
-                isSendEmail: true,
+
+                waitlistId: data.waitlistId,
+                //!TODO: split this to two different functions
+                createdOwnerId: ctx.session.user.userId,
+                isCreatedByOwner: true,
             },
-            tableIds: [tableId],
+            tableIds: data.tableIds,
             trx
         })
 
-        if (guestNote) {
-            await ReservationEntities.createReservationNote({
-                reservationId: reservation.id,
-                note: guestNote,
-                trx
-            })
-        }
 
-        if (reservationTagIds && reservationTagIds.length > 0) {
+
+        if (data.reservationTagIds.length > 0) {
             await ReservationEntities.createReservationTags({
-                reservationId: reservation.id,
-                reservationTagIds,
+                reservationId: newReservation.id,
+                reservationTagIds: data.reservationTagIds,
                 trx
             })
         }
 
-        //--------------------------------
-        //create prepayment
+        const amount = restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount
         const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
             data: {
-                reservationId: reservation.id,
-                amount: prePaymentAmount,
+                reservationId: newReservation.id,
+                amount,
                 isDefaultAmount: true,
-                createdBy: 'System'
+                createdBy: "System-Waitlist"
             },
             trx
         })
@@ -149,53 +152,61 @@ export const createReservationFromWaitlist = async ({
                 currentPrepaymentId: newPrepaymentId,
                 reservationStatusId: EnumReservationStatusNumeric.prepayment,
             },
-            reservationId: reservation.id,
+            reservationId: newReservation.id,
             trx
         })
 
-        //--------------------------------  
-
-        //-----------Reservation Created Log and Notification---------------------
-        await ReservationLogEntities.createLog({
-            message: `Reservation created`,
-            reservationId: reservation.id,
-            owner: 'Guest',
-        })
-        await notificationUseCases.handleReservationCreated({
-            reservationId: reservation.id,
-            withEmail: reservation.isSendEmail,
-            withSms: reservation.isSendSms,
-            ctx
-        })
-        await ReservationLogEntities.createLog({
-            message: `Reservation created notification sent`,
-            reservationId: reservation.id,
-            owner: 'Guest',
-        })
-        //--------------------------------
 
 
-        //-----------Prepayment Notification and log---------------------
-        await notificationUseCases.handlePrePayment({
-            reservationId: reservation.id,
-            withEmail: reservation.isSendEmail,
-            withSms: reservation.isSendSms,
-            ctx
-        })
-
-        await ReservationLogEntities.createLog({
-            message: `Asked for prepayment`,
-            reservationId: reservation.id,
-            owner: 'Guest',
-        })
-        //--------------------------------
-
+        return newReservation
     })
-        .catch((err) => {
-            console.log(err, 'Error while creating reservation from holding')
-            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Error while creating reservation from holding' })
-        })
 
+
+    await ReservationLogEntities.createLog({
+        message: `Reservation created`,
+        reservationId: reservation.id,
+        owner: owner.name,
+    })
+
+
+
+    await notificationUseCases.handleCreatedReservationFromWaitlist({
+        waitlistId: data.waitlistId,
+        withEmail: reservation.isSendEmail,
+        withSms: reservation.isSendSms,
+        ctx
+    })
+
+    await ReservationLogEntities.createLog({
+        message: `Reservation created from waitlist notification sent`,
+        reservationId: reservation.id,
+        owner: 'System',
+    })
+
+    //notifications
+    await notificationUseCases.handlePrePayment({
+        reservationId: reservation.id,
+        withEmail: reservation.isSendEmail,
+        withSms: reservation.isSendSms,
+        ctx
+    })
+    await ReservationLogEntities.createLog({
+        message: `Asked for prepayment`,
+        reservationId: reservation.id,
+        owner: 'System',
+    })
+
+
+
+    await waitlistEntities.updateWaitlist({
+        id: data.waitlistId,
+        data: {
+            status: EnumWaitlistStatus.confirmed,
+            assignedReservationId: reservation.id,
+        }
+    })
+
+    
 
 
 }
@@ -217,4 +228,47 @@ export const getWaitlistStatusData = async ({
 }
 
 
+export const getWaitlists = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TWaitlistValidator.GetWaitlists>) => {
+
+    const { date } = input
+    const { restaurantId } = ctx
+
+    const waitlists = await waitlistEntities.getWailtists({ restaurantId, date })
+
+
+    return waitlists
+}
+
+export const queryWaitlistAvailability = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TWaitlistValidator.QueryWaitlistAvailability>) => {
+
+    const { waitlistId } = input
+    const { restaurantId } = ctx
+
+    const waitlist = await waitlistEntities.getWaitlistById({ waitlistId })
+
+    const result = await reservationUseCases.queryTableAvailabilities({
+        date: waitlist.waitlistDate,
+        mealId: waitlist.mealId,
+        restaurantId,
+        guestCount: waitlist.guestCount
+    })
+
+    const avaliableRoom = result.find(r => r.isRoomHasAvaliableTable)
+    const avalliableFirstHour = avaliableRoom?.hours.find(r => r.isAvaliable)
+    const hour = avalliableFirstHour?.hour
+    const tableId = avalliableFirstHour?.avaliableTableIds[0] as number
+    const roomId = avaliableRoom?.room
+    return {
+        isAvaliable: Boolean(avaliableRoom),
+        hour: hour ? utcHourToLocalHour(hour) : undefined,
+        tableId,
+        roomId
+    }
+}
 

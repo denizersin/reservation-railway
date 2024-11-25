@@ -35,6 +35,23 @@ export const waitlistRouter = createTRPCRouter({
             await reservationUseCases.createReservationFromWaitlist(opts)
         }),
 
+    getWaitlists: ownerProcedure
+        .input(waitlistValidators.getWaitlists)
+        .query(async (opts) => {
+            return await reservationUseCases.getWaitlists(opts)
+        }),
+    queryWaitlistAvailability: ownerProcedure
+        .input(waitlistValidators.queryWaitlistAvailability)
+        .mutation(async (opts) => {
+            return await reservationUseCases.queryWaitlistAvailability(opts)
+        }),
+    deleteWaitlist: ownerProcedure
+        .input(z.object({
+            waitlistId: z.number().int().positive()
+        }))
+        .mutation(async (opts) => {
+            await waitlistEntities.deleteWaitlist({ waitlistId: opts.input.waitlistId })
+        }),
 
 
 

@@ -1,6 +1,6 @@
 import { groupByWithKeyFn } from "@/lib/utils";
 import { db } from "@/server/db";
-import { tblGuest, tblReservationHolding, tblRoomTranslation } from "@/server/db/schema";
+import { tblGuest, tblReservationHolding, tblRestaurantTagTranslation, tblRoomTranslation } from "@/server/db/schema";
 import { tblReservation, tblReservationTable, tblWaitingTableSession } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { tblMealHours } from "@/server/db/schema/restaurant-assets";
@@ -389,7 +389,17 @@ export const getReservations = async ({
                 },
             },
             reservationStatus: true,
-
+            tags: {
+                with:{
+                    tag: {
+                        with: {
+                            translations: {
+                                where: eq(tblRestaurantTagTranslation.languageId, sessionLangId)
+                            }
+                        }
+                    }
+                }
+            },
             reservationExistenceStatus: true,
             reservationNotes: true,
         },

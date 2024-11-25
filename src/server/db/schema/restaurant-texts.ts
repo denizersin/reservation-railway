@@ -122,6 +122,7 @@ export const tblWaitlistMessage = mysqlTable('waitlist_message', {
     addedToWaitlistMessage: text('added_to_waitlist_message'),
     addedToWaitlistWalkinMessage: text('added_to_waitlist_walkin_message'),
     calledFromWaitlistMessage: text('called_from_waitlist_message'),
+    cancelWaitlistMessage: text('cancel_waitlist_message'),
 }, (t) => ({
     unq: unique('unique_waitlist_message').on(t.restaurantId, t.languageId),
 }));

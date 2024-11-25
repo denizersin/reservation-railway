@@ -1,7 +1,7 @@
 import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
 import { boolean, index, int, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
-import { tblUser } from '..';
+import { tblUser, tblWaitlist } from '..';
 import { tblGuest, tblPersonel } from '../guest';
 import { tblMeal, tblReservationExistanceStatus } from '../predefined';
 import { tblRestaurant } from '../restaurant';
@@ -55,8 +55,11 @@ export const tblReservation = mysqlTable('reservation', {
     holdedAt: timestamp('holded_at'),
     holdExpiredAt: timestamp('hold_expired_at'),
 
-    isCameFromWaitlist: boolean('is_came_from_waitlist').notNull().default(false),
 
+    //waitlist
+    waitlistId: int('waitlist_id'),
+
+    allergenWarning: boolean('allergen_warning').notNull().default(false),
 
     reservationDate: timestamp('reservation_date').notNull(),
     guestNote: text('guest_note'),
@@ -107,7 +110,7 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
     waitingSession: one(tblWaitingTableSession, { fields: [tblReservation.waitingSessionId], references: [tblWaitingTableSession.id] }),
     confirmationRequests: many(tblConfirmationRequest),
     createdOwner: one(tblUser, { fields: [tblReservation.createdOwnerId], references: [tblUser.id] }),
-
+    waitlist: one(tblWaitlist, { fields: [tblReservation.waitlistId], references: [tblWaitlist.id] }),
     reservationStatus: one(tblReserVationStatus, { fields: [tblReservation.reservationStatusId], references: [tblReserVationStatus.id] }),
     reservationExistenceStatus: one(tblReservationExistanceStatus, { fields: [tblReservation.reservationExistenceStatusId], references: [tblReservationExistanceStatus.id] }),
     assignedPersonal: one(tblPersonel, { fields: [tblReservation.assignedPersonalId], references: [tblPersonel.id] }),

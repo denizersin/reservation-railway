@@ -20,9 +20,14 @@ export function useShowLoadingModal(loading: boolean[]) {
 
     }, [wilShow])
 
+    console.log(wilShow,'wilShow11')
+
     useEffect(() => {
         return () => {
             if (wilShow) {
+    console.log(wilShow,'wilShow22 UNMOUNT')
+
+                console.log('HIDEEE')
                 LoadingModal?.hide()
             }
         }

@@ -3,10 +3,8 @@ import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../schema/index";
 
-import { reservationUseCases } from "@/server/layer/use-cases/reservation";
-import { eq, isNotNull } from "drizzle-orm";
-import { ReservationEntities } from "@/server/layer/entities/reservation";
-import { userEntities } from "@/server/layer/entities/user";
+import { queryTableAvailabilities } from "@/server/layer/use-cases/reservation/client-queries";
+import { count, isNotNull } from "drizzle-orm";
 import { exit } from "process";
 
 
@@ -45,19 +43,45 @@ function getMonthDays(startDate: Date, endDate: Date) {
 
 async function initDb() {
     try {
+        const startDate = new Date()
+        startDate.setDate(startDate.getDate() + 3)
+
+        const dates = Array.from({ length: 30 }, (_, i) => {
+            const date = new Date(startDate)
+            date.setDate(date.getDate() + i)
+            return date
+        })
+
+        const totalStart = performance.now()
+
+        const results = await Promise.all(dates.map(async (date) => {
+            const start = performance.now()
+            const s = await queryTableAvailabilities({
+                date,
+                mealId: 3,
+                restaurantId: 1,
+                guestCount: 2
+            })
+            const end = performance.now()
+            return {
+                date: date.toISOString().split('T')[0],
+                queryTime: end - start
+            }
+        }))
+
+        const totalEnd = performance.now()
+
+        results.forEach(({ date, queryTime }) => {
+            console.log(`Query time for ${date}: ${queryTime.toFixed(2)}ms`)
+        })
+
+        console.log(`Total time for all queries: ${(totalEnd - totalStart).toFixed(2)}ms`)
+
+        console.log(
+            await db.select({ count: count() }).from(schema.tblReservation)
+        )
 
 
-        // const limitationquery =await ReservationEntities.getLimitationStatuesQuery({
-        //     date: new Date(),
-        //     mealId: 3,
-        //     restaurantId: 1
-        // })
-
-        // console.log(limitationquery, 'limitationquery')
-
-        const users = await db.query.tblRestaurant.findMany()
-
-        console.log(users, 'users')
 
     } catch (error) {
         console.error('Error initializing database:', error)

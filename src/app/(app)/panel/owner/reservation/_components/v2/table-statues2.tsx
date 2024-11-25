@@ -1,27 +1,27 @@
-import { TRestaurantMeal, TRoomWithTranslations } from '@/server/db/schema'
-import { api } from '@/server/trpc/react'
-import React, { useMemo } from 'react'
-import { TableStatuesRowCard } from './table-statues-row-card'
-import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { TTableStatuesRow } from '@/lib/reservation'
+import { cn } from '@/lib/utils'
+import { api } from '@/server/trpc/react'
+import { useMemo } from 'react'
+import { TableStatuesRowCard } from './table-statues-row-card'
 
 type Props = {
     selectedTableId: number | undefined
     setSelectedTableId: (id: number | undefined) => void,
     date: Date
-    selectedRoom: TRoomWithTranslations
-    selectedMeal: TRestaurantMeal,
+    selectedRoomId: number | undefined
+    selectedMealId: number | undefined,
     selectedHour: string | undefined,
     setSelectedHour: (hour: string | undefined) => void
     guestCount: number
     setGuestCount: (count: number) => void
+    isDateDisabled?: boolean
 }
 
 export const TableStatues2 = ({
     date,
-    selectedRoom,
-    selectedMeal,
+    selectedRoomId,
+    selectedMealId,
     selectedHour,
     guestCount,
     setGuestCount,
@@ -40,21 +40,22 @@ export const TableStatues2 = ({
 
     const { data: avaliableTablesData } = api.reservation.getTableStatues.useQuery({
         date: queryDate,
-        mealId: selectedMeal.mealId,
+        mealId: selectedMealId!,
     }, {
-        enabled: [date, selectedMeal, selectedRoom].every(Boolean),
+        enabled: [date, selectedMealId, selectedRoomId].every(Boolean),
         staleTime: 0
     })
 
     const { data: mealHours } = api.restaurant.getRestaurantMealHours.useQuery({
-        // mealId: selectedMeal.id,
+        mealId: selectedMealId!,
 
     }, {
-        select: (data) => data.find((d) => d.meal.id === selectedMeal.mealId)?.mealHours
+        select: (data) => data.find((d) => d.meal.id === selectedMealId)?.mealHours,
+        enabled: Boolean(selectedMealId)
     })
 
 
-    const currentTables = avaliableTablesData?.find((t) => t.roomId === selectedRoom.id)?.tables
+    const currentTables = avaliableTablesData?.find((t) => t.roomId === selectedRoomId)?.tables
 
 
     const onClcikTable = (row: TTableStatuesRow) => {
@@ -64,7 +65,7 @@ export const TableStatues2 = ({
     const selectedTable = useMemo(() => {
         return currentTables?.find((table) => table.table?.id === selectedTableId)?.table
     }, [selectedTableId, currentTables])
-    
+    console.log(mealHours, 'mealHours')
     return (
         <div>
             <div className='flex gap-x-2 my-2'>

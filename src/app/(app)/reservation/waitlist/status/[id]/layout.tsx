@@ -50,7 +50,7 @@ export default function Layout({ children, params }: Props) {
             router.replace(`/reservation/waitlist/status/${waitlistId}/cancel`)
         }
         else if (isConfirmed) {
-            router.replace(`/reservation/waitlist/status/${waitlistId}/confirm`)
+            router.replace(`/reservation/waitlist/status/${waitlistId}/confirm-summary`)
         }
         else if (isCreated) {
             router.replace(`/reservation/waitlist/status/${waitlistId}/created`)

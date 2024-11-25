@@ -1,6 +1,5 @@
 import { getEnumValues } from "@/server/utils/server-utils";
 import { EnumReservationExistanceStatus, EnumReservationPrepaymentType, EnumReservationStatus } from "@/shared/enums/predefined-enums";
-import { date } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { baseNotificationOptionsSchema } from "..";
 
@@ -134,6 +133,7 @@ const updateReservationNote = z.object({
 })
 
 
+
 export const reservationValidator = {
     getTableStatues,
     createReservation,
@@ -164,7 +164,7 @@ export const reservationValidator = {
     checkOutAndCompleteReservation,
     cancelConfirmationRequest,
     cancelAndReturnPrepayment,
-    turnCanceledToReservation
+    turnCanceledToReservation,
 }
 
 namespace TReservationValidator {

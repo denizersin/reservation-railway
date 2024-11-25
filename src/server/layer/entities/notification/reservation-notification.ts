@@ -1,6 +1,6 @@
 import { db } from "@/server/db";
-import { tblPrepaymentMessage, TGuestSelect, TReservation, TRestaurantWithoutTrns } from "@/server/db/schema";
-import { tblReservationNotification, TReservationNotification, TReservationNotificationInsert } from "@/server/db/schema/reservation/notification";
+import { tblPrepaymentMessage, TGuestSelect, TReservation, TRestaurantWithoutTrns, TWaitlist } from "@/server/db/schema";
+import { tblReservationNotification, tblWaitlistNotification, TReservationNotification, TReservationNotificationInsert, TWaitlistNotificationInsert } from "@/server/db/schema/reservation/notification";
 import { reservationLinks } from "@/server/utils/front-link";
 import { EnumLanguage, EnumNotificationType } from "@/shared/enums/predefined-enums";
 import { and, eq } from "drizzle-orm";
@@ -29,11 +29,29 @@ export const getBaseParams = (reservation: TReservationMessageInstance) => {
     }
 }
 
+export const getWaitlistBaseParams = (waitlist: TWaitlistMessageInstance) => {
+    return {
+        Client: waitlist.guest.name,
+        Restaurant: waitlist.restaurant.name,
+        Date: waitlist.waitlistDate.toISOString(),
+        Person: waitlist.guestCount.toString(),
+    }
+}
+
 
 export const createReservationNotification = async (data: TReservationNotificationInsert) => {
     const [result] = await db.insert(tblReservationNotification).values(data).$returningId()
     const notification = await db.query.tblReservationNotification.findFirst({
         where: eq(tblReservationNotification.id, result?.id!)
+    })
+    if (!notification) throw new Error('Notification not created')
+    return notification
+};
+
+export const createWaitlistNotification = async (data: TWaitlistNotificationInsert) => {
+    const [result] = await db.insert(tblWaitlistNotification).values(data).$returningId()
+    const notification = await db.query.tblWaitlistNotification.findFirst({
+        where: eq(tblWaitlistNotification.id, result?.id!)
     })
     if (!notification) throw new Error('Notification not created')
     return notification
@@ -231,7 +249,7 @@ export const generateReservationGuestCountChange = async ({
 
     const params: MessageParams = getBaseParams(reservation)
     params.Link = link
-    
+
     const restaurantReservationMessages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
@@ -283,10 +301,95 @@ export const generateReservationTimeChange = async ({
 
 }
 
+const generateCreatedReservationFromWaitlistNotification = async ({
+    waitlist,
+    type
+}: {
+    waitlist: TWaitlistMessageInstance,
+    type: EnumNotificationType
+}) => {
+    const statusLink = reservationLinks.waitlistStatus({ waitlistId: waitlist.id })
+    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
+    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
+
+    const params: MessageParams = getWaitlistBaseParams(waitlist)
+    params.Link = link
+
+    const restaurantWaitlistMessages = await LanguageEntity.getWaitlistMessagesByLang({
+        restaurantId: waitlist.restaurantId,
+        languageId: waitlist.guest.languageId
+    })
+
+    const message = restaurantWaitlistMessages.calledFromWaitlistMessage
+    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation created from waitlist message not found' })
+    const notificationMessage = parseMessage(message, params)
+
+    return notificationMessage
+}
+
+
+
+//added to waitlist
+const generateAddedToWaitlistNotification = async ({
+    waitlist,
+    type
+}: {
+    waitlist: TWaitlistMessageInstance,
+    type: EnumNotificationType
+}) => {
+    const statusLink = reservationLinks.waitlistStatus({ waitlistId: waitlist.id })
+    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
+    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
+
+    const params: MessageParams = getWaitlistBaseParams(waitlist)
+    params.Link = link
+
+    const restaurantWaitlistMessages = await LanguageEntity.getWaitlistMessagesByLang({
+        restaurantId: waitlist.restaurantId,
+        languageId: waitlist.guest.languageId
+    })
+
+    const message = restaurantWaitlistMessages.addedToWaitlistMessage
+    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation created from waitlist message not found' })
+    const notificationMessage = parseMessage(message, params)
+
+    return notificationMessage
+}
+
+//cancel waitlist
+const generateCancelWaitlistNotification = async ({
+    waitlist,
+    type
+}: {
+    waitlist: TWaitlistMessageInstance,
+    type: EnumNotificationType
+}) => {
+    const statusLink = reservationLinks.waitlistStatus({ waitlistId: waitlist.id })
+    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
+    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
+
+    const params: MessageParams = getWaitlistBaseParams(waitlist)
+    params.Link = link
+
+    const restaurantWaitlistMessages = await LanguageEntity.getWaitlistMessagesByLang({
+        restaurantId: waitlist.restaurantId,
+        languageId: waitlist.guest.languageId
+    })
+
+    const message = restaurantWaitlistMessages.cancelWaitlistMessage
+    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation created from waitlist message not found' })
+    const notificationMessage = parseMessage(message, params)
+
+    return notificationMessage
+}
+
 
 
 export const NotificationEntities = {
     createReservationNotification,
+    createWaitlistNotification,
+
+
     updateNotification,
     generateReservationCreatedNotification,
     generatePrePaymentNotification,
@@ -296,11 +399,21 @@ export const NotificationEntities = {
     generateNotifyPrePaymentNotification,
     generateReservationGuestCountChange,
     generateReservationTimeChange,
+
+    //waitlist
+    generateCreatedReservationFromWaitlistNotification,
+    generateAddedToWaitlistNotification,
+    generateCancelWaitlistNotification,
 }
 
 
 
 export type TReservationMessageInstance = TReservation & {
     guest: TGuestSelect
+    restaurant: TRestaurantWithoutTrns
+}
+
+export type TWaitlistMessageInstance = TWaitlist & {
+    guest: TGuestSelect,
     restaurant: TRestaurantWithoutTrns
 }

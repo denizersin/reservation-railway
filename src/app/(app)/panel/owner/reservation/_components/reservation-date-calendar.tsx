@@ -15,7 +15,11 @@ import {
 } from "@/components/ui/popover"
 
 
-export function ReservationDateCalendar({ date, setDate }: { date: Date, setDate: (date: Date) => void }) {
+export function ReservationDateCalendar({ date, setDate, disabled }: {
+    date: Date,
+    setDate: (date: Date) => void,
+    disabled?: boolean
+}) {
 
 
     return (
@@ -38,6 +42,7 @@ export function ReservationDateCalendar({ date, setDate }: { date: Date, setDate
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
+                    disabled={disabled}
                     mode="single"
                     selected={date}
                     onSelect={(value) => setDate(value || date)}

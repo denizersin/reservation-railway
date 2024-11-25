@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "21fd8b5b-0db7-4239-a287-02ac420f2860",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "786daba0-3403-4470-9813-b8ae8942ff0c",
+  "prevId": "61fa6331-7daa-4987-82c2-56c059474635",
   "tables": {
     "guest": {
       "name": "guest",
@@ -1790,6 +1790,13 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "cancel_waitlist_message": {
+          "name": "cancel_waitlist_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -2467,8 +2474,15 @@
           "notNull": false,
           "autoincrement": false
         },
-        "is_came_from_waitlist": {
-          "name": "is_came_from_waitlist",
+        "waitlist_id": {
+          "name": "waitlist_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "allergen_warning": {
+          "name": "allergen_warning",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -3093,6 +3107,72 @@
       },
       "uniqueConstraints": {}
     },
+    "waitlist_notification": {
+      "name": "waitlist_notification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "waitlist_id": {
+          "name": "waitlist_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "enum('SMS','EMAIL')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notification_message_type": {
+          "name": "notification_message_type",
+          "type": "enum('Created Reservation From Waitlist','Cancel Waitlist','Added To Waitlist')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('PENDING','SENT','FAILED')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "waitlist_notification_id": {
+          "name": "waitlist_notification_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "reservation_log": {
       "name": "reservation_log",
       "columns": {
@@ -3603,6 +3683,23 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
         }
       },
       "indexes": {},

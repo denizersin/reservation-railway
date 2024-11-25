@@ -35,8 +35,8 @@ export const UpdateReservationTmeModal = ({
     const [guestCount, setGuestCount] = useState<number>(reservation.guestCount)
     const [selectedHour, setSelectedHour] = useState<string | undefined>(reservation.hour)
     const [selectedTableId, setSelectedTableId] = useState<number | undefined>(reservation.tables[0]?.tableId)
-    const [selectedMeal, setSelectedMeal] = useState<TRestaurantMeal | undefined>(undefined)
-    const [selectedRoom, setSelectedRoom] = useState<TRoomWithTranslations | undefined>()
+    const [selectedMealId, setSelectedMealId] = useState<number | undefined>(reservation.mealId)
+    const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(reservation.roomId)
 
     const [withEmail, setWithEmail] = useState(true)
     const [withSms, setWithSms] = useState(true)
@@ -90,7 +90,7 @@ export const UpdateReservationTmeModal = ({
                 reservationDate: newDate,
                 hour,
                 tableId: selectedTableId!,
-                roomId: selectedRoom!.id
+                roomId: selectedRoomId!
             },
             notificationOptions: { withEmail, withSms }
         })
@@ -99,7 +99,7 @@ export const UpdateReservationTmeModal = ({
 
     useEffect(() => {
         if (meals) {
-            setSelectedMeal(meals?.find(m => m.mealId === reservation.mealId))
+            setSelectedMealId(meals?.find(m => m.id === reservation.mealId)?.id)
         }
     }, [meals, reservation.mealId])
 
@@ -110,11 +110,11 @@ export const UpdateReservationTmeModal = ({
 
 
     useEffect(() => {
-        setSelectedRoom(roomsData?.find(r => r.id === reservation.roomId))
+        setSelectedRoomId(roomsData?.find(r => r.id === reservation.roomId)?.id)
     }, [roomsData, reservation.roomId])
 
     useEffect(() => {
-        setSelectedMeal(meals?.[0]);
+        setSelectedMealId(meals?.[0]?.id);
     }, [meals])
 
     useEffect(() => {
@@ -125,12 +125,16 @@ export const UpdateReservationTmeModal = ({
 
 
     useEffect(() => {
-        if (selectedRoom?.id === reservation.roomId && date === reservation.reservationDate) {
+        if (selectedRoomId === reservation.roomId && date === reservation.reservationDate) {
             setSelectedTableId(reservation.tables[0]?.tableId)
         } else {
             setSelectedTableId(undefined)
         }
-    }, [date, selectedMeal, selectedRoom])
+    }, [date, selectedMealId, selectedRoomId])
+
+    // Find current room and meal for TableStatues2
+    const currentRoom = roomsData?.find(r => r.id === selectedRoomId)
+    const currentMeal = meals?.find(m => m.id === selectedMealId)
 
 
     return (
@@ -146,21 +150,21 @@ export const UpdateReservationTmeModal = ({
 
                     {/* Meal Selection */}
                     <MealTabs
-                        selectedMeal={selectedMeal}
-                        setSelectedMeal={setSelectedMeal}
+                        selectedMealId={selectedMealId}
+                        setSelectedMealId={setSelectedMealId}
                     />
                     <RoomTabs
-                        selectedRoom={selectedRoom}
-                        setSelectedRoom={setSelectedRoom}
+                        selectedRoomId={selectedRoomId}
+                        setSelectedRoomId={setSelectedRoomId}
                     />
 
                     {/* Hour Selection */}
-                    {selectedMeal && selectedRoom && <TableStatues2
+                    {currentMeal && currentRoom && <TableStatues2
                         selectedTableId={selectedTableId}
                         setSelectedTableId={setSelectedTableId}
                         date={date}
-                        selectedRoom={selectedRoom!}
-                        selectedMeal={selectedMeal}
+                        selectedRoomId={selectedRoomId}
+                        selectedMealId={selectedMealId}
                         selectedHour={selectedHour}
                         setSelectedHour={setSelectedHour}
                         guestCount={guestCount}

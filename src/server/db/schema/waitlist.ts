@@ -1,8 +1,9 @@
 import { getEnumValues } from '@/server/utils/server-utils';
 import { EnumWaitlistStatus } from '@/shared/enums/predefined-enums';
 import { boolean, index, int, json, mysqlEnum, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
-import { tblGuest } from './guest';
+import { tblGuest, TGuest } from './guest';
 import { relations } from 'drizzle-orm';
+import { tblRestaurant, tblWaitlistNotification } from '.';
 
 
 export const tblWaitlist = mysqlTable('waitlist', {
@@ -20,14 +21,22 @@ export const tblWaitlist = mysqlTable('waitlist', {
     guestCount: int('guest_count').notNull(),
 
     assignedReservationId: int('assigned_reservation_id'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow()
 })
 
-export const tblWaitlistRelations = relations(tblWaitlist, ({ one }) => ({
+export const tblWaitlistRelations = relations(tblWaitlist, ({ one, many }) => ({
     guest: one(tblGuest, {
         fields: [tblWaitlist.guestId],
         references: [tblGuest.id]
-    })
+    }),
+    restaurant: one(tblRestaurant, {
+        fields: [tblWaitlist.restaurantId],
+        references: [tblRestaurant.id]
+    }),
+    notifications: many(tblWaitlistNotification)
 }))
 
 export type TWaitlist = typeof tblWaitlist.$inferSelect
 export type TWaitlistInsert = typeof tblWaitlist.$inferInsert
+export type WaitlistWithGuest = TWaitlist & { guest: TGuest }

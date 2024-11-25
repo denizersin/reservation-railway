@@ -205,6 +205,12 @@ export enum EnumNotificationMessageType {
     ReservationGuestCountChange = "Reservation Guest Count Change",
 }
 
+export enum EnumWaitlistNotificationMessageType {
+    CreatedReservationFromWaitlist = "Created Reservation From Waitlist",
+    CancelWaitlist = "Cancel Waitlist",
+    AddedToWaitlist = "Added To Waitlist",
+}
+
 export enum EnumPrepaymentStatus {
     pending = 'pending',
     success = 'success',
@@ -245,4 +251,15 @@ export enum EnumWaitlistStatus {
 export enum EnumInvoiceType {
     individual = 'individual',
     corporate = 'corporate',
+}
+
+export enum EnumReviewSendDay {
+    CHECK_OUT_DAY = 'CHECK_OUT_DAY',
+    NEXT_DAY = 'NEXT_DAY',
+}
+
+export enum EnumReviewSendType {
+    SMS = 'SMS',
+    EMAIL = 'EMAIL',
+    SMS_AND_EMAIL = 'SMS_AND_EMAIL',
 }

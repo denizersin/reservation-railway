@@ -70,8 +70,8 @@ export const CreateReservation = (props: Props) => {
 
 
     const [date, setDate] = useState<Date>(new Date())
-    const [selectedMeal, setSelectedMeal] = useState<TRestaurantMeal | undefined>(meals?.[0])
-    const [selectedRoom, setSelectedRoom] = useState<TRoomWithTranslations | undefined>(roomsData?.[0])
+    const [selectedMealId, setSelectedMealId] = useState<number | undefined>(undefined)
+    const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(undefined)
     const [selectedTableId, setSelectedTableId] = useState<number | undefined>(undefined)
     const [guestCount, setGuestCount] = useState<number>(0)
 
@@ -109,7 +109,8 @@ export const CreateReservation = (props: Props) => {
     })
 
     const handleCreateReservation = () => {
-        if (!selectedGuestId || !selectedRoom || !selectedMeal || !selectedTableId || !selectedHour || !guestCount) {
+        console.log(selectedHour, selectedMealId, selectedRoomId, selectedTableId, guestCount)
+        if (!selectedGuestId || !selectedRoomId || !selectedMealId || !selectedTableId || !selectedHour || !guestCount) {
             return
         }
         const newDate = new Date(date)
@@ -125,11 +126,11 @@ export const CreateReservation = (props: Props) => {
         createReservation({
             reservationData: {
                 guestId: selectedGuestId,
-                roomId: selectedRoom.id,
+                roomId: selectedRoomId,
                 guestCount: guestCount,
                 reservationDate: newDate,
                 hour: selectedHour,
-                mealId: selectedMeal.mealId,
+                mealId: selectedMealId,
                 prepaymentTypeId: selectedPrePaymentTypeId,
                 isSendSms: isSendSms,
                 isSendEmail: isSendEmail,
@@ -152,16 +153,20 @@ export const CreateReservation = (props: Props) => {
 
     //turn them to reducer
     useEffect(() => {
-        setSelectedRoom(roomsData?.[0]);
+        if (roomsData?.length) {
+            setSelectedRoomId(roomsData[0]?.id);
+        }
     }, [roomsData])
 
     useEffect(() => {
-        setSelectedMeal(meals?.[0]);
+        if (meals?.length) {
+            setSelectedMealId(meals[0]?.id);
+        }
     }, [meals])
 
     useEffect(() => {
         setSelectedTableId(undefined)
-    }, [selectedRoom, selectedMeal, date])
+    }, [selectedRoomId, selectedMealId, date])
 
 
 
@@ -202,13 +207,13 @@ export const CreateReservation = (props: Props) => {
             <ReservationDateCalendar date={date} setDate={setDate} />
 
             <MealTabs
-                selectedMeal={selectedMeal}
-                setSelectedMeal={setSelectedMeal}
+                selectedMealId={selectedMealId}
+                setSelectedMealId={setSelectedMealId}
             />
 
             <RoomTabs
-                selectedRoom={selectedRoom}
-                setSelectedRoom={setSelectedRoom}
+                selectedRoomId={selectedRoomId}
+                setSelectedRoomId={setSelectedRoomId}
             />
 
             {
@@ -217,8 +222,8 @@ export const CreateReservation = (props: Props) => {
                     selectedTableId={selectedTableId}
                     setSelectedTableId={setSelectedTableId}
                     date={date}
-                    selectedRoom={selectedRoom!}
-                    selectedMeal={selectedMeal!}
+                    selectedRoomId={selectedRoomId}
+                    selectedMealId={selectedMealId}
                     selectedHour={selectedHour}
                     setSelectedHour={setSelectedHour}
                     guestCount={guestCount}

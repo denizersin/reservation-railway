@@ -1,9 +1,10 @@
 import { TCtx } from "@/server/api/trpc"
-import { TReservationNotificationInsert } from "@/server/db/schema"
-import { EnumNotificationMessageType, EnumNotificationStatus, EnumNotificationType } from "@/shared/enums/predefined-enums"
-import { NotificationEntities, TReservationMessageInstance } from "../../entities/notification/reservation-notification"
+import { TReservationNotificationInsert, TWaitlistNotificationInsert } from "@/server/db/schema"
+import { EnumNotificationMessageType, EnumNotificationStatus, EnumNotificationType, EnumWaitlistNotificationMessageType } from "@/shared/enums/predefined-enums"
+import { NotificationEntities, TReservationMessageInstance, TWaitlistMessageInstance } from "../../entities/notification/reservation-notification"
 import { ReservationEntities } from "../../entities/reservation"
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log"
+import { waitlistEntities } from "../../entities/waitlist"
 
 
 
@@ -155,8 +156,70 @@ const handleNotificationSending = async ({
     }
 }
 
+const handleWaitlistNotificationSending = async ({
+    waitlist,
+    notificationType,
+    shouldSendEmail,
+    shouldSendSms,
+    logPrefix,
+    emailMessage,
+    smsMessage,
+    ctx
+}: {
+    waitlist: TWaitlistMessageInstance
+    notificationType: EnumWaitlistNotificationMessageType
+    shouldSendEmail: boolean
+    shouldSendSms: boolean
+    logPrefix: string,
+    emailMessage: string,
+    smsMessage: string,
+    ctx?: TCtx
+}) => {
+    const guest = waitlist.guest
+    const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
+    const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
+
+    const notification: TWaitlistNotificationInsert = {
+        waitlistId: waitlist.id,
+        type: EnumNotificationType.SMS,
+        notificationMessageType: notificationType,
+        status: EnumNotificationStatus.SENT,
+        message: emailMessage,
+    }
+
+    if (shouldSendEmail && email) {
+        try {
+            await sendEmail({});
+            notification.type = EnumNotificationType.EMAIL
+            await NotificationEntities.createWaitlistNotification(notification);
+        } catch (e) {
+            notification.status = EnumNotificationStatus.FAILED
+            await NotificationEntities.createWaitlistNotification(notification);
+        }
+    }
+
+    if (shouldSendSms && phone) {
+        notification.message = smsMessage
+        try {
+            await sendSms({});
+            notification.type = EnumNotificationType.SMS
+            await NotificationEntities.createWaitlistNotification(notification);
+        } catch (e) {
+            notification.status = EnumNotificationStatus.FAILED
+            await NotificationEntities.createWaitlistNotification(notification);
+        }
+    }
+}
+
 type NotificationHandlerParams = {
     reservationId: number
+    withSms: boolean
+    withEmail: boolean
+    ctx?: TCtx
+}
+
+type WaitlistNotificationHandlerParams = {
+    waitlistId: number
     withSms: boolean
     withEmail: boolean
     ctx?: TCtx
@@ -472,6 +535,105 @@ export const handleReservationTimeChange = async ({
 
 
 
+export const handleCreatedReservationFromWaitlist = async ({
+    waitlistId,
+    withSms,
+    withEmail,
+    ctx
+}: WaitlistNotificationHandlerParams) => {
+    const waitlistWithGuest = await waitlistEntities.getWaitlistMessageInstance({
+        waitlistId
+    })
+
+    const emailMessage = withEmail ? await NotificationEntities.generateCreatedReservationFromWaitlistNotification({
+        waitlist: waitlistWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateCreatedReservationFromWaitlistNotification({
+        waitlist: waitlistWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleWaitlistNotificationSending({
+        waitlist: waitlistWithGuest,
+        notificationType: EnumWaitlistNotificationMessageType.CreatedReservationFromWaitlist,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'created reservation from waitlist notification',
+        ctx
+    })
+}
+
+
+export const handleAddedToWaitlist = async ({
+    waitlistId,
+    withSms,
+    withEmail,
+    ctx
+}: WaitlistNotificationHandlerParams) => {
+    const waitlistWithGuest = await waitlistEntities.getWaitlistMessageInstance({
+        waitlistId
+    })
+
+    const emailMessage = withEmail ? await NotificationEntities.generateAddedToWaitlistNotification({
+        waitlist: waitlistWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateAddedToWaitlistNotification({
+        waitlist: waitlistWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleWaitlistNotificationSending({
+        waitlist: waitlistWithGuest,
+        notificationType: EnumWaitlistNotificationMessageType.AddedToWaitlist,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'added to waitlist notification',
+        ctx
+    })
+}
+
+export const handleCancelWaitlist = async ({
+    waitlistId,
+    withSms,
+    withEmail,
+    ctx
+}: WaitlistNotificationHandlerParams) => {
+    const waitlistWithGuest = await waitlistEntities.getWaitlistMessageInstance({
+        waitlistId
+    })
+
+    const emailMessage = withEmail ? await NotificationEntities.generateCancelWaitlistNotification({
+        waitlist: waitlistWithGuest,
+        type: EnumNotificationType.EMAIL
+    }) : ''
+
+    const smsMessage = withSms ? await NotificationEntities.generateCancelWaitlistNotification({
+        waitlist: waitlistWithGuest,
+        type: EnumNotificationType.SMS
+    }) : ''
+
+    await handleWaitlistNotificationSending({
+        waitlist: waitlistWithGuest,
+        notificationType: EnumWaitlistNotificationMessageType.CancelWaitlist,
+        emailMessage,
+        smsMessage,
+        shouldSendEmail: withEmail,
+        shouldSendSms: withSms,
+        logPrefix: 'cancel waitlist notification',
+        ctx
+    })
+}
+
+
+
 
 
 
@@ -485,5 +647,8 @@ export const notificationUseCases = {
     handleNotifyPrepayment,
     handleReservationGuestCountChange,
     handleReservationTimeChange,
-    handlePrepaymentCancelled
+    handlePrepaymentCancelled,
+
+    //waitlist
+    handleCreatedReservationFromWaitlist,
 }

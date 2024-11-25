@@ -33,8 +33,8 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 1
-const guestCount = 5
+const reservationCount = 1000
+const guestCount = 50000
 
 const seedFunctions = [
     async function createUsers() {
@@ -190,7 +190,7 @@ const seedFunctions = [
 
 
         await RoomEntities.createTables({
-            tables: new Array(20).fill(undefined).map((_, i) => ({
+            tables: new Array(10).fill(undefined).map((_, i) => ({
                 maxCapacity: 3,
                 minCapacity: 2,
                 no: 'R1-' + i.toString(),
@@ -304,6 +304,7 @@ const seedFunctions = [
                 addedToWaitlistMessage: 'Added to waitlist message @Client @Date @Link @Restaurant ' + language.languageCode,
                 addedToWaitlistWalkinMessage: 'Added to waitlist walkin message @Client @Date @Link @Restaurant ' + language.languageCode,
                 calledFromWaitlistMessage: 'Called from waitlist message @Client @Date @Link @Restaurant ' + language.languageCode,
+                cancelWaitlistMessage: 'Cancel waitlist message @Client @Date @Link @Restaurant ' + language.languageCode,
             })
         }
 
@@ -360,7 +361,7 @@ const seedFunctions = [
         }
 
 
-        const reservationCreateionCount = reservationCount / roomTables.length
+        const reservationCreateionCount = reservationCount
         //add two day
         const firstReservationDate = new Date()
         firstReservationDate.setDate(firstReservationDate.getDate() + 2)

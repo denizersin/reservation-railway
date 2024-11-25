@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 
 
 
-export type TMonthAvailabilityRow = RouterOutputs['reservation']['getMonthAvailability'][0]
+export type TMonthAvailabilityRow = RouterOutputs['reservation']['getMonthAvailabilityByGuestCount'][0]
 
 
 

@@ -357,11 +357,11 @@ export const reservationRouter = createTRPCRouter({
         }),
 
 
-    getMonthAvailability: clientProcedure
-        .input(reservatoinClientValidator.monthAvailabilityQuerySchema)
-        .query(async (opts) => {
-            return await reservationUseCases.getMonthAvailability(opts)
-        }),
+    // getMonthAvailability: clientProcedure
+    //     .input(reservatoinClientValidator.monthAvailabilityQuerySchema)
+    //     .query(async (opts) => {
+    //         return await reservationUseCases.getMonthAvailability(opts)
+    //     }),
     getMonthAvailabilityByGuestCount: clientProcedure
         .input(reservatoinClientValidator.monthAvailabilityByGuestCountQuerySchema)
         .query(async (opts) => {

@@ -6,7 +6,7 @@ import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import { and, between, count, eq, isNotNull, isNull, ne, sql, sum } from "drizzle-orm";
 
 import { ReservationEntities } from ".";
-import { tblRoom, tblTable, TTable } from "@/server/db/schema";
+import { tblMeal, tblMealHours, tblRoom, tblTable, TTable } from "@/server/db/schema";
 
 
 
@@ -341,4 +341,24 @@ export async function queryHourAvaliability({ date, mealId, restaurantId, utcHou
     return isAvaliable
 }
 
+
+
+
+export const getLimitationStatusGusetCount2 = async ({ date,
+    mealId,
+    restaurantId,
+    guestCount
+}: { date: Date, mealId: number, restaurantId: number, guestCount: number }) => {
+
+    const { start, end } = getStartAndEndOfDay({
+        date: getLocalTime(date)
+    })
+
+    const limitationStatus = getLimitationStatuesQuery({ date, mealId, restaurantId }).as('limitationStatus')
+
+    
+    
+    
+
+}
 

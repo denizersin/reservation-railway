@@ -1,4 +1,5 @@
 import {
+    IconCalendarClock,
     IconCalendarWeek,
     IconClock12,
     IconHexagonNumber1,
@@ -21,6 +22,12 @@ export const ownerSidelinks: SideLink[] = [
         label: '',
         href: '/panel/owner/reservations',
         icon: <IconCalendarWeek size={18} />,
+    },
+    {
+        title: 'Waitlist',
+        label: '',
+        href: '/panel/owner/waitlist',
+        icon: <IconCalendarClock  size={18} />
     },
     {
         title: 'Guests',

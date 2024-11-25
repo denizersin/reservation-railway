@@ -32,6 +32,14 @@ const getReservationStatusLink = ({
     return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
 }
 
+const getWaitlistStatusLink = ({
+    waitlistId
+}: {
+    waitlistId: number
+}) => {
+    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/waitlist/status/${waitlistId}`
+}
+
 
 
 
@@ -39,5 +47,8 @@ export const reservationLinks = {
     confirmation: getConfirmationLink,
     prepayment: getPrepaymentLink,
     detail: getReservationDetailLink,
-    status: getReservationStatusLink
+    status: getReservationStatusLink,
+    waitlistStatus: getWaitlistStatusLink
 }
+
+
