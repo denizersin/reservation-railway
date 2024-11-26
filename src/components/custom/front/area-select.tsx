@@ -49,7 +49,9 @@ export const AreaSelect = ({
     setAreaId
 }: Props) => {
 
-
+    const { data: rooms } = api.room.getRooms.useQuery({
+        withWaitingRooms:false
+    })
     const areas = [
         {
             id: 1,
@@ -99,13 +101,16 @@ export const AreaSelect = ({
         return avaliableRooms.find(a => a.room === areaId)
     }, [avaliableRooms, areaId])
 
+    const currentRoomName = useMemo(() => {
+        return rooms?.find(r => r.id === areaId)?.translations[0]?.name
+    }, [rooms, areaId])
 
     const TriggerElement = <div className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>
         <div className="c ">
             <IconArrowLeft className="w-3 h-5" />
         </div>
         <div className="c flex flex-col items-center">
-            <div className="text-front-primary font-semibold mb-1">{currentArea?.room}</div>
+            <div className="text-front-primary font-semibold mb-1">{currentRoomName}</div>
             <div className="flex items-center gap-2 text-gray-500">
                 <div className=""><IconSittingArea className="size-4 " /></div>
                 <div className="text-sm">Sitting Area</div>
@@ -126,9 +131,7 @@ export const AreaSelect = ({
         setCurrentImage(areas[imageIndex]?.name)
     }
 
-    const { data: rooms } = api.room.getRooms.useQuery({
-        withWaitingRooms:false
-    })
+
 
 
 

@@ -1,5 +1,5 @@
 import { roomValidator } from "@/shared/validators/room";
-import { createTRPCRouter, ownerProcedure } from "../trpc";
+import { clientProcedure, createTRPCRouter, ownerProcedure } from "../trpc";
 import { RoomEntities } from "@/server/layer/entities/room";
 import { z } from "zod";
 import { roomUseCases } from "@/server/layer/use-cases/room";
@@ -41,12 +41,18 @@ export const roomRouter = createTRPCRouter({
         const data = await RoomEntities.getRoomWithTranslations({ roomId: input.roomId })
         return data;
     }),
-    getRooms: ownerProcedure
+    getRooms: clientProcedure
         .input(z.object({
             withWaitingRooms: z.boolean().optional()
         }))
         .query(async (opts) => {
-            return await roomUseCases.getRooms(opts)
+            const { restaurantId } = opts.ctx
+            const languageId = opts.ctx.userPrefrences.language.id
+            return await RoomEntities.getRooms({
+                restaurantId,
+                languageId,
+                withWaitingRooms: opts.input.withWaitingRooms
+            })
         }),
     getAllRooms: ownerProcedure.query(async (opts) => {
         return await roomUseCases.getRooms({
