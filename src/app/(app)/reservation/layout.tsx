@@ -23,8 +23,9 @@ const ReservationPageLayoutProvider = (props: Props) => {
 
         const isWaitlistStatusPage = pathname.includes('waitlist/status')
         const isReservationStatusPage = pathname.includes('reservation/status')
+        const isReviewPage = pathname.includes('review')
 
-        if (!(isWaitlistStatusPage || isReservationStatusPage)) {
+        if (!(isWaitlistStatusPage || isReservationStatusPage || isReviewPage)) {
             router.push('/reservation')
         }
     }, [])

@@ -46,6 +46,9 @@ export const getMonthAvailabilityByGuestCount = async ({
     const { restaurantId } = ctx
     const language = ctx.userPrefrences.language
 
+
+
+
     // ... existing code ...
 
     // GMT+3'e göre bugünün tarihini al

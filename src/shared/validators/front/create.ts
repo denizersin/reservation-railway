@@ -98,6 +98,8 @@ const createWaitlistSchema = z.object({
 })
 
 
+
+
 export const clientValidator = {
     userInfoFormSchema,
     reservationDataFormSchema,

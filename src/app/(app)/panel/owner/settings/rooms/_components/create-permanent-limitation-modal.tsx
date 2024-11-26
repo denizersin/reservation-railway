@@ -58,15 +58,12 @@ const CreatePermanentLimitationModal: React.FC<Props> = ({ isOpen, setOpen }) =>
 
         //endDate will be 23:59:59
         const endDate = values.endDate
-        endDate.setHours(23, 59,)
+        endDate.setHours(0,0,0,0)
 
 
         const edate = new Date(endDate)
 
-        console.log(edate.toString(), 'edate')
-        console.log(sdate.toString(), 'sdate')
 
-        return;
 
         const formattedValues = {
             ...values,

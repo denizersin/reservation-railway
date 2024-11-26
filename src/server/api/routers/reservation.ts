@@ -17,6 +17,9 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { clientProcedure, createTRPCRouter, ownerProcedure } from "../trpc";
 import { waitlistValidators } from "@/shared/validators/waitlist/waitlist";
+import { reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
+import { clientReviewValidator } from "@/shared/validators/front/reivew";
+import { reviewValidator } from "@/shared/validators/review";
 
 
 
@@ -400,10 +403,54 @@ export const reservationRouter = createTRPCRouter({
         .mutation(async (opts) => {
             await reservationUseCases.holdTable(opts)
         }),
+    unHoldHoldedTable: clientProcedure
+        .input(z.object({}))
+        .mutation(async (opts) => {
+            await reservationUseCases.unHoldHoldedTable(opts)
+        }),
 
     getGuestCountFilterValues: clientProcedure
         .query(async (opts) => {
             return await reservationUseCases.getGuestCountFilterValues(opts)
+        }),
+    makeReservationReview: clientProcedure
+        .input(clientReviewValidator.makeReview)
+        .mutation(async (opts) => {
+            await reservationUseCases.createReservationReview(opts)
+        }),
+    getActiveReviewsByLanguage: clientProcedure
+        .query(async (opts) => {
+            const { restaurantId } = opts.ctx
+            const languageId = opts.ctx.userPrefrences.language.id
+            return await reviewSettingEntities.getActiveReviewsByLanguage({ restaurantId, languageId })
+        }),
+    getAllReviewsByLanguage: ownerProcedure
+        .query(async (opts) => {
+            const { restaurantId } = opts.ctx
+            const languageId = opts.ctx.userPrefrences.language.id
+            return await reviewSettingEntities.getAllReviewsByLanguage({ restaurantId, languageId })
+        }),
+
+    getReviewsByLanguage: clientProcedure
+        .query(async (opts) => {
+            const { restaurantId } = opts.ctx
+            const languageId = opts.ctx.userPrefrences.language.id
+            // return await reviewSettingEntities.getReviewsByLanguage({ restaurantId, languageId })
+        }),
+
+    reviewPagination: ownerProcedure
+        .input(reviewValidator.reviewPaginationQuerySchema)
+        .query(async (opts) => {
+            return await ReservationEntities.reviewPagination({
+                restaurantId: opts.ctx.restaurantId,
+                paginationQuery: opts.input
+            })
+        }),
+
+    updateReservationTagAndNote: ownerProcedure
+        .input(reservationValidator.updateReservationTagAndNote)
+        .mutation(async (opts) => {
+            await reservationUseCases.updateReservationTagAndNote(opts)
         }),
 
 

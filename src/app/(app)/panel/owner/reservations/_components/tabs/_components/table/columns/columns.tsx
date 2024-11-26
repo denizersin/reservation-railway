@@ -10,15 +10,18 @@ import { CounterOptions } from '@/hooks/useTimeCounter'
 import { TReservationRow } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
 import { api } from '@/server/trpc/react'
-import { EnumReservationExistanceStatus } from '@/shared/enums/predefined-enums'
+import { EnumPrepaymentStatus, EnumReservationExistanceStatus } from '@/shared/enums/predefined-enums'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowRightFromLine, Undo2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { statuses } from '../data'
+import { existenceStatuses, statuses } from '../data'
 import { ReservationStatusModal } from '../status-modal/reservation-status-modal'
 import { ExistenceCounter } from './_components/existence-counter'
 import { ReservationGridStatusModal } from './reservation-grid-status-modal'
 import { UpdateReservationTmeModal } from './update-reservation-time-modal'
+import { ReservationNoteModal } from './reservation-note-modal'
+import { Badge } from '@/components/ui/badge'
+import { IconCashRegister, IconClipboardText } from '@tabler/icons-react'
 
 
 // data
@@ -90,7 +93,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
       )
     },
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
+      return value.includes(row.original.reservationStatus.status)
     },
   },
   {
@@ -153,7 +156,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
   },
 
   {
-    id: 'exsitence',
+    accessorKey: 'existence',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Existence' />
     ),
@@ -254,7 +257,8 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
 
       useShowLoadingModal([isTakeReservationInPending, isMakeReservationNotExistPending])
 
-
+      const existenceStatus = existenceStatuses.find(s => s.value === reservation.reservationExistenceStatus.status)!
+      
       return <div
         className={cn('p-2', {
           // 'cursor-pointer': true,
@@ -268,8 +272,11 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
             console.log('click')
           }}
         >
+          <div className='flex items-center gap-x-1'>
+            <existenceStatus.icon className='size-4' />
+            {existenceStatus?.label}
+          </div>
 
-          {row.original.reservationExistenceStatus.status}
           <div>
             {countOptions && <ExistenceCounter countOptions={countOptions} />}
           </div>
@@ -313,6 +320,9 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
         />
       </div>
     },
+    filterFn: (row, id, value) => {
+      return value.includes(row.original.reservationExistenceStatus.status)
+    },
   },
 
 
@@ -350,25 +360,118 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
     ),
     cell: ({ row }) => {
 
-      return <div>
-        <div>
-          {row.original.guestCount} Kişi
+      const [isOpen, setIsOpen] = useState(false)
+
+      return <div
+      >
+        <div
+          onClick={() => setIsOpen(true)}
+
+        >
+          <div>
+            {row.original.guestCount} Kişi
+          </div>
+          <div>
+            {row.original.guest.name} {row.original.guest.surname}
+          </div>
+          <div>
+            {row.original.guest.company?.companyName}
+          </div>
+          {row.original.guestNote && <div className='flex gap-1 '>
+            <IconClipboardText stroke={1} className=' size-4' />
+            <div className='text-xs '>
+
+              {row.original.guestNote}
+            </div>
+          </div>}
+          <div className='flex gap-1'>
+            <div>
+              {row.original.guest.country?.name}
+            </div>
+            <div>
+              {row.original.guest.phoneCode}
+            </div>
+            <div>
+              {row.original.guest.phone}
+            </div>
+          </div>
+          <div className='flex gap-1 flex-col'>
+            {row.original.tags.map(t => <div>
+              <Badge className=''>
+                {t.tag.translations?.[0]?.name}
+              </Badge>
+            </div>)}
+          </div>
         </div>
-        <div>
-          {row.original.guest.name}
-        </div>
-        <div>
-          +{row.original.guest.phone}
-        </div>
+
+        <ReservationNoteModal
+          reservation={row.original}
+          isOpen={isOpen}
+          setOpen={setIsOpen}
+        />
       </div>
     },
   },
 
+  {
+    id: 'guest-status',
+    cell: ({ row }) => {
+      const reservation = row.original
 
+      const badgeContent = reservation.guestReservationCount > 1 ? `${reservation.guestReservationCount}` : 'First Reservation'
+      return <div className='w-full flex justify-center'>
+        <Badge className='text-xs'>{badgeContent}</Badge>
+      </div>
+    },
+  },
+  {
+    id: 'is-vip',
+    cell: ({ row }) => {
+      const reservation = row.original
+      return <div className='w-full flex justify-center'>
+        {reservation?.guest.isVip && <Badge className='text-xs bg-orange-600 text-white'>VIP</Badge>}
+      </div>
+    },
+  },
+  {
+    accessorKey: 'prepaymentStatus',
+    header: "",
+    cell: ({ row }) => {
+      const isWaitingPrepayment = row.original.currentPrepayment?.status === EnumPrepaymentStatus.pending
+      const isPrepaymentCompleted = row.original.currentPrepayment?.status === EnumPrepaymentStatus.success
+
+      const hasPrepayment = Boolean(row.original.currentPrepayment)
+      return <div className='flex justify-center'>
+
+        {hasPrepayment && <IconCashRegister className={cn('size-8', {
+          'text-muted-foreground': isWaitingPrepayment,
+          'text-green-700': isPrepaymentCompleted
+        })} />}
+
+      </div>
+    },
+  },
+  {
+    id: 'createdAt',
+    cell: ({ row }) => {
+
+      const created = row.original.isCreatedByOwner ? 'Owner' : 'System'
+
+      return <div>
+        <div>
+          {created}
+        </div>
+        <div>{row.original.createdAt.toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'long', weekday: 'long' })}</div>
+
+      </div>
+    }
+  },
   {
     id: 'actions',
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
+
+
 
 
 ]

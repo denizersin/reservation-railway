@@ -378,7 +378,13 @@ export const getReservations = async ({
                     }
                 }
             },
-            guest: true,
+            guest: {
+                with: {
+                    company: true,
+                    country: true,
+                    
+                }
+            },
             waitingSession: {
                 with: {
                     tables: {
@@ -400,6 +406,7 @@ export const getReservations = async ({
                     }
                 }
             },
+            currentPrepayment:true,
             reservationExistenceStatus: true,
             reservationNotes: true,
         },
@@ -416,11 +423,24 @@ export const getReservations = async ({
     })
 
 
+    const guestReservationCount = await ReservationEntities.getGuestReservationCountOfTodayReservation({
+        restaurantId,
+        date:input.date,
+    })
+
+    const mapped = reservations.map(r => ({
+        ...r,
+        guestReservationCount: guestReservationCount?.find(g => g.guestId == r.guestId)?.reservationCount ?? 0
+    }))
+    
 
 
-    return reservations
+
+    return mapped
 
 }
+
+
 
 
 

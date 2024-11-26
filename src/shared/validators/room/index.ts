@@ -47,7 +47,7 @@ export const createRoomTableSchema = z.object({
 
 
 export const updateRoomTableFormSchema = z.object({
-    order: z.number().int().positive().optional(),
+    order: z.number().int().min(0).optional(),
     no: z.string().min(1).max(255).optional(),
     minCapacity: z.number().int().positive().optional(),
     maxCapacity: z.number().int().positive().optional(),

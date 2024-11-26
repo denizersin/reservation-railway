@@ -4,7 +4,7 @@ import { ReservationLogEntities } from "@/server/layer/entities/reservation/rese
 import { TUseCaseClientLayer } from "@/server/types/types";
 import { EnumCookieName, HOLDING_RESERVATION_GUEST_ID, HOLDING_TIMEOUT, OCCUPIED_TABLE_TIMEOUT } from "@/server/utils/server-constants";
 import { localHourToUtcHour } from "@/server/utils/server-utils";
-import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumWaitlistStatus } from "@/shared/enums/predefined-enums";
+import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumReviewStatus, EnumWaitlistStatus } from "@/shared/enums/predefined-enums";
 import TclientValidator from "@/shared/validators/front/create";
 import TClientReservationActionValidator from "@/shared/validators/front/reservation-actions";
 import { TRPCError } from "@trpc/server";
@@ -15,6 +15,8 @@ import { ReservationEntities } from "../../../entities/reservation";
 import { restaurantEntities } from "../../../entities/restaurant";
 import { notificationUseCases } from "../notification";
 import { waitlistEntities } from "@/server/layer/entities/waitlist";
+import TClientReviewValidator from "@/shared/validators/front/reivew";
+import { getReservationById } from "@/server/layer/entities/reservation/waiting-session";
 
 export const createPublicReservation = async ({
     input,
@@ -428,6 +430,17 @@ export const holdTable = async ({
 
 }
 
+export const unHoldHoldedTable = async ({
+    input,
+    ctx
+}: TUseCaseClientLayer<{}>) => {
+
+    const holdedReservationId = cookies().get(EnumCookieName.HOLDED_RESERVATION_ID)?.value
+    cookies().delete(EnumCookieName.HOLDED_RESERVATION_ID)
+    //delete if is holding
+    await ReservationEntities.deleteHoldedReservationById({ holdedReservationId: Number(holdedReservationId) })
+
+}
 
 
 
@@ -695,3 +708,38 @@ export const getGuestCountFilterValues = async ({
 
     return { min, max }
 }
+
+
+export const createReservationReview = async ({
+    input,
+    ctx
+}: TUseCaseClientLayer<TClientReviewValidator.TMakeReview>) => {
+
+    const { reviewId, data } = input
+
+    await ReservationEntities.createReviewRatings({
+        data: data.ratings.map((rating) => ({
+            restaurantReviewId: rating.restaurantReviewId,
+            reservationReviewId: reviewId,
+            rating: rating.rating
+        }))
+    })
+
+
+
+    const totalScore = data.ratings.reduce((acc, rating) => acc + rating.rating, 0) / data.ratings.length
+    await ReservationEntities.updateReservationReview({
+        reviewId,
+        data: {
+            status: EnumReviewStatus.REVIEWED,
+            guestReview: data.guestReview,
+            reviewedAt: new Date(),
+            reviewScore: totalScore
+        }
+    })
+
+
+}
+
+
+

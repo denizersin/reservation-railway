@@ -7,6 +7,7 @@ import { languagesData } from "@/shared/data/predefined"
 import { restaurantEntities } from "@/server/layer/entities/restaurant"
 import { RoomEntities } from "@/server/layer/entities/room"
 import { guestEntities } from "@/server/layer/entities/guest"
+import TReviewSettingsValidator from "@/shared/validators/setting/review"
 
 const countries = [
     {
@@ -135,56 +136,88 @@ const hours = [
     "16:00",
 ]
 
-
-async function f() {
-
-    const mealHoursData = await restaurantEntities.getMealHours({ restaurantId: 1 })
-    const mealHours = mealHoursData.find(mealHour => mealHour.meal.id === EnumMealNumeric.dinner)?.mealHours?.map(mealHour => mealHour.hour)
-
-    const roomIdsData = await RoomEntities.getRooms({ restaurantId: 1, languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.tr)!.id })
-    const roomIds = roomIdsData.map(room => room.id)
-
-    const roomTables: { roomId: number, tableId: number }[] = []
-
-    for (const roomId of roomIds) {
-        const tables = await RoomEntities.getTablesByRoomId({ roomId })
-        roomTables.push(...tables.map(table => ({ roomId, tableId: table.id })))
-    }
-
-    const guests = await guestEntities.guestsPagination({
-        restaurantId: 1,
-        paginationQuery: {
-            pagination: {
-                page: 1,
-                limit: 100
-            },
-            filters: {}
+const reviewCategories = [
+    {
+        tr: {
+            title: 'Servis',
+            description: 'Personelin ilgisi ve servis kalitesi'
+        },
+        en: {
+            title: 'Service',
+            description: 'Staff attention and service quality'
         }
-    })
-
-
-    const newReservations: TReservationInsert = {
-        guestCount: 2,
-        guestId: 1,
-        restaurantId: 1,
-        roomId: 1,
-        mealId: EnumMealNumeric.dinner,
-        reservationStatusId: EnumReservationStatusNumeric.reservation,
-        hour: mealHours?.[0]!,
-        isSendEmail: true,
-        isSendSms: true,
-        reservationDate: new Date(),
-        waitingSessionId: 1,
-        prePaymentTypeId: 1,
-        tableIds: [roomTables?.[0]?.tableId!],
+    },
+    {
+        tr: {
+            title: 'Yemek',
+            description: 'Yemeklerin lezzeti ve sunumu'
+        },
+        en: {
+            title: 'Food',
+            description: 'Taste and presentation of the food'
+        }
+    },
+    {
+        tr: {
+            title: 'Ambians',
+            description: 'Mekanın atmosferi ve dekorasyonu'
+        },
+        en: {
+            title: 'Ambiance',
+            description: 'Venue atmosphere and decoration'
+        }
+    },
+    {
+        tr: {
+            title: 'Kokteyl',
+            description: 'Kokteyl çeşitliliği ve kalitesi'
+        },
+        en: {
+            title: 'Cocktails',
+            description: 'Cocktail variety and quality'
+        }
+    },
+    {
+        tr: {
+            title: 'Müzik',
+            description: 'Müzik seçimi ve ses seviyesi'
+        },
+        en: {
+            title: 'Music',
+            description: 'Music selection and volume level'
+        }
+    },
+    {
+        tr: {
+            title: 'Vale',
+            description: 'Vale hizmeti ve park kolaylığı'
+        },
+        en: {
+            title: 'Valet',
+            description: 'Valet service and parking convenience'
+        }
+    },
+    {
+        tr: {
+            title: 'Karşılama',
+            description: 'Karşılama ve ilk izlenim'
+        },
+        en: {
+            title: 'Welcome',
+            description: 'Welcome experience and first impression'
+        }
+    },
+    {
+        tr: {
+            title: 'Rezervasyon',
+            description: 'Rezervasyon süreci ve kolaylığı'
+        },
+        en: {
+            title: 'Reservation',
+            description: 'Reservation process and convenience'
+        }
     }
-
-    
-
-
-
-}
-
+]
 
 
 export const seedDatas = {
@@ -195,5 +228,5 @@ export const seedDatas = {
     hours,
     reservationTags,
     getPersonels,
-    getGuestCompanies
+    getGuestCompanies,
 }

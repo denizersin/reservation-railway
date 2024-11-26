@@ -18,6 +18,7 @@ import { RoomEntities } from "@/server/layer/entities/room";
 import { tblUser } from "../../schema/user";
 import { seedDatas } from "../seedData";
 import { exit } from "process";
+import { reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
 
 
 
@@ -33,8 +34,8 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 2500
-const guestCount = 20000
+const reservationCount = 100
+const guestCount = 200
 
 const seedFunctions = [
     async function createUsers() {
@@ -190,7 +191,7 @@ const seedFunctions = [
 
 
         await RoomEntities.createTables({
-            tables: new Array(40).fill(undefined).map((_, i) => ({
+            tables: new Array(10).fill(undefined).map((_, i) => ({
                 maxCapacity: 3,
                 minCapacity: 2,
                 no: 'R1-' + i.toString(),
@@ -213,6 +214,8 @@ const seedFunctions = [
                 y: Math.floor(i / 5),
             })),
         })
+
+
 
         const waitingRoom = await db.query.tblRoom.findFirst({ where: eq(schema.tblRoom.isWaitingRoom, true) })
 
@@ -251,7 +254,7 @@ const seedFunctions = [
             })
         )
 
-
+ 
 
 
 
@@ -364,7 +367,6 @@ const seedFunctions = [
         const reservationCreateionCount = reservationCount
         //add two day
         const firstReservationDate = new Date()
-        firstReservationDate.setDate(firstReservationDate.getDate() + 2)
 
         for (let i = 0; i < reservationCreateionCount; i++) {
             const newDate = new Date(firstReservationDate)

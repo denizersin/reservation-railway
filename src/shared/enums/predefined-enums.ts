@@ -263,3 +263,9 @@ export enum EnumReviewSendType {
     EMAIL = 'EMAIL',
     SMS_AND_EMAIL = 'SMS_AND_EMAIL',
 }
+
+export enum EnumReviewStatus {
+    NOT_SENT = 'NOT_SENT',
+    PENDING = 'PENDING',
+    REVIEWED = 'REVIEWED',
+}

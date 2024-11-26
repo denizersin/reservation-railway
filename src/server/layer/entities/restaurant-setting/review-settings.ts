@@ -1,7 +1,7 @@
 import { db } from "@/server/db";
 import { tblRestaurantReview, tblRestaurantReviewTranslation, TRestaurantReview, TRestaurantReviewSettings, TRestaurantReviewWithTranslationsInsert, TRestaurantReviewWithTranslationsUpdate } from "@/server/db/schema/restaurant-setting/review-settings";
 import { tblRestaurantReviewSettings } from "@/server/db/schema/restaurant-setting/review-settings";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 export const updateReviewSettings = async ({ reviewSettingId, reviewSetting }: { reviewSettingId: number, reviewSetting: Partial<TRestaurantReviewSettings> }) => {
     await db.update(tblRestaurantReviewSettings).set(reviewSetting).where(eq(tblRestaurantReviewSettings.id, reviewSettingId))
@@ -23,6 +23,39 @@ export const getAllReviews = async ({ restaurantId }: { restaurantId: number }) 
     })
     return reviews
 }
+
+export const getActiveReviewsByLanguage = async ({ languageId, restaurantId }: { languageId: number, restaurantId: number }) => {
+    const reviews = await db.query.tblRestaurantReview.findMany({
+        where: and(
+            eq(tblRestaurantReview.restaurantId, restaurantId),
+            eq(tblRestaurantReview.isActive, true)
+        ),
+        orderBy: [desc(tblRestaurantReview.order)],
+        with: {
+            translations: {
+                where: eq(tblRestaurantReviewTranslation.languageId, languageId)
+            }
+        }
+    })
+    return reviews
+}
+
+export const getAllReviewsByLanguage = async ({ languageId, restaurantId }: { languageId: number, restaurantId: number }) => {
+    const reviews = await db.query.tblRestaurantReview.findMany({
+        where: and(
+            eq(tblRestaurantReview.restaurantId, restaurantId),
+        ),
+        orderBy: [desc(tblRestaurantReview.order)],
+        with: {
+            translations: {
+                where: eq(tblRestaurantReviewTranslation.languageId, languageId)
+            }
+        }
+    })
+    return reviews
+}
+
+
 // export const updateReview = async ({ id, review }: { id: number, review: Partial<TRestaurantReview> }) => {
 //     await db.update(tblRestaurantReview).set(review).where(eq(tblRestaurantReview.id, id))
 // }
@@ -67,3 +100,5 @@ export const updateReview = async ({ id, data }: {
         restaurantReviewId: id
     })))
 }
+
+

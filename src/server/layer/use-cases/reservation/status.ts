@@ -242,7 +242,6 @@ export const confirmReservation = async ({
                 reservationStatusId: EnumReservationStatusNumeric.confirmed,
                 confirmedBy: owner.name,
                 confirmedAt: new Date(),
-                id: 1   
             },
             trx
         })

@@ -1,6 +1,6 @@
 
 import { db } from "@/server/db";
-import { tblPrepayment, tblReservationTable, tblRoom, tblRoomTranslation, tblTable, TReservationInsert, TTable } from "@/server/db/schema";
+import { tblPrepayment, tblReservationTable, tblReservationTag, tblRoom, tblRoomTranslation, tblTable, TReservationInsert, TTable } from "@/server/db/schema";
 import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
 import { TTransaction } from "@/server/utils/db-utils";
 import { and, between, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
@@ -19,17 +19,25 @@ export const createReservation = async ({
     data,
     trx = db
 }: {
-    data: Omit<TReservationInsert, 'waitingSessionId'>,
+    data: Omit<TReservationInsert, 'waitingSessionId' | 'reviewId'>,
     tableIds: number[],
     trx?: TTransaction
 }) => {
 
     const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
-
+    const newUnclaimedReviewId = await ReservationEntities.createUnClaimedReservationReview({
+        trx, data: {
+            restaurantId: data.restaurantId,
+            guestId: data.guestId,
+        }
+    })
     const newReservation = await trx.insert(tblReservation).values({
         ...data,
-        waitingSessionId: newUnclaimedWaitingSessionId
+        waitingSessionId: newUnclaimedWaitingSessionId,
+        reviewId: newUnclaimedReviewId
     }).$returningId()
+
+
 
     const reservationId = newReservation[0]?.id!
     await trx.insert(tblReservationTable).values(tableIds.map(tableId => ({
@@ -40,6 +48,14 @@ export const createReservation = async ({
 
     await ReservationEntities.updateUnClaimedReservationWaitingSession({
         waitingSessionId: newUnclaimedWaitingSessionId,
+        data: {
+            reservationId: reservationId,
+        },
+        trx
+    })
+
+    await ReservationEntities.updateReservationReview({
+        reviewId: newUnclaimedReviewId,
         data: {
             reservationId: reservationId,
         },
@@ -57,13 +73,24 @@ export const updateReservation = async ({
     reservationId,
     trx = db
 }: {
-    data: Partial<TReservationSelect>,
+    data: Partial<TReservationSelect> &{
+        tagIds?: number[],
+    },
     reservationId: number,
     trx?: TTransaction
 }) => {
     await trx.update(tblReservation).set(data).where(
         eq(tblReservation.id, reservationId)
     )
+    if (data.tagIds && data.tagIds?.length) {
+        await trx.delete(tblReservationTag).where(
+            eq(tblReservationTag.reservationId, reservationId)
+        )
+        await trx.insert(tblReservationTag).values(data.tagIds.map(tagId => ({
+            reservationId: reservationId,
+            tagId: tagId,
+        })))
+    }
 }
 
 
@@ -286,6 +313,7 @@ export const getReservationStatusData = async ({
             guest: true,
             currentPrepayment: true,
             reservationStatus: true,
+            review: true
         }
     })
 

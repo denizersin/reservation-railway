@@ -412,6 +412,7 @@ CREATE TABLE `reservation` (
 	`prepayment_type_id` int NOT NULL,
 	`holded_at` timestamp,
 	`hold_expired_at` timestamp,
+	`review_id` int NOT NULL,
 	`waitlist_id` int,
 	`allergen_warning` boolean NOT NULL DEFAULT false,
 	`reservation_date` timestamp NOT NULL,
@@ -577,6 +578,27 @@ CREATE TABLE `reservation_holding` (
 	`meal_id` int NOT NULL,
 	CONSTRAINT `reservation_holding_id` PRIMARY KEY(`id`),
 	CONSTRAINT `unique_table_id` UNIQUE(`holded_table_id`,`holding_date`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_review` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int,
+	`guest_id` int NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`reviewed_at` timestamp,
+	`status` enum('NOT_SENT','PENDING','REVIEWED') NOT NULL DEFAULT 'NOT_SENT',
+	`guest_review` text,
+	`review_score` int,
+	CONSTRAINT `reservation_review_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `review_rating` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_review_id` int NOT NULL,
+	`rating` int NOT NULL,
+	`restaurant_review_id` int NOT NULL,
+	CONSTRAINT `review_rating_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `waitlist` (

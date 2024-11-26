@@ -31,6 +31,7 @@ import { PopoverClose } from '@radix-ui/react-popover'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import { MonthAvailabilityContext } from "@/app/(app)/reservation/page"
+import { api } from "@/server/trpc/react"
 
 
 type Props = {
@@ -125,6 +126,11 @@ export const AreaSelect = ({
         setCurrentImage(areas[imageIndex]?.name)
     }
 
+    const { data: rooms } = api.room.getRooms.useQuery({
+        withWaitingRooms:false
+    })
+
+
 
 
     return (
@@ -139,7 +145,7 @@ export const AreaSelect = ({
                         <SheetDescription>
                             {
                                 avaliableRooms.map((item,index) => {
-
+                                    const roomName=rooms?.find(r=>r.id===item.room)?.translations[0]?.name
                                     const isAvailable = item.isAvailableForTime
                                     return <div
 
@@ -163,11 +169,11 @@ export const AreaSelect = ({
                                             onClick={() => {
                                                 if (isAvailable) {
                                                     setAreaId(item.room)
-                                                    setAreaName(item.room.toString())
+                                                    setAreaName(roomName)
                                                 }
                                             }}
                                             className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
-                                            <div className="text-base font-medium text-primary">{item.room}</div>
+                                            <div className="text-base font-medium text-primary">{roomName}</div>
                                             <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                         </SheetClose>
                                     </div>
@@ -187,7 +193,7 @@ export const AreaSelect = ({
                     <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] flex flex-col p-4 ">
                         {
                             avaliableRooms.map((item,index) => {
-
+                                const roomName=rooms?.find(r=>r.id===item.room)?.translations[0]?.name
                                 const isAvailable = item.isAvailableForTime
                                 return <div
 
@@ -211,14 +217,14 @@ export const AreaSelect = ({
                                         onClick={() => {
                                             if (isAvailable) {
                                                 setAreaId(item.room)
-                                                setAreaName(item.room.toString())
+                                                setAreaName(roomName)
                                             }
                                         }}
                                         className={cn('flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center ', {
                                             'cursor-pointer hover:bg-muted': isAvailable,
                                             'opacity-50 cursor-not-allowed': !isAvailable
                                         })}>
-                                        <div className="text-base font-medium">{item.room}</div>
+                                        <div className="text-base font-medium">{roomName}</div>
                                         <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
                                     </PopoverClose>
                                 </div>

@@ -1,7 +1,7 @@
 import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric } from '@/shared/enums/predefined-enums';
 import { relations } from 'drizzle-orm';
 import { boolean, index, int, mysqlTable, text, time, timestamp, unique, varchar } from 'drizzle-orm/mysql-core';
-import { tblUser, tblWaitlist } from '..';
+import { tblReservationReview, tblUser, tblWaitlist } from '..';
 import { tblGuest, tblPersonel } from '../guest';
 import { tblMeal, tblReservationExistanceStatus } from '../predefined';
 import { tblRestaurant } from '../restaurant';
@@ -55,6 +55,7 @@ export const tblReservation = mysqlTable('reservation', {
     holdedAt: timestamp('holded_at'),
     holdExpiredAt: timestamp('hold_expired_at'),
 
+    reviewId: int('review_id').notNull(),
 
     //waitlist
     waitlistId: int('waitlist_id'),
@@ -113,13 +114,14 @@ export const tblReservationRelations = relations(tblReservation, ({ one, many })
     waitlist: one(tblWaitlist, { fields: [tblReservation.waitlistId], references: [tblWaitlist.id] }),
     reservationStatus: one(tblReserVationStatus, { fields: [tblReservation.reservationStatusId], references: [tblReserVationStatus.id] }),
     reservationExistenceStatus: one(tblReservationExistanceStatus, { fields: [tblReservation.reservationExistenceStatusId], references: [tblReservationExistanceStatus.id] }),
-    assignedPersonal: one(tblPersonel, { fields: [tblReservation.assignedPersonalId], references: [tblPersonel.id] }),
     restaurant: one(tblRestaurant, { fields: [tblReservation.restaurantId], references: [tblRestaurant.id] }),
     room: one(tblRoom, { fields: [tblReservation.roomId], references: [tblRoom.id] }),
     meal: one(tblMeal, { fields: [tblReservation.mealId], references: [tblMeal.id] }),
     guest: one(tblGuest, { fields: [tblReservation.guestId], references: [tblGuest.id] }),
-
+    
     //nullable relations
+    assignedPersonal: one(tblPersonel, { fields: [tblReservation.assignedPersonalId], references: [tblPersonel.id] }),
+    review: one(tblReservationReview, { fields: [tblReservation.reviewId], references: [tblReservationReview.id] }),
     currentPrepayment: one(tblPrepayment, { fields: [tblReservation.currentPrepaymentId], references: [tblPrepayment.id] }),
     billPayment: one(tblBillPayment, { fields: [tblReservation.billPaymentId], references: [tblBillPayment.id] }),
     invoice: one(tblInvoice, { fields: [tblReservation.invoiceId], references: [tblInvoice.id] }),

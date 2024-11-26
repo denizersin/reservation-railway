@@ -12,7 +12,6 @@ export const baseSortSchema = z.object({
 
 export const basePaginationQuerySchema = z.object({
     pagination: basePaginationSchema,
-    sort: baseSortSchema.optional(),
     global_search: z.string().optional(),
 })
 

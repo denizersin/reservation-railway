@@ -6,6 +6,7 @@ import {
     IconHexagonNumber2,
     IconHexagonNumber3,
     IconLanguage,
+    IconMessageCircle,
     IconSettings,
     IconSquare,
     IconTags,
@@ -28,6 +29,12 @@ export const ownerSidelinks: SideLink[] = [
         label: '',
         href: '/panel/owner/waitlist',
         icon: <IconCalendarClock  size={18} />
+    },
+    {
+        title: 'Reviews',
+        label: '',
+        href: '/panel/owner/reviews',
+        icon: <IconMessageCircle  size={18} />
     },
     {
         title: 'Guests',

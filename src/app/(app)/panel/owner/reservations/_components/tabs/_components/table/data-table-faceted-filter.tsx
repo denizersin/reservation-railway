@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons'
-import { Column } from '@tanstack/react-table'
+import { Column, Table } from '@tanstack/react-table'
 
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +29,7 @@ interface DataTableFacetedFilterProps<TData, TValue> {
     value: string
     icon?: React.ComponentType<{ className?: string }>
   }[]
+  table: Table<TData>
 }
 
 export function DataTableFacetedFilter<TData, TValue>({

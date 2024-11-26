@@ -1,4 +1,4 @@
-import { EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { EnumReservationExistanceStatus, EnumReservationStatus } from '@/shared/enums/predefined-enums';
 import {
   ArrowDownIcon,
   ArrowRightIcon,
@@ -9,7 +9,7 @@ import {
   QuestionMarkCircledIcon,
   StopwatchIcon,
 } from '@radix-ui/react-icons'
-import { IconCalendarPlus, IconCashRegister, IconChecks, IconCircleCheck, IconCircleCheckFilled, IconCircleXFilled, IconCopyCheckFilled, IconHelpHexagonFilled } from '@tabler/icons-react';
+import { IconCalendarCancel, IconCalendarPlus, IconCashRegister, IconChecks, IconCircleCheck, IconCircleCheckFilled, IconCircleXFilled, IconCopyCheckFilled, IconHelpHexagonFilled, IconUserCheck, IconUserScreen, IconUserSearch, IconUserX } from '@tabler/icons-react';
 
 export const labels = [
   {
@@ -71,7 +71,43 @@ export const statuses = [
     icon: IconCopyCheckFilled,
     renderIcon: () => <IconCopyCheckFilled className='w-4 h-4 text-primary' />
   },
+  {
+    value: EnumReservationStatus.holding,
+    label: 'Holding',
+    icon: IconCalendarCancel,
+    renderIcon: () => <IconCalendarCancel className='w-4 h-4 text-primary' />
+  },
 ];
+
+
+export const existenceStatuses = [
+  {
+    value: EnumReservationExistanceStatus.notExist,
+    label: 'Not Exist',
+    icon: IconUserX,
+    renderIcon: () => <IconUserX className='w-4 h-4  text-destructive' />
+  },
+  {
+    value: EnumReservationExistanceStatus.waitingTable,
+    label: 'Waiting Table',
+    icon: IconUserSearch,
+    renderIcon: () => <IconUserSearch className='w-4 h-4  text-destructive' />
+  },
+  {
+    value: EnumReservationExistanceStatus.inRestaurant,
+    label: 'In Restaurant',
+    icon: IconUserScreen,
+    renderIcon: () => <IconUserScreen className='w-4 h-4  text-destructive' />
+  },
+  {
+    value: EnumReservationExistanceStatus.checkedOut,
+    label: 'Checked Out',
+    icon: IconUserCheck,
+    renderIcon: () => <IconUserCheck className='w-4 h-4  text-destructive' />
+  },
+]
+
+
 export const priorities = [
   {
     label: 'Low',

@@ -7,8 +7,11 @@ import { EnumDays, EnumLanguage, EnumMeals, EnumReservationStatus, EnumReviewSen
 import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
 import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
-import { restaurantSettingEntities } from '../restaurant-setting';
+import { restaurantSettingEntities, reviewSettingEntities } from '../restaurant-setting';
 import { tblRestaurantGeneralSetting, tblRestaurantReviewSettings, tblRoom, tblRoomTranslation } from '@/server/db/schema';
+import { serverData } from '@/server/data';
+import { languagesData } from '@/shared/data/predefined';
+import TReviewSettingsValidator from '@/shared/validators/setting/review';
 
 export const createRestaurant = async ({
     restaurant,
@@ -138,6 +141,27 @@ export const setDefaultsToRestaurant = async ({
             reviewSendType: EnumReviewSendType.SMS_AND_EMAIL,
             reviewSendDay: EnumReviewSendDay.CHECK_OUT_DAY
         })
+
+        //review categories
+       const reviews= serverData.reviewCategories.map((category, index) => ({
+            review: {
+                isActive: true,
+                order: index + 1,
+            },
+            translations: languagesData.map(lang => ({
+                title: lang.languageCode === 'tr' ? category.tr.title : category.en.title,
+                description: lang.languageCode === 'tr' ? category.tr.description : category.en.description,
+                languageId: lang.id
+            }))
+        })) as TReviewSettingsValidator.TCreateReviewSchema[]
+
+        await Promise.all(reviews.map(review => reviewSettingEntities.createReview({
+            review: {
+                ...review.review,
+                restaurantId
+            },
+            translations: review.translations
+        })))
 
     }
     catch (e) {

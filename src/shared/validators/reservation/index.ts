@@ -132,6 +132,13 @@ const updateReservationNote = z.object({
     note: z.string(),
 })
 
+const updateReservationTagAndNote = z.object({
+    reservationId: z.number().int().positive(),
+    reservationTagIds: reservationTagIds,
+    note: z.string(),
+})
+
+
 
 
 export const reservationValidator = {
@@ -165,6 +172,7 @@ export const reservationValidator = {
     cancelConfirmationRequest,
     cancelAndReturnPrepayment,
     turnCanceledToReservation,
+    updateReservationTagAndNote,
 }
 
 namespace TReservationValidator {
@@ -198,6 +206,7 @@ namespace TReservationValidator {
     export type cancelConfirmationRequest = z.infer<typeof cancelConfirmationRequest>
     export type cancelAndReturnPrepayment = z.infer<typeof cancelAndReturnPrepayment>
     export type turnCanceledToReservation = z.infer<typeof turnCanceledToReservation>
+    export type updateReservationTagAndNote = z.infer<typeof updateReservationTagAndNote>
 }
 
 export default TReservationValidator

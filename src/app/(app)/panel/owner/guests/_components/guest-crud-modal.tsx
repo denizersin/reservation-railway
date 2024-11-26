@@ -102,19 +102,30 @@ const GuestCrudModal = ({
     useEffect(() => {
         if (guestData) {
             const { tags, ...rest } = guestData;
+
             form.reset({
                 ...rest,
-                tagIds: tags.map((tag) => tag.tagId)
+                countryId: guestData.companyId ?? undefined,
+                gender: guestData.gender ?? undefined,
+                birthDate: guestData.birthDate ?? undefined,
+                vipLevel: guestData.vipLevel ?? undefined,
+                tagIds: tags.map((tag) => tag.tagId)    
+
             })
         }
     }, [guestData])
 
     useEffect(() => {
-        if (guestDetailData?.guest) {
-            const { guest: { tags, ...rest }, guestReservations } = guestDetailData;
+        const guest = guestDetailData?.guest
+        if (guest) {
+            const { tags, ...rest } = guest;
             form.reset({
                 ...rest,
-                tagIds: tags.map((tag) => tag.tagId)
+                countryId: guest.companyId ?? undefined,
+                gender: guest.gender ?? undefined,
+                birthDate: guest.birthDate ?? undefined,
+                vipLevel: guest.vipLevel ?? undefined,
+                tagIds: tags.map((tag) => tag.tagId)  
             })
 
         }
@@ -165,7 +176,7 @@ const GuestCrudModal = ({
                         )} />
                         <div className='col-span-2 flex gap-4 md:flex-row flex-col'>
                             <FormField control={form.control} name="phoneCode" render={({ field }) => (
-                                <FormItem  className='flex-1'>
+                                <FormItem className='flex-1'>
                                     <FormLabel>Phone Code</FormLabel>
                                     <PhoneCodeSelect
                                         className='flex w-full'

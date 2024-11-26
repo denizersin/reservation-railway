@@ -36,6 +36,7 @@ import { RefObject, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { CookieContent } from "../_components/cookie-content"
 import { ReservationStatusHeader } from "../_components/reservation-status-header"
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal"
 export type UserInfoImperativeModalRefs = RefObject<{
     openCookieModal?: () => void
 }>
@@ -45,7 +46,7 @@ export type UserInfoImperativeModalRefs = RefObject<{
 
 export default function UserInfo() {
 
-    const { getReservationUserInfoFormValues, updateReservationUserInfoFormValues,getReservationState } = useReservationStates()
+    const { getReservationUserInfoFormValues, updateReservationUserInfoFormValues, getReservationState } = useReservationStates()
 
     const reservationUserInfoFormValues = getReservationUserInfoFormValues()
 
@@ -68,12 +69,16 @@ export default function UserInfo() {
 
 
     const { selectData: reservationTagsSelectData, isLoading: reservationTagsIsLoading } = useReservationTagsSelectData()
-
+    const { mutate: unHoldHoldedTable, isPending: isUnHoldHoldedTableLoading } = api.reservation.unHoldHoldedTable.useMutation({
+        onSuccess: () => {
+            router.back()
+        }
+    })
 
     const router = useRouter()
 
     const onGoBack = () => {
-        router.back()
+        unHoldHoldedTable({});
     }
 
 
@@ -125,10 +130,11 @@ export default function UserInfo() {
         }
     })
 
-    console.log(form.formState.errors,'err')
-    console.log(form.getValues(),'values')
+    console.log(form.formState.errors, 'err')
+    console.log(form.getValues(), 'values')
 
 
+    useShowLoadingModal([isUnHoldHoldedTableLoading])
 
 
     return (
