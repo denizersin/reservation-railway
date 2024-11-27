@@ -109,7 +109,7 @@ const LimitationCrudModal = ({
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
+                        {/* <FormField
                             control={form.control}
                             name="day"
                             render={({ field }) => (
@@ -124,7 +124,7 @@ const LimitationCrudModal = ({
                                     <FormMessage />
                                 </FormItem>
                             )}
-                        />
+                        /> */}
                         <FormField
                             control={form.control}
                             name="mealId"
