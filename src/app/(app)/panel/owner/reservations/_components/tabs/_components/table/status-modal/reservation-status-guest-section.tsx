@@ -34,7 +34,10 @@ export const ReservationStatusGuestSection = ({
         window.open(`/reservation/status/${reservation.id}`, '_blank')
     }
 
-
+    const goToReviewStatus = () => {
+        // router.(`/reservation/status/${reservation.id}`)
+        window.open(`/reservation/review/${reservation.id}`, '_blank')
+    }
 
     return (
         <div className='w-full max-w-full  flex flex-col items-center'>
@@ -64,6 +67,10 @@ export const ReservationStatusGuestSection = ({
                 <Button
                     className='text-blue-500'
                     onClick={goToReservationStatus} variant='link'>Go Reservation Status </Button>
+
+                <Button
+                    className='text-blue-500'
+                    onClick={goToReviewStatus} variant='link'>Go Review Status </Button>
             </div>
 
             <GuestCrudModal

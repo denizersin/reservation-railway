@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { Button } from "@/components/custom/button";
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
 
 type Rating = {
     restaurantReviewId: number;
@@ -18,7 +19,7 @@ type Rating = {
 
 export default function ReservationReviewPage() {
     const { reservationStatusData } = useReservationStatusContext();
-    const { data: reviews } = api.reservation.getActiveReviewsByLanguage.useQuery();
+    const { data: reviews, isLoading } = api.reservation.getActiveReviewsByLanguage.useQuery();
     const [ratings, setRatings] = useState<Rating[]>([]);
     const [guestReview, setGuestReview] = useState<string>("");
 
@@ -73,6 +74,8 @@ export default function ReservationReviewPage() {
         }
     });
 
+
+    useShowLoadingModal([isPending, isLoading])
     
 
     return <div>
