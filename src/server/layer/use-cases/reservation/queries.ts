@@ -382,6 +382,7 @@ export const getReservations = async ({
                 with: {
                     company: true,
                     country: true,
+                    phoneCodeCountry: true,
                     
                 }
             },

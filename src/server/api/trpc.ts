@@ -163,7 +163,6 @@ export const clientProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
   const restaurantIdContext = ctx.restaurantId
   const restaurantId = ctx.headers.get(EnumHeader.RESTAURANT_ID);
 
-  console.log(ctx.headers, 'ctx.headers')
   if ( !restaurantIdContext && !restaurantId ) {
     throw new TRPCError({ code: "BAD_REQUEST", message: "Restaurant id header is required" });
   }

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "4dbdfc92-9194-4b72-a6d0-f8b36638e017",
+  "id": "165b80a7-4939-4115-b08d-8a025af8623d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -63,9 +63,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "phone_code": {
-          "name": "phone_code",
-          "type": "varchar(256)",
+        "phone_code_id": {
+          "name": "phone_code_id",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1045,6 +1045,13 @@
         "restaurant_id": {
           "name": "restaurant_id",
           "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "varchar(10)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

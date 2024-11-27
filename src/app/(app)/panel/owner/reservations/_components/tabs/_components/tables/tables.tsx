@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/custom/button';
+import { useUpdateQueryParams } from '@/hooks/useUpdateQueryParams';
+import { Cross2Icon } from '@radix-ui/react-icons';
+import { useSearchParams } from 'next/navigation';
+import { LocalNameFilter } from '../table/local-name-filter';
+import { api } from '@/server/trpc/react';
+import { useReservationsContext } from '../../../../page';
+import RoomTabs from '@/components/room-tabs';
+import { EnumMealNumeric } from '@/shared/enums/predefined-enums';
+import { TableViewRowCard } from './table-view-row-card';
+import { WaitingTableStatus } from './waitin-table-status';
+import ReactGridLayout, { Layout } from 'react-grid-layout';
+import "/node_modules/react-grid-layout/css/styles.css";
+import "/node_modules/react-resizable/css/styles.css";
+import { EnumTableShape } from '@/shared/enums/predefined-enums';
+import { cn } from '@/lib/utils';
+import { TTable } from '@/server/db/schema';
+import { HourTabs } from '@/components/hour-tabs';
 
 const dummyData = {
     "Ana Salon": [
@@ -30,53 +48,133 @@ const dummyData = {
 
 const smallTables = ["A-1", "A-2", "A-3", "A-4", "A-5", "A-6", "A-7"];
 
+
+
+
+
 const TablesView = () => {
+
+    const { queryDate, reservationsData } = useReservationsContext()
+
+    const { data: avaliableTablesData } = api.reservation.getTableStatues.useQuery({
+        date: queryDate,
+        mealId: EnumMealNumeric.dinner
+    })
+
+
+
+    const updateQueryParam = useUpdateQueryParams({ replace: true })
+
+    const globalFilter = useSearchParams().get('globalFilter') || ''
+
+    const reset = () => {
+        updateQueryParam({ globalFilter: '' })
+    }
+    const { data: roomsData } = api.room.getRooms.useQuery({ withWaitingRooms: true })
+
+    const [selectedRoomId, setSelectedRoomId] = useState<number | undefined>(undefined)
+    const [isWaitingRoom, setIsWaitingRoom] = useState(false)
+
+
+    const currentTables = useMemo(() => {
+        const globalFilterLower = globalFilter.toLowerCase()
+        if (!avaliableTablesData) return []
+        const tables = avaliableTablesData?.find((t) => t.roomId === selectedRoomId)?.tables
+        if (!globalFilter) return tables
+
+        const filteredTables = tables?.filter((t) => {
+            const guestName = t.guest?.name.toLowerCase() ?? ''
+            const guestSurname = t.guest?.surname.toLowerCase() ?? ''
+            const phone = t.guest?.phone.toLowerCase() ?? ''
+            return guestName.includes(globalFilterLower) || guestSurname.includes(globalFilterLower) || phone.includes(globalFilterLower)
+        })
+
+
+        return filteredTables
+    }, [avaliableTablesData, selectedRoomId, globalFilter])
+
+    const getLayoutOfTable = (table: TTable): Layout => {
+        return {
+            h: table.h!,
+            i: table.id.toString(),
+            w: table.w!,
+            x: table.x!,
+            y: table.y!,
+            shape: table.shape,
+            tableId: table.id
+        }
+    }
+
+    const gridLayout = useMemo(() => {
+        if (!currentTables) return [];
+        return currentTables.map(table => getLayoutOfTable(table.table!));
+    }, [currentTables]);
+
+    const selectedRoom = roomsData?.find(room => room.id === selectedRoomId);
+    const { layoutRowHeight = 100, layoutWidth = 800 } = selectedRoom || {};
+    const cols = Math.round(layoutWidth / (layoutRowHeight + (layoutRowHeight * 0.2)));
+
     return (
         <div className="p-4">
-
-            <Tabs defaultValue="Ana Salon">
-                <div className='flex gap-x-2 items-center'>
-                    <TabsList>
-                        {Object.keys(dummyData).map((area) => (
-                            <TabsTrigger key={area} value={area}>{area}</TabsTrigger>
-                        ))}
-                    </TabsList>
-                    <Input
-                        type="text"
-                        placeholder="Ad soyad, şirket, telefon, e-posta adre"
-                        className="max-w-[200px] p-2  rounded my-2"
-                    />
+            <div className='flex items-center gap-x-2 '>
+                <RoomTabs
+                    selectedRoomId={selectedRoomId}
+                    setSelectedRoomId={setSelectedRoomId}
+                    withWaitingRooms={true}
+                    setIsWaitingRoom={setIsWaitingRoom}
+                />
+                <div className='flex items-center gap-x-2'>
+                    <div className='w-[200px]'>
+                        <LocalNameFilter />
+                    </div>
+                    {globalFilter && (
+                        <Button variant='ghost' onClick={reset} className='h-8 px-2 lg:px-3'>
+                            Reset
+                            <Cross2Icon className='ml-2 h-4 w-4' />
+                        </Button>
+                    )}
                 </div>
+            </div>
 
-                {Object.entries(dummyData).map(([area, reservations]) => (
-                    <TabsContent key={area} value={area}>
-                        <div className="flex flex-wrap gap-x-2 gap-y-2">
-                            {reservations.map((reservation) => (
-                                <Card key={reservation.id} className="bg-foreground text-background size-[150px] ">
-                                    <CardContent className="p-4 ">
-                                        <div className="text-xl font-bold">{reservation.id}</div>
-                                        <div className="text-sm">{reservation.name}</div>
-                                        <div className="flex items-center text-xs mt-2">
-                                            <Clock className="w-3 h-3 mr-1" /> {reservation.time}
-                                        </div>
-                                        <div className="flex items-center text-xs">
-                                            <Users className="w-3 h-3 mr-1" /> {reservation.guests}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                            {smallTables.map((table) => (
-                                <Card key={table} className="bg-background text-foreground size-[150px] ">
-                                    <CardContent className="p-4 ">
-                                        <div className="text-lg font-semibold">{table}</div>
-                                        <div className="text-sm">2 Misafir</div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </TabsContent>
-                ))}
-            </Tabs>
+
+            {isWaitingRoom ? (
+                <WaitingTableStatus />
+            ) : (
+                <div className="mt-4 ">
+                    <ReactGridLayout
+                        className="layout border-black border-2 py-4"
+                        layout={gridLayout}
+                        cols={cols}
+                        rowHeight={layoutRowHeight}
+                        width={layoutWidth}
+                        style={{
+                            minHeight: 600
+                        }}
+                        verticalCompact={false}
+                        compactType={null}
+                        preventCollision={true}
+                        isDraggable={false}
+                        isResizable={false}
+                    >
+                        {currentTables?.map((tableStatus) => {
+                            const table = tableStatus.table!;
+                            return (
+                                <div
+                                    key={table.id.toString()}
+                                    className={cn('border flex items-center justify-center', {
+                                        'rounded-full': table.shape === EnumTableShape.round,
+                                    })}
+                                >
+                                    <TableViewRowCard
+                                        key={table.id}
+                                        statusTableRow={tableStatus}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </ReactGridLayout>
+                </div>
+            )}
         </div>
     );
 };

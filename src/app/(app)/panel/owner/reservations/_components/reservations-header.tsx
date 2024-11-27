@@ -7,19 +7,22 @@ import { useUpdateQueryParams } from "@/hooks/useUpdateQueryParams";
 import { IconAlertTriangle, IconArchive, IconBell, IconCashBanknote, IconClockHour3, IconDownload, IconInfoCircle, IconLayoutGrid, IconList, IconPrinter } from "@tabler/icons-react";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useReservationsContext } from "../page";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
+import { api } from "@/server/trpc/react";
 
 export type TReservationsViewType = 'list' | 'table'
 
 export function ReservationHeader() {
 
-    const { date, setDate } = useReservationsContext()
+    const { date, setDate, queryDate } = useReservationsContext()
 
     console.log('headerr')
 
 
-    const updateQueryParam = useUpdateQueryParams()
+    const updateQueryParam = useUpdateQueryParams({ replace: true })
 
     const searchParams = useSearchParams()
 
@@ -43,6 +46,18 @@ export function ReservationHeader() {
     }
 
     const router = useRouter();
+
+    const queryClient = useQueryClient()
+
+    const onRefresh = () => {
+        queryClient.invalidateQueries({
+            queryKey: getQueryKey(api.reservation.getReservations, {
+                date: queryDate
+            }, 'query')
+        })
+    }
+
+
 
     return (
         <div>
@@ -87,7 +102,7 @@ export function ReservationHeader() {
                         <Button onClick={onClickNextDate} tooltip="ileri" variant="ghost" size="icon" className="">
                             <ChevronRightIcon className="h-4 w-4" />
                         </Button>
-                        <Button tooltip="yenile" variant="ghost" size="icon" className="">
+                        <Button onClick={onRefresh} tooltip="yenile" variant="ghost" size="icon" className="">
                             <RefreshCwIcon className="h-4 w-4" />
                         </Button>
                         <Button tooltip="ayarlar" variant="ghost" size="icon" className="">

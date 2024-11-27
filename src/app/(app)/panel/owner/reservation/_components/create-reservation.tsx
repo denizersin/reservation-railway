@@ -23,24 +23,11 @@ type Props = {}
 
 export const CreateReservation = (props: Props) => {
 
-    const { t } = useTranslation('common')
-    console.log(t('welcome'))
-    const queryClient = useQueryClient();
-
     const [isCreateGuestModalOpen, setIsCreateGuestModalOpen] = useState(false)
 
 
 
 
-
-
-    const { data } = api.guest.getGuestsPagination.useQuery({
-        pagination: {
-            page: 1,
-            limit: 100
-        },
-        filters: {},
-    })
 
     const { data: tags } = api.restaurant.getTags.useQuery()
 
@@ -53,12 +40,7 @@ export const CreateReservation = (props: Props) => {
 
 
 
-    const guestToSelect = useMemo(() => {
-        return data?.data.map((guest) => ({
-            value: String(guest.id),
-            label: guest.name
-        })) ?? []
-    }, [data])
+
 
     const [selectedGuestId, setSelectedGuestId] = useState<number | null>(2)
 

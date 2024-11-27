@@ -5,7 +5,7 @@ const userInfoFormSchema = z.object({
     name: z.string().max(256).min(2, "Name must be at least 2 characters"),
     surname: z.string().max(256).min(2, "Surname must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    phoneCode: z.string(),
+    phoneCodeId: z.number().int().positive(),
     phone: z.string().min(10, "Phone number must be at least 10 digits"),
     allergenWarning: z.boolean(),
     guestNote: z.string().optional().refine((val) => {
@@ -62,7 +62,7 @@ const prePaymentFormSchema = z.object({
         invoiceType: z.enum(["individual", "corporate"]).optional(),
         invoiceFirstName: z.string().optional(),
         invoiceLastName: z.string().optional(),
-        invoicePhoneCode: z.string().optional(),
+        invoicePhoneCodeId: z.string().optional(),
         invoicePhone: z.string().optional(),
         city: z.string().optional(),
         district: z.string().optional(),

@@ -7,7 +7,7 @@ CREATE TABLE `guest` (
 	`surname` varchar(256) NOT NULL,
 	`email` varchar(256) NOT NULL,
 	`phone` varchar(256) NOT NULL,
-	`phone_code` varchar(256) NOT NULL,
+	`phone_code_id` int NOT NULL,
 	`stable_phone` varchar(256),
 	`gender` enum('male','female','other'),
 	`birth_date` date,
@@ -165,6 +165,7 @@ CREATE TABLE `reservation_prepayment_type` (
 CREATE TABLE `restaurant_tags` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
+	`color` varchar(10) NOT NULL,
 	CONSTRAINT `restaurant_tags_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint

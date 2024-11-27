@@ -1,14 +1,14 @@
 import { Button } from '@/components/custom/button'
+import { CustomComboSelect } from '@/components/custom/custom-combo-select'
 import { CustomSelect } from '@/components/custom/custom-select'
 import { MultiSelect } from '@/components/custom/multi-select'
-import PhoneCodeSelect from '@/components/phone-code-select'
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useCountriesSelectData, useGuestCompanySelectData, useLanguagesSelectData, useRestaurantTagsSelectData } from '@/hooks/predefined/predfined'
+import { useCountriesSelectData, useGuestCompanySelectData, useLanguagesSelectData, usePhoneCodesSelectData, useRestaurantTagsSelectData } from '@/hooks/predefined/predfined'
 import { cn } from '@/lib/utils'
 import { TGuest } from '@/server/db/schema/guest'
 import { api } from '@/server/trpc/react'
@@ -40,6 +40,7 @@ const GuestCrudModal = ({
 
     const { selectData: restaurantTags, isLoading: isLoadingRestaurantTags } = useRestaurantTagsSelectData();
     const { selectData: countries, isLoading: isLoadingCountries } = useCountriesSelectData();
+    const { selectData: phoneCodes, isLoading: isLoadingPhoneCodes } = usePhoneCodesSelectData();
     const { selectData: languages, isLoading: isLoadingLanguages } = useLanguagesSelectData();
     const { selectData: guestCompanies, isLoading: isLoadingGuestCompanies } = useGuestCompanySelectData();
 
@@ -109,7 +110,7 @@ const GuestCrudModal = ({
                 gender: guestData.gender ?? undefined,
                 birthDate: guestData.birthDate ?? undefined,
                 vipLevel: guestData.vipLevel ?? undefined,
-                tagIds: tags.map((tag) => tag.tagId)    
+                tagIds: tags.map((tag) => tag.tagId)
 
             })
         }
@@ -125,7 +126,7 @@ const GuestCrudModal = ({
                 gender: guest.gender ?? undefined,
                 birthDate: guest.birthDate ?? undefined,
                 vipLevel: guest.vipLevel ?? undefined,
-                tagIds: tags.map((tag) => tag.tagId)  
+                tagIds: tags.map((tag) => tag.tagId)
             })
 
         }
@@ -175,13 +176,14 @@ const GuestCrudModal = ({
                             </FormItem>
                         )} />
                         <div className='col-span-2 flex gap-4 md:flex-row flex-col'>
-                            <FormField control={form.control} name="phoneCode" render={({ field }) => (
+                            <FormField control={form.control} name="phoneCodeId" render={({ field }) => (
                                 <FormItem className='flex-1'>
                                     <FormLabel>Phone Code</FormLabel>
-                                    <PhoneCodeSelect
-                                        className='flex w-full'
-                                        phoneCode={field.value}
-                                        onValueChange={(value) => field.onChange(value)}
+                                    <CustomComboSelect
+                                        buttonClass='w-full'
+                                        data={phoneCodes}
+                                        onValueChange={(value) => field.onChange(Number(value))}
+                                        value={String(field.value)}
                                     />
                                     <FormMessage />
                                 </FormItem>
@@ -340,7 +342,8 @@ const GuestCrudModal = ({
                         <FormField control={form.control} name="countryId" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Country</FormLabel>
-                                <CustomSelect
+                                <CustomComboSelect
+                                    buttonClass='w-full'
                                     data={countries}
                                     onValueChange={(value) => field.onChange(Number(value))}
                                     value={String(field.value)}

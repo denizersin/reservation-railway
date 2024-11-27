@@ -1,3 +1,4 @@
+import { COLORS } from "@/lib/constants"
 import { api } from "@/server/trpc/react"
 import { MEAL_HOURS } from "@/shared/data/predefined"
 import { useMemo } from "react"
@@ -6,6 +7,15 @@ export const useCountriesSelectData = () => {
     const { data } = api.predefiend.getCountries.useQuery()
     const selectData = useMemo(() => data?.map((country) => ({
         label: country.name,
+        value: String(country.id)
+    })) || [], [data])
+    return { selectData, isLoading: false }
+}
+
+export const usePhoneCodesSelectData = () => {
+    const { data } = api.predefiend.getCountries.useQuery()
+    const selectData = useMemo(() => data?.map((country) => ({
+        label: country.phoneCode + '-' + country.name,
         value: String(country.id)
     })) || [], [data])
     return { selectData, isLoading: false }
@@ -95,4 +105,9 @@ export const useHoursSelectData = () => {
         label: hour,
     })), [])
     return { selectData: mealHoursToSelect, isLoading: false }
+}
+
+export const useColorsSelectData = () => {
+    const colors = useMemo(() => COLORS, [])
+    return { selectData: colors, isLoading: false }
 }

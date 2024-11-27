@@ -20,7 +20,7 @@ export const tblGuest = mysqlTable('guest', {
     surname: varchar('surname', { length: 256 }).notNull(),
     email: varchar('email', { length: 256 }).notNull(),
     phone: varchar('phone', { length: 256 }).notNull(),
-    phoneCode: varchar('phone_code', { length: 256 }).notNull(),
+    phoneCodeId: int('phone_code_id').notNull(),
     stablePhone: varchar('stable_phone', { length: 256 }),
     gender: mysqlEnum('gender', getEnumValues(EnumGender)),
     birthDate: date('birth_date'),
@@ -62,6 +62,7 @@ export const tblGuestRelations = relations(tblGuest, ({ one, many }) => ({
     restaurant: one(tblRestaurant, { fields: [tblGuest.restaurantId], references: [tblRestaurant.id] }),
     language: one(tblLanguage, { fields: [tblGuest.languageId], references: [tblLanguage.id] }),
     country: one(tblCountry, { fields: [tblGuest.countryId], references: [tblCountry.id] }),
+    phoneCodeCountry: one(tblCountry, { fields: [tblGuest.phoneCodeId], references: [tblCountry.id] }),
     reservation:one(tblReservation, { fields: [tblGuest.id], references: [tblReservation.guestId] }),
     tags: many(tblGuestTag),
 }));

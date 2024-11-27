@@ -1,6 +1,7 @@
 "use client"
 import { ClientI18nProvider } from '@/hooks/18n-provider'
 import { useReservationStates } from '@/hooks/front/useReservatoinStates'
+import { useClientLanguageHandler } from '@/hooks/useClientLanguageHandler'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 
@@ -9,6 +10,8 @@ type Props = {
 }
 
 const ReservationPageLayoutProvider = (props: Props) => {
+
+    useClientLanguageHandler()
 
     const pathname = usePathname()
     const router = useRouter()

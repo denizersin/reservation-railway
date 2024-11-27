@@ -9,6 +9,9 @@ import { priorities, statuses } from './data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableStatusFilter } from './data-table-status-filter'
 import { DataTableExistenceStatusFilter } from './data-table-existence-status'
+import { LocalNameFilter } from './local-name-filter'
+import { useSearchParams } from 'next/navigation'
+import { useUpdateQueryParams } from '@/hooks/useUpdateQueryParams'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -18,10 +21,18 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
+  const globalFilter = useSearchParams().get('globalFilter') || ''
+
+  const updateQueryParam = useUpdateQueryParams({ replace: true })
+
+  const reset = () => {
+    table.resetColumnFilters()
+    updateQueryParam({ globalFilter: '' })
+  }
 
   return (
     <div className='flex items-center justify-between'>
-      <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
+      <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2 flex-wrap'>
         <div className='flex gap-x-2'>
           {/* {table.getColumn('status') && (
             <DataTableFacetedFilter
@@ -40,12 +51,16 @@ export function DataTableToolbar<TData>({
         <DataTableExistenceStatusFilter
           table={table} />
 
+        <div className='w-[200px]'>
+          <LocalNameFilter />
+        </div>
 
 
-        {isFiltered && (
+
+        {(isFiltered || globalFilter) && (
           <Button
             variant='ghost'
-            onClick={() => table.resetColumnFilters()}
+            onClick={reset}
             className='h-8 px-2 lg:px-3'
           >
             Reset

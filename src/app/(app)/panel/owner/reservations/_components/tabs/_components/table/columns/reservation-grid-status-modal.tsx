@@ -237,8 +237,6 @@ export const ReservationGridStatusModal = ({
                                 // key={}
                                 /> : <ReservationWaitingTableSelect
                                     reservation={reservation}
-                                    selectionWaitingState={selectionWaitingState}
-                                    setselectionWaitingState={setselectionWaitingState}
                                 />
                         }
 

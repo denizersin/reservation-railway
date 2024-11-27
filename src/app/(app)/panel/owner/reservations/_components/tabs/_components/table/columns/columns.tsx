@@ -258,7 +258,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
       useShowLoadingModal([isTakeReservationInPending, isMakeReservationNotExistPending])
 
       const existenceStatus = existenceStatuses.find(s => s.value === reservation.reservationExistenceStatus.status)!
-      
+
       return <div
         className={cn('p-2', {
           // 'cursor-pointer': true,
@@ -386,10 +386,15 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           </div>}
           <div className='flex gap-1'>
             <div>
-              {row.original.guest.country?.name}
+              {/* {row.original.guest.country?.name} */}
             </div>
-            <div>
-              {row.original.guest.phoneCode}
+            <div className='flex gap-1 items-center  '>
+              <span className='text-xs max-w-[100px]  truncate'>
+                {row.original.guest.phoneCodeCountry.name}
+              </span>
+              <span className='text-sm'>
+                ({row.original.guest.phoneCodeCountry.phoneCode})
+              </span>
             </div>
             <div>
               {row.original.guest.phone}
@@ -397,7 +402,9 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           </div>
           <div className='flex gap-1 flex-col'>
             {row.original.tags.map(t => <div>
-              <Badge className=''>
+              <Badge className={cn('text-white ', {
+                [`bg-${t.tag.color}`]: t.tag.color
+              })}>
                 {t.tag.translations?.[0]?.name}
               </Badge>
             </div>)}

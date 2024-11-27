@@ -1,8 +1,6 @@
-import { predefinedEntities } from "@/server/layer/entities/predefined";
-import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
-import { restaurantEntities } from "@/server/layer/entities/restaurant";
-import { z } from "zod";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
+import { z } from "zod";
+import { createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 
 export const testRouter = createTRPCRouter({
     makePrepayment: publicProcedure

@@ -81,37 +81,6 @@ export const getPersonels = (restaurantId: number) => new Array(8).fill(0).map((
     restaurantId,
 })) as TPersonelInsert[]
 
-export const reservationTags = [
-    {
-        translations: [
-            {
-                name: 'Dogum gunu',
-                code: 'dgm',
-                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.tr)!.id
-            },
-            {
-                name: 'Birthday',
-                code: 'bday',
-                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.en)!.id
-            }
-
-        ]
-    },
-    {
-        translations: [
-            {
-                name: 'Anniversary',
-                code: 'anv',
-                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.en)!.id
-            },
-            {
-                name: 'Yildonumu',
-                code: 'yld',
-                languageId: languagesData.find(lang => lang.languageCode === EnumLanguage.tr)!.id
-            }
-        ]
-    },
-] as TRestaurantTagValidator.createRestaurantTagFormSchema[]
 
 
 // [{
@@ -226,7 +195,6 @@ export const seedDatas = {
     restaurant,
     getGuests,
     hours,
-    reservationTags,
     getPersonels,
     getGuestCompanies,
 }

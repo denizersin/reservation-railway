@@ -40,7 +40,7 @@ export const restaurantRouter = createTRPCRouter({
         .mutation(async ({ input, ctx }) => {
             const { user: { restaurantId } } = ctx.session
             await restaurantTagEntities.createRestaurantTag({
-                tag: { restaurantId: restaurantId },
+                tag: { restaurantId: restaurantId, color: input.color },
                 translations: input.translations
             })
             return true
@@ -50,22 +50,26 @@ export const restaurantRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             await restaurantTagEntities.updateRestaurantTagTranslations({
                 id: input.id,
-                translations: input.translations
+                translations: input.translations,
+                tag: input.tag
             })
             return true
         }),
     getAlltags: ownerProcedure
         .input(restaurantTagValidator.getAllRestaurantTagsSchema)
-        .query(async ({ input }) => {
-            const tags = await restaurantTagEntities.getAllRestaurantTags2(input)
+        .query(async ({ input, ctx }) => {
+            const { restaurantId } = ctx
+            const tags = await restaurantTagEntities.getAllRestaurantTags2({ ...input, restaurantId })
             return tags
         }),
     getTags: clientProcedure
         .query(async ({ ctx }) => {
+            const { restaurantId } = ctx
             return await restaurantTagEntities.getAllRestaurantTags2({
                 page: -1,
                 limit: 10,
-                languageId: ctx.userPrefrences.language.id
+                languageId: ctx.userPrefrences.language.id,
+                restaurantId
             })
         }),
     deleteTag: ownerProcedure

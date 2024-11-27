@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useReservationStates } from "@/hooks/front/useReservatoinStates"
-import { useReservationTagsSelectData } from "@/hooks/predefined/predfined"
+import { usePhoneCodesSelectData, useReservationTagsSelectData } from "@/hooks/predefined/predfined"
 import { useToast } from "@/hooks/use-toast"
 import { api } from "@/server/trpc/react"
 import { EnumMealNumeric } from "@/shared/enums/predefined-enums"
@@ -36,6 +36,7 @@ import { RefObject, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { CookieContent } from "../../_components/cookie-content"
 import { ReservationStatusHeader } from "../../_components/reservation-status-header"
+import { CustomComboSelect } from "@/components/custom/custom-combo-select"
 export type UserInfoImperativeModalRefs = RefObject<{
     openCookieModal?: () => void
 }>
@@ -49,13 +50,15 @@ export default function UserInfo() {
 
     const waitlistFormValues = getWaitlistFormValues()
 
+    const { selectData: phoneCodesSelectData } = usePhoneCodesSelectData()
+
     const form = useForm<TclientValidator.TWaitlistForm>({
         resolver: zodResolver(clientValidator.waitlistFormSchema),
         defaultValues: waitlistFormValues || {
             name: "erdem",
             surname: "yilmaz",
             email: "erdem@gmail.com",
-            phoneCode: "+90",
+            phoneCodeId: 1,
             phone: "5321234567",
             allergenWarning: false,
             guestNote: "",
@@ -164,25 +167,19 @@ export default function UserInfo() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="phoneCode"
+                                name="phoneCodeId"
                                 render={({ field }) => (
                                     <FormItem >
                                         <FormLabel>Code</FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                        >
+             
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select" />
-                                                </SelectTrigger>
+                                                <CustomComboSelect
+                                                    data={phoneCodesSelectData}
+                                                    onValueChange={(val) => field.onChange(Number(val))}
+                                                    value={String(field.value)}
+                                                />
                                             </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="+90">Turkey (+90)</SelectItem>
-                                                <SelectItem value="+1">USA (+1)</SelectItem>
-                                                <SelectItem value="+44">UK (+44)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+
                                         <FormMessage />
                                     </FormItem>
                                 )}

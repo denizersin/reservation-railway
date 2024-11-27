@@ -29,7 +29,7 @@ export const createPublicReservation = async ({
 
     const { mealId, time, guestCount, } = reservationData
 
-    const { email, phone, phoneCode, name, surname } = userInfo
+    const { email, phone, phoneCodeId, name, surname } = userInfo
 
     const utcHour = localHourToUtcHour(time)
 
@@ -39,13 +39,14 @@ export const createPublicReservation = async ({
     //--------------------------------
     //var olan guesti bul yoksa yarat.
     let guest: TGuestSelect | undefined = undefined
-    guest = await guestEntities.getGuestByPhoneAndEmail({ phone, email, phoneCode })
+    guest = await guestEntities.getGuestByPhoneAndEmail({ phone, email, phoneCodeId })
     if (!guest) {
         const newGuestId = await guestEntities.createGuest({
             guestData: {
                 email,
                 phone,
-                phoneCode,
+                phoneCodeId,
+                countryId:phoneCodeId,
                 name,
                 surname,
                 languageId: ctx.userPrefrences.language.id,
@@ -238,7 +239,7 @@ export const createReservationFromHolding = async ({
     const { restaurantId } = ctx
     const { mealId, time, guestCount } = reservationData
 
-    const { email, phone, phoneCode, name, surname, reservationTags } = userInfo
+    const { reservationTags } = userInfo
     const utcHour = localHourToUtcHour(time)
 
 
@@ -488,7 +489,7 @@ export const cancelPublicReservation = async ({
 
     const isStatusConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
 
-await    db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
 
         if (isPrepaymentPaid) {
             //!TODO: check if this is needed

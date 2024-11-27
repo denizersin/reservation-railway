@@ -10,38 +10,29 @@ import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
 import { Clock } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { TSelctionWaitingState } from './reservation-grid-status-modal'
+import ReactGridLayout from 'react-grid-layout'
+import { EnumTableShape } from '@/shared/enums/predefined-enums'
+import { HourTabs } from '@/components/hour-tabs'
 
 type Props = {
     reservation: TReservationRow,
-    selectionWaitingState: TSelctionWaitingState,
-    setselectionWaitingState: (state: TSelctionWaitingState) => void
 }
 
 export type TWaitingTable = TTable & {
     reservedTableRow?: TReservationWaitingTableRow
 }
 
-// TReservationWaitingTableRow
-type WaitingTableStatus = {
-    hour: string,
-    tables: TWaitingTable[]
-}[]
-
 export const ReservationWaitingTableSelect = ({
     reservation,
-    selectionWaitingState,
-    setselectionWaitingState
 }: Props) => {
 
+    const [selectedHour, setSelectedHour] = useState(reservation.hour)
 
     const { data } = api.restaurant.getRestaurantMealHours.useQuery({ mealId: reservation.mealId })
 
-    const hours = data?.[0]?.mealHours?.map(r => r.hour) || []
 
     const { data: waitingTables,isLoading:isLoadingWaitingTables } = api.reservation.getWaitingTables.useQuery()
 
-    const reservationHour = reservation.hour
 
 
     const queryDate = useMemo(() => {
@@ -58,33 +49,21 @@ export const ReservationWaitingTableSelect = ({
 
 
 
-    const [thisTableStatues, otherTableStatues] = useMemo(() => {
+    const { data: roomsData } = api.room.getRooms.useQuery({ withWaitingRooms: true })
 
-        const waitinTableStatus: WaitingTableStatus = []
+    const waitingRoom = useMemo(() => {
+        return roomsData?.find(r => r.isWaitingRoom)
+    }, [roomsData])
 
-        hours.forEach(h => {
-
-            const tables: TWaitingTable[] = waitingTables?.map(rt => {
-                return {
-                    ...rt,
-                    reservedTableRow: reservedWaitingTables?.find(r =>
-                        r.waitingSession?.tables.find(t => t.tableId === rt.id) &&
-                        r.hour === h
-                    )
-                }
-            }) || []
-
-            waitinTableStatus.push({
-                hour: h,
-                tables
-            })
-
-        })
-
-        const thisTableStatusData = waitinTableStatus.find(r => r.hour === reservationHour)
-        const otherTableStatusData = waitinTableStatus.filter(r => r.hour !== reservationHour)
-        return [thisTableStatusData, otherTableStatusData]
-
+    const thisTableStatues = useMemo(() => {
+        if (!waitingTables || !reservedWaitingTables) return []
+        
+        return waitingTables.map(rt => ({
+            ...rt,
+            reservedTableRow: reservedWaitingTables?.find(r =>
+                r.waitingSession?.tables.find(t => t.tableId === rt.id)
+            )
+        }))
     }, [waitingTables, reservedWaitingTables])
 
 
@@ -147,118 +126,100 @@ export const ReservationWaitingTableSelect = ({
 
     useShowLoadingModal([updateReservationWaitingSessionPending, createReservationWaitingSessionPending,isLoadingWaitingTables])
 
-    return (
-        <div className='max-w-full overflow-auto f'>
+    const gridLayout = useMemo(() => {
+        return thisTableStatues.map(table => ({
+            h: table.h!,
+            i: table.id.toString(),
+            w: table.w!,
+            x: table.x!,
+            y: table.y!,
+            shape: table.shape,
+            tableId: table.id
+        }))
+    }, [thisTableStatues])
 
+    const { layoutRowHeight = 100, layoutWidth = 800 } = waitingRoom || {}
+    const cols = Math.round(layoutWidth / (layoutRowHeight + (layoutRowHeight * 0.2)))
+
+
+    return (
+        <div className='max-w-full overflow-auto'>
             <Button
                 className='my-1'
                 onClick={onUpdate}
+                disabled={selectedHour !== reservation.hour}
             >
                 Update Waiting Tables
             </Button>
 
-            <div className='text-lg font-bold'>{reservation.hour}</div>
+            <HourTabs
+                selectedHour={selectedHour}
+                setHour={setSelectedHour}
+                selectedMealId={reservation.mealId}
+            />
 
-            <div className='flex gap-x-3 max-w-full overflow-x-auto py-4  border-y-2 border-black'>
+            <ReactGridLayout
+                className="layout border-black border-2 py-4 mt-4"
+                layout={gridLayout}
+                cols={cols}
+                rowHeight={layoutRowHeight}
+                width={layoutWidth}
+                style={{
+                    minHeight: 600
+                }}
+                verticalCompact={false}
+                compactType={null}
+                preventCollision={true}
+                isDraggable={false}
+                isResizable={false}
+            >
+                {thisTableStatues.map((table) => {
+                    const isOtherSelected = table.reservedTableRow && (
+                        table.reservedTableRow.id !== reservation.id
+                    )
+                    const isThisSelected = !isOtherSelected && selectedTables?.includes(table.id)
+                    const isThisDeSelected = currentReservationTable?.waitingSession?.tables.find(t => t.tableId === table.id) && !selectedTables?.includes(table.id)
+                    const isWrongHour = selectedHour !== reservation.hour
 
-                {
-                    thisTableStatues?.tables.map((table, i) => {
-
-                        const isOtherSelected = table.reservedTableRow && table.reservedTableRow.id !== reservation.id
-
-                        const isThisSelected = !isOtherSelected && selectedTables?.includes(table.id)
-
-                        const tableReservation = table.reservedTableRow
-                        const isThisDeSelected=currentReservationTable?.waitingSession?.tables.find(t=>t.tableId===table.id) && !selectedTables?.includes(table.id)
-
-                        return (
-                            <Card
-                                onClick={
-                                    () => {
-                                        if (isOtherSelected) return
-                                        if (selectedTables?.includes(table.id)) {
-                                            setSelectedTables(selectedTables?.filter(t => t !== table.id))
-                                        } else {
-                                            setSelectedTables([...selectedTables || [], table.id])
-                                        }
-                                    }
+                    return (
+                        <div
+                            key={table.id.toString()}
+                            className={cn('border', {
+                                'rounded-full': table.shape === EnumTableShape.round,
+                                'cursor-not-allowed': isOtherSelected || isWrongHour
+                            })}
+                            onClick={() => {
+                                if (isOtherSelected || isWrongHour) return
+                                
+                                if (selectedTables?.includes(table.id)) {
+                                    setSelectedTables(selectedTables?.filter(t => t !== table.id))
+                                } else {
+                                    setSelectedTables([...selectedTables || [], table.id])
                                 }
-                                key={table.id} className={cn(' min-w-[150px] relative', {
-                                    'bg-primary text-primary-foreground': isThisSelected,
-                                    "bg-secondary text-secondary-foreground": isOtherSelected,
-                                    "border-2 border-black":isThisDeSelected
-                                })}>
+                            }}
+                        >
+                            <Card className={cn('w-full h-full', {
+                                'bg-primary text-primary-foreground': isThisSelected,
+                                "bg-secondary text-secondary-foreground": isOtherSelected,
+                                "border-2 border-black": isThisDeSelected,
+                                "opacity-50": isWrongHour
+                            })}>
                                 <CardContent className="p-4 flex flex-col gap-y-1">
                                     <div className="r r1 flex justify-between">
                                         <div className="text-xl font-bold">{table.no}</div>
-
                                     </div>
                                     <div className="text-sm flex">
-                                        <div>{tableReservation?.guest?.name || '-'}</div>
+                                        <div>{table.reservedTableRow?.guest?.name || '-'}</div>
                                     </div>
                                     <div className="flex items-center text-xs mt-2">
-                                        <Clock className="w-3 h-3 mr-1" /> {tableReservation?.hour}
+                                        <Clock className="w-3 h-3 mr-1" /> {table.reservedTableRow?.hour}
                                     </div>
-
                                 </CardContent>
-
-                                {/* {
-                                    isThisSelected && <CircleCheck className='absolute top-0 right-0 h-6 w-6 text-background fill-foreground' />
-                                } */}
-
                             </Card>
-                        )
-                    })
-                }
-            </div>
-
-            {
-                otherTableStatues?.map((ots, i) => {
-                    return (
-                        <div key={i}>
-                            <div className='text-lg font-bold'>{ots.hour}</div>
-                            <div className='flex gap-x-3 max-w-full overflow-x-auto'>
-
-                                {
-                                    ots.tables.map((table, i) => {
-
-                                        const tableReservation = table.reservedTableRow && ots.hour === table.reservedTableRow.hour ? table.reservedTableRow : undefined
-
-                                        return (
-                                            <Card
-
-                                                key={table.id} className={cn(' min-w-[150px] relative', {
-                                                    "bg-secondary text-secondary-foreground": tableReservation,
-                                                })}>
-                                                <CardContent className="p-4 flex flex-col gap-y-1">
-                                                    <div className="r r1 flex justify-between">
-                                                        <div className="text-xl font-bold">{table.no}</div>
-
-
-                                                    </div>
-                                                    <div className="text-sm flex">
-                                                        <div>{tableReservation?.guest.name || '-'}</div>
-                                                    </div>
-                                                    <div className="flex items-center text-xs mt-2">
-                                                        <Clock className="w-3 h-3 mr-1" /> {tableReservation?.hour}
-                                                    </div>
-
-                                                </CardContent>
-
-                                                {/* {
-                                            isThisSelected && <CircleCheck className='absolute top-0 right-0 h-6 w-6 text-background fill-foreground' />
-                                        } */}
-
-                                            </Card>
-                                        )
-                                    })
-                                }
-                            </div>
                         </div>
-                    )
-                })
-            }
-
+                    );
+                })}
+            </ReactGridLayout>
         </div>
     )
 }

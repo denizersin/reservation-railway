@@ -12,6 +12,7 @@ import { IconDotsVertical } from "@tabler/icons-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { useState } from "react"
 import { TagCreateModal } from "./tags-crud-modal"
+import { cn } from "@/lib/utils"
 
 export const columns: ColumnDef<TRestaurantTagWithTranslations>[] = [
     {
@@ -30,6 +31,15 @@ export const columns: ColumnDef<TRestaurantTagWithTranslations>[] = [
             const tagTrns = row.original.translations?.[0]
             if (!tagTrns) return null
             return tagTrns.code
+        }
+    },
+    {
+        id: "color",
+        header: "Color",
+        cell: ({ row }) => {
+            return <div className={cn(`w-max px-2 py-px rounded-full text-white bg-${row.original.color}`)}>
+                {row.original.translations?.[0]?.name}
+            </div>
         }
     },
     {

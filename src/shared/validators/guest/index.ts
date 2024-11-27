@@ -11,7 +11,7 @@ export const createGuestSchema = z.object({
     surname: z.string().max(256),
     email: z.string().max(256),
     phone: z.string().max(256),
-    phoneCode: z.string().max(256),
+    phoneCodeId: z.number().int().positive(),
 
     stablePhone: z.string().max(256).nullable().optional(),
     gender: z.enum(getEnumValues(EnumGender)),
@@ -54,7 +54,7 @@ export const createGuestSchemaForm = z.object({
     surname: z.string().max(256),
     email: z.string().max(256),
     phone: z.string().max(256),
-    phoneCode: z.string().max(256),
+    phoneCodeId: z.number().int().positive(),
     stablePhone: z.string().max(256).nullable().optional(),
     gender: z.enum(getEnumValues(EnumGender)),
     birthDate: z.date(),

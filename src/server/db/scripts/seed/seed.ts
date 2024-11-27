@@ -13,12 +13,10 @@ import { EnumGender, EnumLanguage, EnumMealNumeric, EnumReservationPrepaymentNum
 import TReservationValidator from "@/shared/validators/reservation";
 import { and, eq } from "drizzle-orm";
 
-import { restaurantTagEntities } from "@/server/layer/entities/restaurant-tag";
 import { RoomEntities } from "@/server/layer/entities/room";
+import { exit } from "process";
 import { tblUser } from "../../schema/user";
 import { seedDatas } from "../seedData";
-import { exit } from "process";
-import { reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
 
 
 
@@ -34,7 +32,9 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 1
+const reservationCount = 10
+const room1TblCOunt=10
+
 const guestCount = 10
 
 const seedFunctions = [
@@ -94,7 +94,7 @@ const seedFunctions = [
                     restaurantId: 1,
                     surname: `Surname ${i}`,
                     phone: `5331234567`,
-                    phoneCode: `+90`,
+                    phoneCodeId: 1,
                     tagIds: [],
                     vipLevel: EnumVipLevel.goodSpender,
                     isSendReviewNotifs: false,
@@ -191,7 +191,7 @@ const seedFunctions = [
 
 
         await RoomEntities.createTables({
-            tables: new Array(10).fill(undefined).map((_, i) => ({
+            tables: new Array(room1TblCOunt).fill(undefined).map((_, i) => ({
                 maxCapacity: 3,
                 minCapacity: 2,
                 no: 'R1-' + i.toString(),
@@ -225,7 +225,9 @@ const seedFunctions = [
                 minCapacity: 2,
                 no: 'W-' + i.toString(),
                 order: i,
-                roomId: waitingRoom?.id!
+                roomId: waitingRoom?.id!,
+                x: (i % 5),
+                y: Math.floor(i / 5),
             })),
         })
 
@@ -245,18 +247,9 @@ const seedFunctions = [
 
         })
 
-        await Promise.all(
-            seedDatas.reservationTags.map(async (tag) => {
-                await restaurantTagEntities.createRestaurantTag({
-                    tag: { restaurantId: 1 },
-                    translations: tag.translations
-                })
-            })
-        )
+
 
  
-
-
 
 
 

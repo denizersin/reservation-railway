@@ -284,7 +284,7 @@ export const getGuestDetail = async ({ guestId }: { guestId: number }) => {
 }
 
 
-export const getGuestByPhoneAndEmail = async ({ phone, email, phoneCode }: { phone: string, email: string, phoneCode: string }) => {
-    const [result] = await db.select().from(tblGuest).where(and(eq(tblGuest.phone, phone), eq(tblGuest.email, email), eq(tblGuest.phoneCode, phoneCode)));
+export const getGuestByPhoneAndEmail = async ({ phone, email, phoneCodeId }: { phone: string, email: string, phoneCodeId: number }) => {
+    const [result] = await db.select().from(tblGuest).where(and(eq(tblGuest.phone, phone), eq(tblGuest.email, email), eq(tblGuest.phoneCodeId, phoneCodeId)));
     return result;
 }

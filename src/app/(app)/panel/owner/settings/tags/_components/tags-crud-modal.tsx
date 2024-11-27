@@ -1,7 +1,9 @@
 import { Button } from '@/components/custom/button'
+import { CustomSelect } from '@/components/custom/custom-select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useColorsSelectData } from '@/hooks/predefined/predfined'
 import { api } from '@/server/trpc/react'
 import TRestaurantTagValidator, { restaurantTagValidator } from '@/shared/validators/restaurant-tag'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -17,6 +19,9 @@ type Props = {
 }
 
 export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
+
+    const isUpdate = Boolean(tagId)
+
     const queryClient = useQueryClient()
 
     const onSuccessCrud = () => {
@@ -38,6 +43,8 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
         }
     })
 
+    const { selectData: colorsSelectData } = useColorsSelectData()
+
 
     const {
         data: restaurantLanguages
@@ -57,7 +64,7 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
 
     const onSubmit = (data: TRestaurantTagValidator.createRestaurantTagFormSchema) => {
         if (tagId) {
-            updateTagMutation.mutate({ id: tagId, translations: data.translations })
+            updateTagMutation.mutate({ id: tagId, translations: data.translations, tag: { color: data.color } })
         } else {
             createTagMutation.mutate(data)
         }
@@ -65,13 +72,18 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
 
     console.log(tagId, 'tagId')
 
-    const { data: translations } = api.restaurant.getTagTranslations.useQuery({
+    const { data: tagData } = api.restaurant.getTagTranslations.useQuery({
         tagId: tagId!
     }, {
         enabled: Boolean(tagId)
     })
 
-    console.log(translations, 'translations')
+    const translations = tagData?.translations
+
+
+    console.log(form.getValues(), 'form.getValues()')
+
+    console.log(form.formState.errors, 'form.formState.errors')
 
 
     useEffect(() => {
@@ -88,7 +100,7 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
             })
 
         console.log(newTraanslations, 'newTraanslations')
-        form.reset({ translations: newTraanslations })
+        form.reset({ translations: newTraanslations, color: tagData?.color })
 
 
     }, [translations])
@@ -102,6 +114,28 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
+                        {/* <CustomSelect
+                            data={colorsSelectData}
+                            label="Color"
+                            name="tag.color"
+                        /> */}
+                        <FormField
+                            control={form.control}
+                            name="color"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Color</FormLabel>
+                                    <FormControl>
+                                        <CustomSelect
+                                            value={field.value}
+                                            onValueChange={(value) => field.onChange(value)}
+                                            data={colorsSelectData} />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+
                         {restaurantLanguages?.map((lang, index) => (
                             <div key={lang.id} className="space-y-2">
                                 <h3 className="font-medium">{lang.language.name}</h3>
@@ -136,7 +170,7 @@ export function TagCreateModal({ isOpen, setOpen, tagId }: Props) {
                         <Button
                             loading={createTagMutation.isPending}
                             type="submit">
-                            Create Tag
+                            {isUpdate ? 'Update Tag' : 'Create Tag'}
                         </Button>
                     </form>
                 </Form>

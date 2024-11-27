@@ -38,10 +38,15 @@ export const getRestaurantTagTranslationsById = async ({
 }: {
     tagId: number
 }) => {
-    const translations = await db.query.tblRestaurantTagTranslation.findMany({
-        where: eq(tblRestaurantTagTranslation.tagId, tagId)
+
+    const tag = await db.query.tblRestaurantTag.findFirst({
+        where: eq(tblRestaurantTag.id, tagId),
+        with: {
+            translations: true
+        }
     })
-    return translations
+
+    return tag
 }
 
 export const getRestaurantTagWithTrnsById = async ({
@@ -60,9 +65,11 @@ export const getRestaurantTagWithTrnsById = async ({
 
 export const updateRestaurantTagTranslations = async ({
     id,
+    tag,
     translations
 }: TRestaurantTagWithTranslationsUpdate) => {
 
+    await db.update(tblRestaurantTag).set(tag).where(eq(tblRestaurantTag.id, id))
     await db.delete(tblRestaurantTagTranslation).where(eq(tblRestaurantTagTranslation.tagId, id))
 
     await db.insert(tblRestaurantTagTranslation).values(
@@ -80,8 +87,14 @@ export const updateRestaurantTagTranslations = async ({
 
 
 export const getAllRestaurantTags2 = async ({
-    limit, page, languageId, name
-}: TRestaurantTagValidator.getAllRestaurantTagsSchema)
+    limit, page, languageId, name, restaurantId
+}: {
+    limit: number,
+    page: number,
+    languageId: number,
+    name?: string,
+    restaurantId: number
+})
     : Promise<TPagination<TRestaurantTagWithTranslations>> => {
 
     const offset = (page - 1) * limit;
@@ -101,7 +114,8 @@ export const getAllRestaurantTags2 = async ({
             }
         },
         limit: page === -1 ? undefined : limit,
-        offset: page === -1 ? undefined : offset
+        offset: page === -1 ? undefined : offset,
+        where: eq(tblRestaurantTag.restaurantId, restaurantId)
     });
 
     const countQuery = db.query.tblRestaurantTag.findMany({
@@ -109,7 +123,8 @@ export const getAllRestaurantTags2 = async ({
             translations: {
                 where: and(...whereConditions)
             }
-        }
+        },
+        where: eq(tblRestaurantTag.restaurantId, restaurantId)
     });
 
     const totalCount = await countQuery.execute().then(res => res.length);

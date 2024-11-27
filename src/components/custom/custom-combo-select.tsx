@@ -48,6 +48,15 @@ export function CustomComboSelect({
 }: CustomComboSelectProps) {
   const [open, setOpen] = React.useState(false)
 
+  const valueLabelMap: Record<string, string> = React.useMemo(() => {
+    return data.reduce((acc: Record<string, string>, option) => {
+      acc[option.value] = option.label
+      return acc
+    }, {} as Record<string, string>)
+  }, [data])
+
+
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       {isFormSelect ? (
@@ -84,7 +93,11 @@ export function CustomComboSelect({
         </PopoverTrigger>
       )}
       <PopoverContent className="w-[200px] p-0">
-        <Command>
+        <Command
+          filter={(value, search, keywords) => {
+            return valueLabelMap[value]?.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+          }}
+        >
           <CommandInput placeholder="Search option..." />
           <CommandList>
             <CommandEmpty>No option found.</CommandEmpty>

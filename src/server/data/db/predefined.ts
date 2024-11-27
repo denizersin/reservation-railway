@@ -1,21 +1,13 @@
 import { TCountryInsert, TLanguageInsert } from "@/server/db/schema"
+import codeData from "@/shared/data/country-code.json"
 
-const countries = [
-    {
-        name: 'turkey',
-        code: 'tr',
-        phoneCode: '+90'
-    }, {
-        name: 'usa',
-        code: 'us',
-        phoneCode: '+1'
-    },
-    {
-        name: 'germany',
-        code: 'de',
-        phoneCode: '+49'
-    }
-] as TCountryInsert[]
+const countryCodeData = codeData as {
+    name: string
+    phoneCode: string
+    code: string
+  }[]
+
+const countries = countryCodeData as TCountryInsert[]
 
 const languages = [
     {

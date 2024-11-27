@@ -1,6 +1,6 @@
 import React from 'react'
-import TableViewCards from './_components/table-view-cards'
 import TablesView from './_components/tables/tables'
+import TableViewCards from './_components/tables/table-view-cards'
 
 type Props = {}
 

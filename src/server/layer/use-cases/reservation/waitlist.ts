@@ -24,18 +24,18 @@ export const createWaitlist = async ({
     const { restaurantId } = ctx
     const { waitlistUserInfo, guestCount, mealId, waitlistDate } = input
 
-    const { email, phone, phoneCode, name, surname, guestNote, allergenWarning, reservationTags } = waitlistUserInfo
+    const { email, phone, phoneCodeId, name, surname, guestNote, allergenWarning, reservationTags } = waitlistUserInfo
 
     //--------------------------------
     //var olan guesti bul yoksa yarat.
     let guest: TGuestSelect | undefined = undefined
-    guest = await guestEntities.getGuestByPhoneAndEmail({ phone, email, phoneCode })
+    guest = await guestEntities.getGuestByPhoneAndEmail({ phone, email, phoneCodeId })
     if (!guest) {
         const newGuestId = await guestEntities.createGuest({
             guestData: {
                 email,
                 phone,
-                phoneCode,
+                phoneCodeId,
                 name,
                 surname,
                 languageId: ctx.userPrefrences.language.id,

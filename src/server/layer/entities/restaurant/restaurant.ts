@@ -8,10 +8,11 @@ import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran
 import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
 import { restaurantSettingEntities, reviewSettingEntities } from '../restaurant-setting';
-import { tblRestaurantGeneralSetting, tblRestaurantReviewSettings, tblRoom, tblRoomTranslation } from '@/server/db/schema';
+import { tblRestaurantGeneralSetting, tblRestaurantReviewSettings, tblRestaurantTag, tblRoom, tblRoomTranslation } from '@/server/db/schema';
 import { serverData } from '@/server/data';
 import { languagesData } from '@/shared/data/predefined';
 import TReviewSettingsValidator from '@/shared/validators/setting/review';
+import { restaurantTagEntities } from '../restaurant-tag';
 
 export const createRestaurant = async ({
     restaurant,
@@ -161,6 +162,12 @@ export const setDefaultsToRestaurant = async ({
                 restaurantId
             },
             translations: review.translations
+        })))
+
+        console.log('serverData.reservationTags', restaurantId, 'restaurantId')
+        await Promise.all(serverData.reservationTags.map(tag => restaurantTagEntities.createRestaurantTag({
+            tag: { restaurantId, color: tag.color },
+            translations: tag.translations
         })))
 
     }

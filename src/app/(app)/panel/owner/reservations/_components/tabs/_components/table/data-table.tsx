@@ -30,7 +30,7 @@ import { reservationColumns } from './columns/columns'
 import { TReservationRow } from '@/lib/reservation'
 import { useReservationsContext } from '../../../../page'
 import { cn } from '@/lib/utils'
-import { EnumPrepaymentStatus, EnumReservationExistanceStatus, EnumReservationStatus } from '@/shared/enums/predefined-enums'
+import { EnumMealNumeric, EnumPrepaymentStatus, EnumReservationExistanceStatus, EnumReservationStatus } from '@/shared/enums/predefined-enums'
 
 
 type TTableContext = {
@@ -64,110 +64,103 @@ export function ReservationDataTable({
 
 
 
-  const { queryDate } = useReservationsContext()
+  const { queryDate, reservationsData } = useReservationsContext()
 
-
-
-  const { data } = api.reservation.getReservations.useQuery({
-    date: queryDate
-  }, {
-    staleTime: 0
-  })
-
+ 
 
 
 
 
   const table = useReactTable<TReservationRow>({
-    data: data || [],
-    columns: reservationColumns,
-    state: {
-      sorting,
-      columnVisibility,
-      rowSelection,
-      columnFilters,
-    },
-    enableRowSelection: true,
-    rowCount: data?.length,
-    manualPagination: true,
+      data: reservationsData,
+      columns: reservationColumns,
+      state: {
+        sorting,
+        columnVisibility,
+        rowSelection,
+        columnFilters,
+      },
+      enableRowSelection: true,
+      rowCount: reservationsData.length,
+      manualPagination: true,
 
 
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+      onRowSelectionChange: setRowSelection,
+      onSortingChange: setSorting,
+      onColumnFiltersChange: setColumnFilters,
+      onColumnVisibilityChange: setColumnVisibility,
 
 
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-  })
+      getCoreRowModel: getCoreRowModel(),
+      getFilteredRowModel: getFilteredRowModel(),
+      getPaginationRowModel: getPaginationRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      getFacetedRowModel: getFacetedRowModel(),
+      getFacetedUniqueValues: getFacetedUniqueValues(),
+    })
 
   console.log(table.getState().columnFilters, 'filters')
   // console.log(data, 'asd')
 
-  return (
-    <TableContext.Provider value={{ data: data || [] }}>
-      <div className='space-y-4 mt-4'>
-        <DataTableToolbar table={table} />
-        <div className='rounded-md border'>
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id} colSpan={header.colSpan}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className={cn({
-                        'bg-orange-300': cell.row.original.holdedAt
-                      })}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={reservationColumns.length}
-                    className='h-24 text-center'
-                  >
-                    No results.
+  return(
+    <TableContext.Provider value={{ data: reservationsData }}>
+  <div className='space-y-4 mt-4'>
+    <DataTableToolbar table={table} />
+    <div className='rounded-md border'>
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                  </TableHead>
+                )
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && 'selected'}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className={cn({
+                    'bg-orange-300': cell.row.original.holdedAt
+                  })}>
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
                   </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        {/* <DataTablePagination table={table} /> */}
-      </div>
-    </TableContext.Provider>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={reservationColumns.length}
+                className='h-24 text-center'
+              >
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+    {/* <DataTablePagination table={table} /> */}
+  </div>
+    </TableContext.Provider >
 
   )
 }
