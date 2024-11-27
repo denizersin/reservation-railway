@@ -122,7 +122,7 @@ export const cancelPrepayment = async ({
         message: 'Prepayment already paid',
     })
 
-    db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
         await ReservationEntities.updateReservationPrepayment({
             data: {
                 id: currentPrepayment.id,
@@ -162,7 +162,7 @@ export const requestForConfirmation = async ({
 
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
 
-    db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
         await ReservationEntities.createConfirmationRequest({
             data: {
                 reservationId,
@@ -209,7 +209,7 @@ export const cancelConfirmationRequest = async ({
             message: 'Reservation is not waiting for confirmation',
         })
 
-    db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
         await ReservationEntities.deleteReservationConfirmationRequests({ reservationId, trx })
         await ReservationEntities.updateReservation({
             reservationId,
@@ -305,7 +305,7 @@ export const cancelReservation = async ({
     const isStatusConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
 
 
-    db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
 
         if (isPrepaymentPaid) {
             //!TODO: check if this is needed

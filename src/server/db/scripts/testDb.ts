@@ -44,9 +44,9 @@ function getMonthDays(startDate: Date, endDate: Date) {
 async function initDb() {
     try {
         const startDate = new Date()
-        startDate.setDate(startDate.getDate() + 3)
+        let total = 0;
 
-        const dates = Array.from({ length: 1 }, (_, i) => {
+        const dates = Array.from({ length: 30 }, (_, i) => {
             const date = new Date(startDate)
             date.setDate(date.getDate() + i)
             return date
@@ -62,7 +62,6 @@ async function initDb() {
                 restaurantId: 1,
                 guestCount: 2
             })
-            console.log(s, 'result')
             const end = performance.now()
             return {
                 date: date.toISOString().split('T')[0],
@@ -76,7 +75,12 @@ async function initDb() {
             console.log(`Query time for ${date}: ${queryTime.toFixed(2)}ms`)
         })
 
+        total += results.reduce((acc, { queryTime }) => acc + queryTime, 0)
+
         console.log(`Total time for all queries: ${(totalEnd - totalStart).toFixed(2)}ms`)
+
+
+        console.log('avarage time for one query', (total / results.length).toFixed(2), 'ms')
 
         console.log(
             await db.select({ count: count() }).from(schema.tblReservation)

@@ -81,7 +81,7 @@ export const GridStatusTableRowCard = ({
 
 
     const optionDropdown = hasOptions && (
-        <DropdownMenu modal={false}>
+        <DropdownMenu >
             <DropdownMenuTrigger asChild>
                 <Button
                     className={cn('rounded-full px-1 py-1 size-6 ', {
@@ -133,7 +133,7 @@ export const GridStatusTableRowCard = ({
             }, className)}>
             <CardContent className="p-4 flex flex-col gap-y-1 text-xs">
                 <div className="r r1 flex justify-between">
-                    <div className="text-sm font-bold flex-1 text-center">{statusTableRow.table?.no}2</div>
+                    <div className="text-sm font-bold flex-1 text-center">{statusTableRow.table?.no}</div>
                     {optionDropdown}
                 </div>
                 <div className=" flex">

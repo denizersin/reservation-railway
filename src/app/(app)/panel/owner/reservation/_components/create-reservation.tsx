@@ -60,7 +60,7 @@ export const CreateReservation = (props: Props) => {
         })) ?? []
     }, [data])
 
-    const [selectedGuestId, setSelectedGuestId] = useState<number | null>(1)
+    const [selectedGuestId, setSelectedGuestId] = useState<number | null>(2)
 
 
 

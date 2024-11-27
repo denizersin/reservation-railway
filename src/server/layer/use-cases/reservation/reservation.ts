@@ -384,191 +384,195 @@ export const checkOutAndCompleteReservation = async ({
 }
 
 export const updateReservationTime = async ({
-        input,
-        ctx
-    }: TUseCaseOwnerLayer<TReservationValidator.updateReservationTime>) => {
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationTime>) => {
 
-        const {
-            reservationId,
-            data,
-            notificationOptions: { withEmail, withSms }
-        } = input
+    const {
+        reservationId,
+        data,
+        notificationOptions: { withEmail, withSms }
+    } = input
 
-        const hour = localHourToUtcHour(data.hour)
+    const hour = localHourToUtcHour(data.hour)
 
-        const reservation = await db.query.tblReservation.findFirst({
-            where: eq(tblReservation.id, reservationId),
-            with: {
-                tables: true
-            }
-        })
-
-        if (!reservation) throw new Error('Reservation not found')
-
-
-        const isDateChanged = format(reservation.reservationDate, 'dd-MM-yyyy') !== format(data.reservationDate, 'dd-MM-yyyy')
-
-        const isTimeChanged = reservation.hour !== hour
-        const isGuestCountChanged = reservation.guestCount !== data.guestCount
-
-        const tableData = await RoomEntities.getTableById({ tableId: data.tableId })
-
-        const isRoomChanged = reservation.roomId !== tableData.roomId
-
-
-        if (isDateChanged || isRoomChanged) {
-
-            const table = await RoomEntities.getTableById({ tableId: data.tableId })
-
-
-            await ReservationEntities.resetReservationTablesAndLinks({
-                reservationId,
-                tableId: data.tableId
-            })
-
-            await ReservationEntities.updateReservation({
-                reservationId,
-                data: {
-                    roomId: table.roomId
-                }
-            })
-
+    const reservation = await db.query.tblReservation.findFirst({
+        where: eq(tblReservation.id, reservationId),
+        with: {
+            tables: true
         }
+    })
+
+    if (!reservation) throw new Error('Reservation not found')
+
+
+    const isDateChanged = format(reservation.reservationDate, 'dd-MM-yyyy') !== format(data.reservationDate, 'dd-MM-yyyy')
+
+    const isTimeChanged = reservation.hour !== hour
+    const isGuestCountChanged = reservation.guestCount !== data.guestCount
+
+    const tableData = await RoomEntities.getTableById({ tableId: data.tableId })
+
+    const isRoomChanged = reservation.roomId !== tableData.roomId
+
+    const isTableChanged = reservation.tables.find(t => t.tableId === data.tableId) === undefined
+
+    if (isTableChanged) {
+        await ReservationEntities.resetReservationTablesAndLinks({
+            reservationId,
+            tableId: data.tableId
+        })
+    }
+
+    if (isDateChanged || isRoomChanged) {
+
+        const table = await RoomEntities.getTableById({ tableId: data.tableId })
+
+
 
         await ReservationEntities.updateReservation({
             reservationId,
             data: {
-                reservationDate: data.reservationDate,
-                hour,
-                guestCount: data.guestCount,
-            },
+                roomId: table.roomId
+            }
         })
 
+    } 
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            reservationDate: data.reservationDate,
+            hour,
+            guestCount: data.guestCount,
+        },
+    })
 
 
-        if (isTimeChanged || isDateChanged) {
-            await notificationUseCases.handleReservationTimeChange({
-                reservationId,
-                oldValue: reservation.reservationDate.toLocaleString() + ' ' + reservation.hour,
-                newValue: data.reservationDate.toLocaleString() + ' ' + data.hour,
-                withEmail,
-                withSms,
-                ctx
-            })
-        }
 
-        if (isGuestCountChanged) {
-            await notificationUseCases.handleReservationGuestCountChange({
-                reservationId,
-                oldValue: reservation.guestCount.toString(),
-                newValue: data.guestCount.toString(),
-                withEmail,
-                withSms,
-                ctx
-            })
-        }
-
+    if (isTimeChanged || isDateChanged) {
+        await notificationUseCases.handleReservationTimeChange({
+            reservationId,
+            oldValue: reservation.reservationDate.toLocaleString() + ' ' + reservation.hour,
+            newValue: data.reservationDate.toLocaleString() + ' ' + data.hour,
+            withEmail,
+            withSms,
+            ctx
+        })
     }
 
-    export const updateReservationTable = async ({
-        input,
-        ctx
-    }: TUseCaseOwnerLayer<TReservationValidator.updateReservationTable>) => {
-
-        const { reservationId, tableId } = input
-        const table = await RoomEntities.getTableById({ tableId })
-        const reservation = await ReservationEntities.getReservationById({ reservationId })
-        if (reservation.roomId != table.roomId) {
-            await ReservationEntities.resetReservationTablesAndLinks({
-                reservationId,
-                tableId
-            })
-            await ReservationEntities.updateReservation({
-                reservationId,
-                data: {
-                    roomId: table.roomId
-                }
-            })
-        }
-        else {
-            await ReservationEntities.updateReservationTable({
-                data: {
-                    id: input.id,
-                    tableId,
-                }
-            })
-
-        }
-
-
+    if (isGuestCountChanged) {
+        await notificationUseCases.handleReservationGuestCountChange({
+            reservationId,
+            oldValue: reservation.guestCount.toString(),
+            newValue: data.guestCount.toString(),
+            withEmail,
+            withSms,
+            ctx
+        })
     }
 
+}
 
-    export const updateReservationAssignedPersonal = async ({
-        input,
-        ctx
-    }: TUseCaseOwnerLayer<TReservationValidator.updateReservationAssignedPersonal>) => {
-        const { reservationId, assignedPersonalId } = input
+export const updateReservationTable = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationTable>) => {
 
+    const { reservationId, tableId } = input
+    const table = await RoomEntities.getTableById({ tableId })
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+    if (reservation.roomId != table.roomId) {
+        await ReservationEntities.resetReservationTablesAndLinks({
+            reservationId,
+            tableId
+        })
         await ReservationEntities.updateReservation({
             reservationId,
             data: {
-                assignedPersonalId
+                roomId: table.roomId
             }
         })
     }
-
-    export const updateReservationNote = async ({
-        input,
-        ctx
-    }: TUseCaseOwnerLayer<TReservationValidator.updateReservationNote>) => {
-        const { reservationId, note } = input
-
-        const [firstNote] = await db.query.tblReservationNote.findMany({
-            where: eq(tblReservationNote.reservationId, reservationId),
-            orderBy: [asc(tblReservationNote.createdAt)],
-            limit: 1
-        })
-
-        if (firstNote) {
-            await db.update(tblReservationNote).set({
-                note
-            }).where(eq(tblReservationNote.id, firstNote.id))
-        } else {
-            await db.insert(tblReservationNote).values({
-                note,
-                reservationId
-            })
-        }
-
-    }
-
-    export const syncHoldingReservations = async ({
-        input,
-        ctx
-    }: TUseCaseOwnerLayer<object>) => {
-        const reservationId = ctx.restaurantId
-
-        await db.delete(tblReservation).where(and(
-            eq(tblReservation.restaurantId, reservationId),
-            eq(tblReservation.reservationStatusId, EnumReservationStatusNumeric.holding)
-        )
-        )
-
-    }
-
-    export const updateReservationTagAndNote = async ({
-        input,
-        ctx
-    }: TUseCaseOwnerLayer<TReservationValidator.updateReservationTagAndNote>) => {
-        const { reservationId, reservationTagIds, note } = input
-
-        await ReservationEntities.updateReservation({
-            reservationId,
+    else {
+        await ReservationEntities.updateReservationTable({
             data: {
-                tagIds: reservationTagIds,
-                guestNote: note
+                id: input.id,
+                tableId,
             }
         })
+
     }
+
+
+}
+
+
+export const updateReservationAssignedPersonal = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationAssignedPersonal>) => {
+    const { reservationId, assignedPersonalId } = input
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            assignedPersonalId
+        }
+    })
+}
+
+export const updateReservationNote = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationNote>) => {
+    const { reservationId, note } = input
+
+    const [firstNote] = await db.query.tblReservationNote.findMany({
+        where: eq(tblReservationNote.reservationId, reservationId),
+        orderBy: [asc(tblReservationNote.createdAt)],
+        limit: 1
+    })
+
+    if (firstNote) {
+        await db.update(tblReservationNote).set({
+            note
+        }).where(eq(tblReservationNote.id, firstNote.id))
+    } else {
+        await db.insert(tblReservationNote).values({
+            note,
+            reservationId
+        })
+    }
+
+}
+
+export const syncHoldingReservations = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<object>) => {
+    const reservationId = ctx.restaurantId
+
+    await db.delete(tblReservation).where(and(
+        eq(tblReservation.restaurantId, reservationId),
+        eq(tblReservation.reservationStatusId, EnumReservationStatusNumeric.holding)
+    )
+    )
+
+}
+
+export const updateReservationTagAndNote = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationTagAndNote>) => {
+    const { reservationId, reservationTagIds, note } = input
+
+    await ReservationEntities.updateReservation({
+        reservationId,
+        data: {
+            tagIds: reservationTagIds,
+            guestNote: note
+        }
+    })
+}
 

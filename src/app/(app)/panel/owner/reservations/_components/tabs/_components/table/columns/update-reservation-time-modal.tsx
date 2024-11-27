@@ -1,23 +1,19 @@
 'use client'
 import { ReservationDateCalendar } from '@/app/(app)/panel/owner/reservation/_components/reservation-date-calendar';
+import { TableStatues2 } from '@/app/(app)/panel/owner/reservation/_components/v2/table-statues2';
 import { Button } from '@/components/custom/button';
+import MealTabs from '@/components/meal-tabs';
+import RoomTabs from '@/components/room-tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import { useMutationCallback } from '@/hooks/useMutationCallback';
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal';
-import { TReservationRow, TStatusTableRow } from '@/lib/reservation';
-import { cn } from '@/lib/utils';
+import { TReservationRow } from '@/lib/reservation';
 import { api } from '@/server/trpc/react';
 import { format } from 'date-fns';
-import { useEffect, useMemo, useState } from 'react';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TRestaurantMeal, TRoomWithTranslations } from '@/server/db/schema';
-import RoomTabs from '@/components/room-tabs';
-import MealTabs from '@/components/meal-tabs';
-import { useToast } from '@/hooks/use-toast';
-import { TableStatues2 } from '@/app/(app)/panel/owner/reservation/_components/v2/table-statues2';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { useEffect, useState } from 'react';
 
 type Props = {
     isOpen: boolean
@@ -97,11 +93,7 @@ export const UpdateReservationTmeModal = ({
     }
 
 
-    useEffect(() => {
-        if (meals) {
-            setSelectedMealId(meals?.find(m => m.id === reservation.mealId)?.id)
-        }
-    }, [meals, reservation.mealId])
+
 
 
     // Loading states
@@ -109,13 +101,9 @@ export const UpdateReservationTmeModal = ({
     const isDateChanged = format(date, 'dd-MM-yyyy') !== format(reservation.reservationDate, 'dd-MM-yyyy')
 
 
-    useEffect(() => {
-        setSelectedRoomId(roomsData?.find(r => r.id === reservation.roomId)?.id)
-    }, [roomsData, reservation.roomId])
+ 
 
-    useEffect(() => {
-        setSelectedMealId(meals?.[0]?.id);
-    }, [meals])
+
 
     useEffect(() => {
         if (isDateChanged) {
@@ -125,7 +113,9 @@ export const UpdateReservationTmeModal = ({
 
 
     useEffect(() => {
-        if (selectedRoomId === reservation.roomId && date === reservation.reservationDate) {
+        if (selectedRoomId === reservation.roomId && 
+            
+            format(date, 'dd-MM-yyyy') === format(reservation.reservationDate, 'dd-MM-yyyy')) {
             setSelectedTableId(reservation.tables[0]?.tableId)
         } else {
             setSelectedTableId(undefined)
@@ -135,6 +125,8 @@ export const UpdateReservationTmeModal = ({
     // Find current room and meal for TableStatues2
     const currentRoom = roomsData?.find(r => r.id === selectedRoomId)
     const currentMeal = meals?.find(m => m.id === selectedMealId)
+
+    console.log(currentRoom, currentMeal, 'currentRoom, currentMeal')
 
 
     return (
@@ -159,7 +151,7 @@ export const UpdateReservationTmeModal = ({
                     />
 
                     {/* Hour Selection */}
-                    {currentMeal && currentRoom && <TableStatues2
+                    {selectedMealId && selectedRoomId && <TableStatues2
                         selectedTableId={selectedTableId}
                         setSelectedTableId={setSelectedTableId}
                         date={date}

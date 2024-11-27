@@ -8,7 +8,7 @@ import { TUseCaseClientLayer, TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumDaysNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservatoinClientValidator from "@/shared/validators/front/reservation";
-import { and, between, eq, exists, gt, isNull, lt, ne, not, or, sql, sum } from "drizzle-orm";
+import { and, between, eq, exists, isNull, ne, not, sql, sum } from "drizzle-orm";
 import { restaurantEntities } from "../../entities/restaurant";
 import { tblReservationHolding, TTable } from "@/server/db/schema";
 import { union } from "drizzle-orm/mysql-core";
@@ -519,60 +519,51 @@ export const queryTableAvailabilitiesByGuestCount = async ({
 
 
 
+
+
 export const queryTableAvailabilities = async ({
     date,
     mealId,
     restaurantId,
-    guestCount
 }: {
     date: Date,
     mealId: number,
     restaurantId: number,
-    guestCount: number
 }) => {
     //478k  40-50ms (40 table)
     const { start, end } = getStartAndEndOfDay({
         date: getLocalTime(date)
     })
+    const getReservationTables = () => db
+        .select({
+            RESERVATION_TABLE_ID: tblReservationTable.id,
+            RESERVATION_ID: tblReservationTable.reservationId,
+            TABLE_ID: tblReservationTable.tableId,
+        })
+        .from(tblReservation)
+        .leftJoin(tblReservationTable, eq(tblReservationTable.reservationId, tblReservation.id))
+        .where(
+            and(
+                between(tblReservation.reservationDate, start, end),
+                ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel),
+                eq(tblReservation.mealId, mealId),
 
-    // const avaliableTables = await db
-    //     .select()
-    //     .from(tblRoom)
-    //     .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
-    //     .leftJoin(reservationTables, eq(reservationTables.TABLE_ID, tblTable.id))
-    //     .where(and(
-    //         isNull(reservationTables.RESERVATION_ID),
-    //         between(sql<number>`${guestCount}`, tblTable.minCapacity, tblTable.maxCapacity),
-    //         eq(tblRoom.restaurantId, restaurantId),
-    //         eq(tblRoom.isActive, true),
-    //         eq(tblRoom.isWaitingRoom, false),
-    //     ))
+            )
+        )
 
-    const avaliableTables2 = await db
+    const reservationTables = getReservationTables().as('reservationTables')
+
+    const avaliableTables = await db
         .select()
         .from(tblRoom)
         .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
-        .leftJoin(tblReservationTable, eq(tblReservationTable.tableId, tblTable.id))
-        .leftJoin(tblReservation, eq(tblReservation.id, tblReservationTable.reservationId))
-        .where(
-            and(
-                or(
-                    isNull(tblReservation.id), // Eşleşme yoksa (masa boş)
-                    and(
-                        // Rezervasyonun geçerli bir zaman aralığında olmadığını kontrol et
-                        or(
-                            lt(tblReservation.reservationDate, start), // Rezervasyon başlangıç tarihinden önce
-                            gt(tblReservation.reservationDate, end)   // Rezervasyon bitiş tarihinden sonra
-                        ),
-                        ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel), // İptal edilenler hariç
-                    )
-                ),
-                eq(tblRoom.restaurantId, restaurantId), // Restoran filtresi
-                eq(tblRoom.isActive, true), // Aktif odalar
-                eq(tblRoom.isWaitingRoom, false) // Bekleme odası olmayanlar
-            )
-        );
-
+        .leftJoin(reservationTables, eq(reservationTables.TABLE_ID, tblTable.id))
+        .where(and(
+            isNull(reservationTables.RESERVATION_ID),
+            eq(tblRoom.restaurantId, restaurantId),
+            eq(tblRoom.isActive, true),
+            eq(tblRoom.isWaitingRoom, false),
+        ))
 
 
     const limitationStatus = await getLimitationStatuesQuery({
@@ -581,7 +572,7 @@ export const queryTableAvailabilities = async ({
         restaurantId
     }).as('limitationStatus')
 
-    const avaliableTablesGroupByRoom = groupByWithKeyFn(avaliableTables2, (r) => r.room.id)
+    const avaliableTablesGroupByRoom = groupByWithKeyFn(avaliableTables, (r) => r.room.id)
 
 
 
@@ -609,7 +600,6 @@ export const queryTableAvailabilities = async ({
     const s1 = performance.now()
     type TLimitationRow = typeof result[number]
     type THourAvailibilty = TLimitationRow & {
-        avaliableTableIds: number[]
         isAvaliable: boolean
     }
     const groupByRoom = groupByWithKeyFn(result, (r) => r.room)
@@ -626,7 +616,6 @@ export const queryTableAvailabilities = async ({
                 return {
                     ...r,
                     isAvaliable: isRoomHasAvaliableTable,
-                    avaliableTableIds: avaliableTablesOfRoom?.map(a => a?.table?.id) ?? []
                 }
             }
 
@@ -634,24 +623,18 @@ export const queryTableAvailabilities = async ({
 
             const isHourNotAvalibe = !isRoomHasAvaliableTable ||
                 avaliableGuest <= 0 ||
-                avaliableTable <= 0 ||
-                avaliableGuest < guestCount
+                avaliableTable <= 0
 
             if (isHourNotAvalibe) {
                 return {
                     ...r,
                     isAvaliable: false,
-                    avaliableTableIds: []
                 }
             }
 
             return {
                 ...r,
                 isAvaliable: true,
-                avaliableTableIds: avaliableTablesOfRoom?.map(a => ({
-                    ...a.table,
-                    maxCapacity: Math.min(a.table?.maxCapacity!, avaliableGuest)
-                })) ?? []
             }
 
 
@@ -685,3 +668,4 @@ export const queryTableAvailabilities = async ({
 
 
 }
+

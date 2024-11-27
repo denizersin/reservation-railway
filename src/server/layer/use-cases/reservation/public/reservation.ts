@@ -488,7 +488,7 @@ export const cancelPublicReservation = async ({
 
     const isStatusConfirmation = reservation.reservationStatusId === EnumReservationStatusNumeric.confirmation
 
-    db.transaction(async (trx) => {
+await    db.transaction(async (trx) => {
 
         if (isPrepaymentPaid) {
             //!TODO: check if this is needed
@@ -643,7 +643,7 @@ export const confirmPublicReservation = async ({
     if (reservation.reservationStatusId !== EnumReservationStatusNumeric.confirmation)
         throw new Error('Reservation not in confirmation status')
 
-    db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
         await ReservationEntities.updateReservation({
             reservationId,
             data: {

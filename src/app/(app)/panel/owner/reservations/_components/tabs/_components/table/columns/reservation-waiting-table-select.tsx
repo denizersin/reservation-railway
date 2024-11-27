@@ -1,17 +1,16 @@
-import { TStatusTableRow, TReservationWaitingTableRow, TReservationRow } from '@/lib/reservation'
-import { TReservation, TTable } from '@/server/db/schema'
-import { api } from '@/server/trpc/react'
-import { CircleCheck, Clock } from 'lucide-react'
-import React, { useEffect, useMemo, useState } from 'react'
+import { Button } from '@/components/custom/button'
 import { Card, CardContent } from "@/components/ui/card"
+import { useMutationCallback } from '@/hooks/useMutationCallback'
+import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { TReservationRow, TReservationWaitingTableRow } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
-import { TSelctionWaitingState } from './reservation-grid-status-modal'
-import { table } from 'console'
+import { TTable } from '@/server/db/schema'
+import { api } from '@/server/trpc/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
-import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
-import { Button } from '@/components/custom/button'
-import { useMutationCallback } from '@/hooks/useMutationCallback'
+import { Clock } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { TSelctionWaitingState } from './reservation-grid-status-modal'
 
 type Props = {
     reservation: TReservationRow,
@@ -40,7 +39,7 @@ export const ReservationWaitingTableSelect = ({
 
     const hours = data?.[0]?.mealHours?.map(r => r.hour) || []
 
-    const { data: waitingTables } = api.reservation.getWaitingTables.useQuery()
+    const { data: waitingTables,isLoading:isLoadingWaitingTables } = api.reservation.getWaitingTables.useQuery()
 
     const reservationHour = reservation.hour
 
@@ -146,11 +145,8 @@ export const ReservationWaitingTableSelect = ({
 
     }
 
-    useShowLoadingModal([updateReservationWaitingSessionPending, createReservationWaitingSessionPending])
+    useShowLoadingModal([updateReservationWaitingSessionPending, createReservationWaitingSessionPending,isLoadingWaitingTables])
 
-    console.log(thisTableStatues, 'thisTableStatues')
-    console.log(otherTableStatues, 'otherTableStatues')
-    console.log(currentReservationTable, 'currentReservationTable')
     return (
         <div className='max-w-full overflow-auto f'>
 

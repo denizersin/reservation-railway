@@ -8,7 +8,7 @@ import { TReservationRow, TTableStatuesRow } from '@/lib/reservation'
 import { TRoomWithTranslations } from '@/server/db/schema'
 import { api } from '@/server/trpc/react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ReservationGridStatus } from './reservation-grid-status'
 import { ReservationWaitingTableSelect, TWaitingTable } from './reservation-waiting-table-select'
 import { ReservationPersonel } from './reservation-personel'
@@ -190,6 +190,15 @@ export const ReservationGridStatusModal = ({
             return;
         }
     }
+
+    useEffect(() => {
+        if (reservation.roomId && !isWaitinfRoom) {
+            setSelectedRoom(roomsData?.find(r => r.id === reservation.roomId))
+        }
+
+    }, [reservation])
+
+    
 
     useShowLoadingModal([isPendingAddNewTables, isPendingLinkReservation, isPendingUpdateReservation, isPendingCreateReservation, isPendingUpdateReservationWaitingSession, isPendingCheckInReservation, isPendingCheckOutAndCompleteReservation])
 

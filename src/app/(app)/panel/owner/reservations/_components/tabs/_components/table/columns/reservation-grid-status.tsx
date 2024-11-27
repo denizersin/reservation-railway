@@ -269,8 +269,9 @@ export const ReservationGridStatus = ({
         <div>
             <div className='flex items-center justify-between'>
                 <Button
+                    className='my-2'
                     onClick={() => { setLatoutKey(latoutKey + 1) }}
-                >Rest layout</Button>
+                >Reset layout</Button>
             </div>
             <ArcherContainer
                 className='w-max h-max'
