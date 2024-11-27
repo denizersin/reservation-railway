@@ -119,7 +119,12 @@ export const ReservationGridStatusModal = ({
     const {
         mutate: checkOutAndCompleteReservation,
         isPending: isPendingCheckOutAndCompleteReservation
-    } = api.reservation.checkOutAndCompleteReservation.useMutation({ onSuccess: onSuccsessUpdate })
+    } = api.reservation.checkOutAndCompleteReservation.useMutation({
+        onSuccess: () => {
+            onSuccsessUpdate()
+            setOpen(false)
+        }
+    })
 
 
     const isUpdateReservationTable = selectedRows.length === 1 && deSelectedRows.length === 1
