@@ -8,7 +8,7 @@ import { TUseCaseClientLayer, TUseCasePublicLayer } from "@/server/types/types";
 import { getLocalTime, getMonthDays, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumDaysNumeric, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import TReservatoinClientValidator from "@/shared/validators/front/reservation";
-import { and, between, eq, exists, isNull, ne, not, sql, sum } from "drizzle-orm";
+import { and, between, eq, exists, gt, isNull, lt, ne, not, or, sql, sum } from "drizzle-orm";
 import { restaurantEntities } from "../../entities/restaurant";
 import { tblReservationHolding, TTable } from "@/server/db/schema";
 import { union } from "drizzle-orm/mysql-core";
@@ -92,7 +92,7 @@ export const getMonthAvailabilityByGuestCount = async ({
     const promises = monthDays.map(async (day) => {
         //without holding
         const s1 = performance.now();
-        const tableStatuses = await queryTableAvailabilities({ date: day, mealId, restaurantId, guestCount })
+        const tableStatuses = await queryTableAvailabilitiesByGuestCount({ date: day, mealId, restaurantId, guestCount })
         const s2 = performance.now();
         console.log(` took ${s2 - s1}ms`)
 
@@ -357,7 +357,7 @@ function getLimitationStatuesQuery({ date, mealId, restaurantId }: { date: Date,
 
 
 
-export const queryTableAvailabilities = async ({
+export const queryTableAvailabilitiesByGuestCount = async ({
     date,
     mealId,
     restaurantId,
@@ -516,3 +516,172 @@ export const queryTableAvailabilities = async ({
 
 }
 
+
+
+
+export const queryTableAvailabilities = async ({
+    date,
+    mealId,
+    restaurantId,
+    guestCount
+}: {
+    date: Date,
+    mealId: number,
+    restaurantId: number,
+    guestCount: number
+}) => {
+    //478k  40-50ms (40 table)
+    const { start, end } = getStartAndEndOfDay({
+        date: getLocalTime(date)
+    })
+
+    // const avaliableTables = await db
+    //     .select()
+    //     .from(tblRoom)
+    //     .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
+    //     .leftJoin(reservationTables, eq(reservationTables.TABLE_ID, tblTable.id))
+    //     .where(and(
+    //         isNull(reservationTables.RESERVATION_ID),
+    //         between(sql<number>`${guestCount}`, tblTable.minCapacity, tblTable.maxCapacity),
+    //         eq(tblRoom.restaurantId, restaurantId),
+    //         eq(tblRoom.isActive, true),
+    //         eq(tblRoom.isWaitingRoom, false),
+    //     ))
+
+    const avaliableTables2 = await db
+        .select()
+        .from(tblRoom)
+        .leftJoin(tblTable, eq(tblTable.roomId, tblRoom.id))
+        .leftJoin(tblReservationTable, eq(tblReservationTable.tableId, tblTable.id))
+        .leftJoin(tblReservation, eq(tblReservation.id, tblReservationTable.reservationId))
+        .where(
+            and(
+                or(
+                    isNull(tblReservation.id), // Eşleşme yoksa (masa boş)
+                    and(
+                        // Rezervasyonun geçerli bir zaman aralığında olmadığını kontrol et
+                        or(
+                            lt(tblReservation.reservationDate, start), // Rezervasyon başlangıç tarihinden önce
+                            gt(tblReservation.reservationDate, end)   // Rezervasyon bitiş tarihinden sonra
+                        ),
+                        ne(tblReservation.reservationStatusId, EnumReservationStatusNumeric.cancel), // İptal edilenler hariç
+                    )
+                ),
+                eq(tblRoom.restaurantId, restaurantId), // Restoran filtresi
+                eq(tblRoom.isActive, true), // Aktif odalar
+                eq(tblRoom.isWaitingRoom, false) // Bekleme odası olmayanlar
+            )
+        );
+
+
+
+    const limitationStatus = await getLimitationStatuesQuery({
+        date: date,
+        mealId,
+        restaurantId
+    }).as('limitationStatus')
+
+    const avaliableTablesGroupByRoom = groupByWithKeyFn(avaliableTables2, (r) => r.room.id)
+
+
+
+    const result = await db.select({
+        hour: tblMealHours.hour,
+        room: tblRoom.id,
+        limitationId: limitationStatus.limitationId,
+        maxTable: limitationStatus.maxTable,
+        maxGuest: limitationStatus.maxGuest,
+        avaliableGuest: limitationStatus.avaliableGuest,
+        avaliableTable: limitationStatus.avaliableTable,
+    })
+        .from(tblMealHours)
+        .innerJoin(tblRoom, and(
+            eq(tblRoom.restaurantId, tblMealHours.restaurantId),
+            eq(tblRoom.isActive, true),
+            eq(tblRoom.isWaitingRoom, false)
+        ))
+        .leftJoin(limitationStatus, and(
+            eq(limitationStatus.hour, tblMealHours.hour),
+            eq(tblRoom.id, limitationStatus.room)
+        ))
+
+
+    const s1 = performance.now()
+    type TLimitationRow = typeof result[number]
+    type THourAvailibilty = TLimitationRow & {
+        avaliableTableIds: number[]
+        isAvaliable: boolean
+    }
+    const groupByRoom = groupByWithKeyFn(result, (r) => r.room)
+
+    const groupByRoomResult = Object.values(groupByRoom).map((rows) => {
+        return rows.map((r) => {
+
+            const avaliableTablesOfRoom = avaliableTablesGroupByRoom[r.room]
+            const isRoomHasAvaliableTable = Boolean(avaliableTablesOfRoom?.length)
+
+            const isHourHasLimitation = r.limitationId !== null
+
+            if (!isHourHasLimitation) {
+                return {
+                    ...r,
+                    isAvaliable: isRoomHasAvaliableTable,
+                    avaliableTableIds: avaliableTablesOfRoom?.map(a => a?.table?.id) ?? []
+                }
+            }
+
+            const { avaliableGuest, avaliableTable, } = r
+
+            const isHourNotAvalibe = !isRoomHasAvaliableTable ||
+                avaliableGuest <= 0 ||
+                avaliableTable <= 0 ||
+                avaliableGuest < guestCount
+
+            if (isHourNotAvalibe) {
+                return {
+                    ...r,
+                    isAvaliable: false,
+                    avaliableTableIds: []
+                }
+            }
+
+            return {
+                ...r,
+                isAvaliable: true,
+                avaliableTableIds: avaliableTablesOfRoom?.map(a => ({
+                    ...a.table,
+                    maxCapacity: Math.min(a.table?.maxCapacity!, avaliableGuest)
+                })) ?? []
+            }
+
+
+
+
+        }) as THourAvailibilty[]
+    })
+
+
+    const mapped = groupByRoomResult.map((r) => {
+        return {
+            room: r[0]?.room!,
+            hours: r,
+            isRoomHasAvaliableTable: r.some(r => r.isAvaliable)
+        }
+    })
+
+
+
+    return mapped
+
+
+
+
+
+
+
+
+
+
+
+
+}

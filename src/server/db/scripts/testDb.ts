@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../schema/index";
 
-import { queryTableAvailabilities } from "@/server/layer/use-cases/reservation/client-queries";
+import { queryTableAvailabilitiesByGuestCount } from "@/server/layer/use-cases/reservation/client-queries";
 import { count, isNotNull } from "drizzle-orm";
 import { exit } from "process";
 
@@ -46,7 +46,7 @@ async function initDb() {
         const startDate = new Date()
         startDate.setDate(startDate.getDate() + 3)
 
-        const dates = Array.from({ length: 30 }, (_, i) => {
+        const dates = Array.from({ length: 1 }, (_, i) => {
             const date = new Date(startDate)
             date.setDate(date.getDate() + i)
             return date
@@ -56,12 +56,13 @@ async function initDb() {
 
         const results = await Promise.all(dates.map(async (date) => {
             const start = performance.now()
-            const s = await queryTableAvailabilities({
+            const s = await queryTableAvailabilitiesByGuestCount({
                 date,
                 mealId: 3,
                 restaurantId: 1,
                 guestCount: 2
             })
+            console.log(s, 'result')
             const end = performance.now()
             return {
                 date: date.toISOString().split('T')[0],

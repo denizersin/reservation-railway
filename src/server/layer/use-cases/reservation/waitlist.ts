@@ -252,7 +252,7 @@ export const queryWaitlistAvailability = async ({
 
     const waitlist = await waitlistEntities.getWaitlistById({ waitlistId })
 
-    const result = await reservationUseCases.queryTableAvailabilities({
+    const result = await reservationUseCases.queryTableAvailabilitiesByGuestCount({
         date: waitlist.waitlistDate,
         mealId: waitlist.mealId,
         restaurantId,

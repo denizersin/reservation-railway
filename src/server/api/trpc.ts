@@ -38,6 +38,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   const languageData = languagesData.find(l => l.languageCode === language)
 
 
+
   const userPrefrences: TUserPreferences = {
     theme: EnumTheme.light,
     language: DEFAULT_LANGUAGE_DATA
@@ -49,6 +50,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     userUseCases.updateUserPreferences({ language: DEFAULT_LANGUAGE_DATA.languageCode })
   }
 
+  const restaurantId = session?.user.restaurantId
   // const toast = {
   //   message: ''
   // }
@@ -64,6 +66,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   return {
     session,
     userPrefrences,
+    restaurantId,
     ...opts,
   };
 };
@@ -157,20 +160,21 @@ export const publicProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
 
 export const clientProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
 
+  const restaurantIdContext = ctx.restaurantId
   const restaurantId = ctx.headers.get(EnumHeader.RESTAURANT_ID);
-  console.log(restaurantId, 'restaurantId 3131')
-  if (!restaurantId) {
+
+  console.log(ctx.headers, 'ctx.headers')
+  if ( !restaurantIdContext && !restaurantId ) {
     throw new TRPCError({ code: "BAD_REQUEST", message: "Restaurant id header is required" });
   }
 
 
 
-  console.log(parseInt(restaurantId), 'Number(restaurantId)')
 
   return next({
     ctx: {
       ...ctx,
-      restaurantId: Number(restaurantId),
+      restaurantId: restaurantIdContext || Number(restaurantId),
     }
   })
 });
