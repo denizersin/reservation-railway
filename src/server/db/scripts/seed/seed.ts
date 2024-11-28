@@ -13,11 +13,11 @@ import { EnumGender, EnumLanguage, EnumMealNumeric, EnumReservationPrepaymentNum
 import TReservationValidator from "@/shared/validators/reservation";
 import { and, eq } from "drizzle-orm";
 
+import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { RoomEntities } from "@/server/layer/entities/room";
 import { exit } from "process";
 import { tblUser } from "../../schema/user";
 import { seedDatas } from "../seedData";
-import { predefinedEntities } from "@/server/layer/entities/predefined";
 
 
 
@@ -33,7 +33,7 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
-const reservationCount = 10
+const reservationCount = 1
 const room1TblCOunt=10
 
 const guestCount = 10

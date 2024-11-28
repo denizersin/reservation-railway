@@ -35,9 +35,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ReservationStatusHeader } from "@/app/(app)/reservation/_components/reservation-status-header";
 import { useReservationStatusContext } from "../../layout";
+import { usePhoneCodesSelectData } from "@/hooks/predefined/predfined";
+import { CustomComboSelect } from "@/components/custom/custom-combo-select";
+import { useEffect } from "react";
 
 export default function Page() {
-
+    const { selectData: phoneCodes, isLoading: isLoadingPhoneCodes } = usePhoneCodesSelectData();
 
     const { reservationStatusData } = useReservationStatusContext()
 
@@ -48,6 +51,7 @@ export default function Page() {
     const form = useForm<TclientValidator.TPrePaymentForm>({
         resolver: zodResolver(clientValidator.prePaymentFormSchema),
         defaultValues: {
+            name: reservationStatusData?.guest?.name ?? "",
             card_number: "1212121212121212",
             expiry_date: "12/24",
             cvc: "123",
@@ -85,6 +89,10 @@ export default function Page() {
     const invoiceRequired = form.watch("invoice.invoiceRequired")
     const invoiceType = form.watch("invoice.invoiceType")
 
+
+    useEffect(() => {
+        form.setValue("name", reservationStatusData?.guest?.name ?? "")
+    }, [reservationStatusData?.guest?.name])
 
     return (
         <div>
@@ -267,25 +275,16 @@ export default function Page() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="invoice.invoicePhoneCode"
+                                        name="invoice.invoicePhoneCodeId"
                                         render={({ field }) => (
                                             <FormItem className="">
-                                                <FormLabel>Code</FormLabel>
-                                                <Select
-                                                    onValueChange={field.onChange}
-                                                    defaultValue={field.value}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="+90">Turkey (+90)</SelectItem>
-                                                        <SelectItem value="+1">USA (+1)</SelectItem>
-                                                        <SelectItem value="+44">UK (+44)</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                <FormLabel>Phone Code</FormLabel>
+                                                <CustomComboSelect
+                                                    buttonClass='w-full'
+                                                    data={phoneCodes}
+                                                    onValueChange={(value) => field.onChange(Number(value))}
+                                                    value={String(field.value)}
+                                                />
                                                 <FormMessage />
                                             </FormItem>
                                         )}

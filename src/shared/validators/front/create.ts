@@ -53,6 +53,7 @@ const holdTableSchema = z.object({
 })
 
 const prePaymentFormSchema = z.object({
+    name: z.string().max(256).min(2, "Name must be at least 2 characters"),
     card_number: z.string().min(16, "Card number must be 16 digits"),
     expiry_date: z.string().regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Invalid expiry date (MM/YY)"),
     cvc: z.string().min(3, "CVC must be 3 digits"),

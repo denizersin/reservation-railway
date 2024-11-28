@@ -107,7 +107,11 @@ export const reservationRouter = createTRPCRouter({
     getTableStatues: ownerProcedure
         .input(reservationValidator.getTableStatues)
         .query(async (opts) => {
-            return await reservationUseCases.getAllAvailableReservations2(opts)
+            const s1 = performance.now()
+            const result = await reservationUseCases.getAllAvailableReservations2(opts)
+            const s2 = performance.now()
+            console.log(`getAllAvailableReservations2-query-took ${s2 - s1} ms`)
+            return result
         }),
     removeTableFromReservation: ownerProcedure
         .input(z.object({
