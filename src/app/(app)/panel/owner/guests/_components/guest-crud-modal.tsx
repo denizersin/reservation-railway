@@ -1,6 +1,5 @@
 import { Button } from '@/components/custom/button'
 import { CustomComboSelect } from '@/components/custom/custom-combo-select'
-import { CustomSelect } from '@/components/custom/custom-select'
 import { MultiSelect } from '@/components/custom/multi-select'
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from '@/components/ui/checkbox'
@@ -106,7 +105,7 @@ const GuestCrudModal = ({
 
             form.reset({
                 ...rest,
-                countryId: guestData.companyId ?? undefined,
+                countryId: guestData.countryId ?? undefined,
                 gender: guestData.gender ?? undefined,
                 birthDate: guestData.birthDate ?? undefined,
                 vipLevel: guestData.vipLevel ?? undefined,
@@ -207,7 +206,8 @@ const GuestCrudModal = ({
                         <FormField control={form.control} name="gender" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Gender</FormLabel>
-                                <CustomSelect
+                                <CustomComboSelect
+                                    buttonClass='w-full'
                                     data={GenderToSelect}
                                     onValueChange={field.onChange}
                                     value={field.value}
@@ -330,7 +330,8 @@ const GuestCrudModal = ({
                         <FormField control={form.control} name="companyId" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Company</FormLabel>
-                                <CustomSelect
+                                <CustomComboSelect
+                                    buttonClass='w-full'
                                     data={guestCompanies}
                                     onValueChange={(value) => field.onChange(Number(value))}
                                     value={String(field.value)}
@@ -354,7 +355,8 @@ const GuestCrudModal = ({
                         <FormField control={form.control} name="languageId" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Language</FormLabel>
-                                <CustomSelect
+                                <CustomComboSelect
+                                    buttonClass='w-full'
                                     data={languages}
                                     onValueChange={(value) => field.onChange(Number(value))}
                                     value={String(field.value)}
@@ -395,7 +397,8 @@ const GuestCrudModal = ({
                         <FormField control={form.control} name="vipLevel" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>VIP Level</FormLabel>
-                                <CustomSelect
+                                <CustomComboSelect
+                                    buttonClass='w-full'
                                     data={VipLevelToSelect}
                                     onValueChange={field.onChange}
                                     value={field.value}

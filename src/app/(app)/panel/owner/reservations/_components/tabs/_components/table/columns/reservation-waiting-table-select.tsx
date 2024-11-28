@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from 'react'
 import ReactGridLayout from 'react-grid-layout'
 import { EnumTableShape } from '@/shared/enums/predefined-enums'
 import { HourTabs } from '@/components/hour-tabs'
+import { useStartOfDay } from '@/hooks/useStartOfDay'
 
 type Props = {
     reservation: TReservationRow,
@@ -28,18 +29,14 @@ export const ReservationWaitingTableSelect = ({
 
     const [selectedHour, setSelectedHour] = useState(reservation.hour)
 
-    const { data } = api.restaurant.getRestaurantMealHours.useQuery({ mealId: reservation.mealId })
 
 
     const { data: waitingTables,isLoading:isLoadingWaitingTables } = api.reservation.getWaitingTables.useQuery()
 
 
 
-    const queryDate = useMemo(() => {
-        const date = new Date(reservation.reservationDate)
-        date.setHours(0, 0, 0, 0)
-        return date.toISOString()
-    }, [reservation.reservationDate])
+
+    const queryDate = useStartOfDay(reservation.reservationDate)
 
 
     const { data: reservedWaitingTables } = api.reservation.getReservationWaitingTables.useQuery({
@@ -58,13 +55,15 @@ export const ReservationWaitingTableSelect = ({
     const thisTableStatues = useMemo(() => {
         if (!waitingTables || !reservedWaitingTables) return []
         
+        const hourReservations = reservedWaitingTables.filter(r => r.hour === selectedHour)
+        
         return waitingTables.map(rt => ({
             ...rt,
-            reservedTableRow: reservedWaitingTables?.find(r =>
+            reservedTableRow: hourReservations.find(r =>
                 r.waitingSession?.tables.find(t => t.tableId === rt.id)
             )
         }))
-    }, [waitingTables, reservedWaitingTables])
+    }, [waitingTables, reservedWaitingTables, selectedHour])
 
 
 
@@ -75,7 +74,6 @@ export const ReservationWaitingTableSelect = ({
     const [selectedTables, setSelectedTables] = useState<number[]>()
 
 
-    console.log(currentReservationTable, 'currentReservationTable')
 
     useEffect(() => {
         if (!currentReservationTable) return
@@ -177,9 +175,9 @@ export const ReservationWaitingTableSelect = ({
                     const isOtherSelected = table.reservedTableRow && (
                         table.reservedTableRow.id !== reservation.id
                     )
-                    const isThisSelected = !isOtherSelected && selectedTables?.includes(table.id)
-                    const isThisDeSelected = currentReservationTable?.waitingSession?.tables.find(t => t.tableId === table.id) && !selectedTables?.includes(table.id)
                     const isWrongHour = selectedHour !== reservation.hour
+                    const isThisSelected = !isOtherSelected && selectedTables?.includes(table.id) && selectedHour === reservation.hour
+                    const isThisDeSelected = currentReservationTable?.waitingSession?.tables.find(t => t.tableId === table.id) && !selectedTables?.includes(table.id)
 
                     return (
                         <div

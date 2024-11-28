@@ -8,6 +8,7 @@ CREATE TABLE `guest` (
 	`email` varchar(256) NOT NULL,
 	`phone` varchar(256) NOT NULL,
 	`phone_code_id` int NOT NULL,
+	`full_phone` varchar(256) NOT NULL,
 	`stable_phone` varchar(256),
 	`gender` enum('male','female','other'),
 	`birth_date` date,

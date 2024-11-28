@@ -321,8 +321,10 @@ export const getReservationDetail = async ({
     input,
     ctx
 }: TUseCaseOwnerLayer<TReservationValidator.getReservationDetail>) => {
+    const languageId = ctx.userPrefrences.language.id
+    const reservationDetail = await ReservationEntities.getReservationDetail({ reservationId: input.reservationId, languageId })
 
-    const reservationDetail = await ReservationEntities.getReservationDetail({ reservationId: input.reservationId })
+    reservationDetail.hour = utcHourToLocalHour(reservationDetail.hour)
 
     return reservationDetail
 }

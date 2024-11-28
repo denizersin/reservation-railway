@@ -12,6 +12,7 @@ import { GridStatusTableRowCard } from './grid-status-table-row-card';
 import { TSelectionRowState } from './reservation-grid-status-modal';
 import "/node_modules/react-grid-layout/css/styles.css";
 import "/node_modules/react-resizable/css/styles.css";
+import { useStartOfDay } from '@/hooks/useStartOfDay';
 
 const colors = ['blue', 'red', 'green', 'purple', 'pink', 'orange', 'gray', 'indigo', 'teal', 'cyan', 'lime', 'amber', 'brown', 'lightBlue', 'lightGreen', 'deepOrange', 'deepPurple', 'blueGray']
 
@@ -51,11 +52,8 @@ export const ReservationGridStatus = ({
 
 
 
-    const queryDate = useMemo(() => {
-        const date = new Date(reservation.reservationDate)
-        date.setHours(0, 0, 0, 0)
-        return date
-    }, [reservation.reservationDate])
+
+    const queryDate = useStartOfDay(reservation.reservationDate)
     const { data: availableTableData } = api.reservation.getTableStatues.useQuery({
         date: queryDate,
         mealId: reservation.mealId

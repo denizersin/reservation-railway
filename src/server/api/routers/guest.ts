@@ -2,14 +2,17 @@ import { guestValidator } from "@/shared/validators/guest";
 import { createTRPCRouter, ownerProcedure } from "../trpc";
 import { guestEntities } from "@/server/layer/entities/guest";
 import { z } from "zod";
+import { predefinedEntities } from "@/server/layer/entities/predefined";
+import { TGuest, TGuestSelect } from "@/server/db/schema";
 
 export const guestRouter = createTRPCRouter({
     createGuest: ownerProcedure.input(guestValidator.createGuestSchema).mutation(async ({ input, ctx }) => {
         const { session: { user: { restaurantId } } } = ctx
-        
+        const fullPhone = await predefinedEntities.getFullPhone({ phone: input.phone, phoneCodeId: input.phoneCodeId })
         await guestEntities.createGuest({
             guestData: {
                 ...input,
+                fullPhone,
                 restaurantId
             }
         });
@@ -17,11 +20,13 @@ export const guestRouter = createTRPCRouter({
 
     updateGuest: ownerProcedure.input(guestValidator.updateGuestSchema).mutation(async ({ input, ctx }) => {
         // input.data.
+        const guestData:Partial<TGuestSelect> = { ...input.data }
+        if (input.data.phone && input.data.phoneCodeId) {
+            guestData.fullPhone = await predefinedEntities.getFullPhone({ phone: input.data.phone, phoneCodeId: input.data.phoneCodeId })
+        }
         await guestEntities.updateGuest({
             id: input.id,
-            guestData: {
-                ...input.data,
-            }
+            guestData
         });
     }),
 

@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
+import { useStartOfDay } from '@/hooks/useStartOfDay'
 
 type Props = {
     open: boolean
@@ -46,11 +47,9 @@ export const CreateWaitlistReservModal = ({
     const [withSms, setWithSms] = useState(true)
     const [withEmail, setWithEmail] = useState(true)
 
-    const queryDate = useMemo(() => {
-        const newDate = new Date(waitlistData.waitlistDate)
-        newDate.setHours(0, 0, 0, 0)
-        return newDate
-    }, [date])
+
+
+    const queryDate = useStartOfDay(waitlistData.waitlistDate)
 
     const { data: avaliableTablesData } = api.reservation.getTableStatues.useQuery({
         date: queryDate,

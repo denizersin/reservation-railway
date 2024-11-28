@@ -1,6 +1,6 @@
 
 import { db } from "@/server/db";
-import { tblPrepayment, tblReservationTable, tblReservationTag, tblRoom, tblRoomTranslation, tblTable, TReservationInsert, TTable } from "@/server/db/schema";
+import { tblPrepayment, tblReservationTable, tblReservationTag, tblRestaurantTagTranslation, tblRoom, tblRoomTranslation, tblTable, TReservationInsert, TTable } from "@/server/db/schema";
 import { tblReservation, TReservationSelect, TReservatioTable, TUpdateReservation, tblWaitingTableSession, tblWaitingSessionTables, TWaitingTableSession } from "@/server/db/schema/reservation";
 import { TTransaction } from "@/server/utils/db-utils";
 import { and, between, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
@@ -178,9 +178,11 @@ export const updateReservationTable = async ({
 
 
 export const getReservationDetail = async ({
-    reservationId
+    reservationId,
+    languageId
 }: {
-    reservationId: number
+    reservationId: number,
+    languageId: number
 }) => {
     const reservation = await db.query.tblReservation.findFirst({
         where: eq(tblReservation.id, reservationId),
@@ -190,7 +192,13 @@ export const getReservationDetail = async ({
                     table: true,
                 }
             },
-            room: true,
+            room: {
+                with: {
+                    translations: {
+                        where: eq(tblRoomTranslation.languageId, languageId)
+                    }
+                }
+            },
             guest: true,
             reservationStatus: true,
             reservationExistenceStatus: true,
@@ -204,7 +212,17 @@ export const getReservationDetail = async ({
 
             meal: true,
             assignedPersonal: true,
-            tags: true,
+            tags: {
+                with: {
+                    tag:{
+                        with: {
+                            translations: {
+                                where: eq(tblRestaurantTagTranslation.languageId, languageId)
+                            }
+                        }
+                    }
+                }
+            },
             waitingSession: {
                 with: {
                     tables: {

@@ -5,6 +5,7 @@ import { TPagination } from "@/server/types/types";
 import TGuestValidator from "@/shared/validators/guest";
 import { and, desc, eq, like, or, SQL } from "drizzle-orm";
 import { record } from "zod";
+import { getFullPhone } from "../predefined/predefined";
 
 
 
@@ -12,6 +13,7 @@ export const createGuest = async ({ guestData }: {
     guestData: TGuestInsert
 }) => {
     const { tagIds, ..._guestData } = guestData;
+
 
     const [result] = await db.insert(tblGuest).values(_guestData).$returningId();
 
@@ -274,6 +276,7 @@ export const getGuestDetail = async ({ guestId }: { guestId: number }) => {
     const guestReservations = await db.query.tblReservation.findMany({
         with: {
             reservationStatus: true,
+            reservationExistenceStatus: true,
         },
         where: eq(tblReservation.guestId, guestId)
     })

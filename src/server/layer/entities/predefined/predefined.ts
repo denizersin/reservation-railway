@@ -3,6 +3,7 @@ import { db } from "@/server/db"
 import { tblReserVationStatus } from "@/server/db/schema"
 import { tblCountry, tblLanguage } from "@/server/db/schema/predefined"
 import { EnumLanguage, EnumReservationStatus } from "@/shared/enums/predefined-enums"
+import { TRPCError } from "@trpc/server"
 import { eq } from "drizzle-orm"
 
 
@@ -13,6 +14,15 @@ export const getCountries = async () => {
     const countries = await db.query.tblCountry.findMany()
     //language properties
     return countries
+}
+
+export const getCountryById = async ({
+    id
+}: {
+    id: number
+}) => {
+    const country = await db.query.tblCountry.findFirst({ where: eq(tblCountry.id, id) })
+    return country
 }
 
 export const getLanguages = async () => {
@@ -76,4 +86,19 @@ export const getMeals = async () => {
 export const getReservationSatues = async () => {
     const reservationStatus = await db.query.tblReserVationStatus.findMany()
     return reservationStatus
+}
+
+export const getFullPhone = async ({
+    phone,
+    phoneCodeId
+}: {
+    phone: string,
+    phoneCodeId: number
+}) => {
+    const country = await getCountryById({ id: phoneCodeId })
+    if (!country) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Country not found' })
+    }
+    const fullPhone = `${country.phoneCode}${phone}`
+    return fullPhone
 }

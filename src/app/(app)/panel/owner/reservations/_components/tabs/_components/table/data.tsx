@@ -1,4 +1,4 @@
-import { EnumReservationExistanceStatus, EnumReservationStatus } from '@/shared/enums/predefined-enums';
+import { EnumReservationExistanceStatus, EnumReservationStatus, EnumVipLevel } from '@/shared/enums/predefined-enums';
 import {
   ArrowDownIcon,
   ArrowRightIcon,
@@ -10,6 +10,7 @@ import {
   StopwatchIcon,
 } from '@radix-ui/react-icons'
 import { IconCalendarCancel, IconCalendarPlus, IconCashRegister, IconChecks, IconCircleCheck, IconCircleCheckFilled, IconCircleXFilled, IconCopyCheckFilled, IconHelpHexagonFilled, IconUserCheck, IconUserScreen, IconUserSearch, IconUserX } from '@tabler/icons-react';
+import { Blocks, Lock, Star } from 'lucide-react';
 
 export const labels = [
   {
@@ -104,6 +105,51 @@ export const existenceStatuses = [
     label: 'Checked Out',
     icon: IconUserCheck,
     renderIcon: () => <IconUserCheck className='w-4 h-4  text-destructive' />
+  },
+]
+
+export const vipLevels=[
+  {
+    value: EnumVipLevel.bigSpender,
+    label: 'Big Spender',
+    icon: Star,
+    renderIcon: () => <Star className='w-4 h-4  text-destructive' />
+  },
+  {
+    value: EnumVipLevel.goodSpender,
+    label: 'Good Spender',
+    icon: Star,
+    renderIcon: () => <Star className='w-4 h-4  text-destructive' />
+  },
+  {
+    value: EnumVipLevel.lowSpender,
+    label: 'Low Spender',
+    icon: Star,
+    renderIcon: () => <Star className='w-4 h-4  text-destructive' />
+  },
+  {
+    value: EnumVipLevel.blackList,
+    label: 'Black List',
+    icon: Lock,
+    renderIcon: () => <Lock className='w-4 h-4  text-destructive' />
+  },
+  {
+    value: EnumVipLevel.lostCustomer,
+    label: 'Lost Customer',
+    icon: Lock,
+    renderIcon: () => <Lock className='w-4 h-4  text-destructive' />,
+  },
+  {
+    value: EnumVipLevel.potentialCustomer,
+    label: 'Potential Customer',
+    icon: Star,
+    renderIcon: () => <Star className='w-4 h-4  text-destructive' />,
+  },
+  {
+    value: EnumVipLevel.regularCustomer,
+    label: 'Regular Customer',
+    icon: Star,
+    renderIcon: () => <Star className='w-4 h-4  text-destructive' />,
   },
 ]
 

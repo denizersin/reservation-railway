@@ -1,6 +1,12 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Shield, Building, Star, AlertTriangle } from 'lucide-react';
+import { db } from '@/server/db';
+import { tblGuest, tblGusetCompany } from '@/server/db/schema';
+import { and, count, eq } from 'drizzle-orm';
+import { EnumVipLevel } from '@/shared/enums/predefined-enums';
+import { getEnumValues } from '@/server/utils/server-utils';
+import { vipLevels } from '../../reservations/_components/tabs/_components/table/data';
 
 type CardData = {
   title: string;
@@ -10,22 +16,54 @@ type CardData = {
   color: string;
 }
 
-const MainCards = () => {
+const MainCards = async () => {
+
+  const [totalGuests] = await db.select({
+    count: count()
+  }).from(tblGuest);
+
+  const [vipGuests] = await db.select({
+    count: count()
+  }).from(tblGuest)
+    .where(eq(tblGuest.isVip, true));
+
+  const [companies] = await db.select({
+    count: count()
+  }).from(tblGusetCompany);
+
   const guestData: CardData[] = [
-    { title: 'Misafir', value: '25556', subtitle: 'Misafir', icon: Users, color: 'bg-green-100' },
-    { title: 'VIP', value: '114', subtitle: 'VIP', icon: Shield, color: 'bg-red-100' },
-    { title: 'Şirket', value: '303', subtitle: 'Şirket', icon: Building, color: 'bg-blue-100' },
+    { title: 'Misafir', value: totalGuests?.count?.toString() || '0', subtitle: 'Misafir', icon: Users, color: 'bg-green-100' },
+    { title: 'VIP', value: vipGuests?.count?.toString() || '0', subtitle: 'VIP', icon: Shield, color: 'bg-red-100' },
+    { title: 'Şirket', value: companies?.count?.toString() || '0', subtitle: 'Şirket', icon: Building, color: 'bg-blue-100' },
   ];
 
-  const distributionData: CardData[] = [
-    { title: 'Büyük Harcama', value: '2', subtitle: 'Büyük Harcama', icon: Star, color: 'bg-yellow-100' },
-    { title: 'İyi Harcama', value: '0', subtitle: 'İyi Harcama', icon: Star, color: 'bg-yellow-100' },
-    { title: 'Düşük Harcama', value: '0', subtitle: 'Düşük Harcama', icon: Star, color: 'bg-yellow-100' },
-    { title: 'Normal Müşteri', value: '22', subtitle: 'Normal Müşteri', icon: Star, color: 'bg-yellow-100' },
-    { title: 'Potansiyel Müşteri', value: '1', subtitle: 'Potansiyel Müşteri', icon: Star, color: 'bg-yellow-100' },
-    { title: 'Kara Liste', value: '11', subtitle: 'Kara Liste', icon: AlertTriangle, color: 'bg-gray-100' },
-    { title: 'Kayıp Müşteri', value: '11', subtitle: 'Kayıp Müşteri', icon: AlertTriangle, color: 'bg-gray-100' },
-  ];
+  // const distributionData2: {
+  //   EnumVipLevel: EnumVipLevel
+  //   count: number
+  // }[] 
+
+
+  const distributionData = await Promise.all(getEnumValues(EnumVipLevel).map(async (level) => {
+    const [_count] = await db.select({
+      count: count()
+    }).from(tblGuest)
+      .where(eq(tblGuest.vipLevel, level));
+    return {
+      EnumVipLevel: level,
+      count: _count?.count?.toString() || '0'
+    }
+  }))
+
+  const distributionData2: CardData[] = distributionData.map((item) => ({
+    title: item.EnumVipLevel,
+    value: item.count,
+    subtitle: item.EnumVipLevel,
+    icon: vipLevels.find((level) => level.value === item.EnumVipLevel)?.icon!,
+    color: 'bg-yellow-100'
+  }))
+
+
+
 
   const renderCards = (cards: CardData[]) => (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -56,7 +94,7 @@ const MainCards = () => {
       </div>
       <div>
         <h2 className="text-2xl font-bold mb-4">Listelere Göre Dağılım</h2>
-        {renderCards(distributionData)}
+        {renderCards(distributionData2)}
       </div>
     </div>
   );

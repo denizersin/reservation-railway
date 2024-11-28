@@ -22,6 +22,7 @@ import { ReservationDateCalendar } from "../../reservation/_components/reservati
 import { CreateWaitlistReservModal } from "./create-waitlist-reserv-modal";
 import { getQueryKey } from "@trpc/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useStartOfDay } from "@/hooks/useStartOfDay";
 
 export type WaitlistRecord = RouterOutputs['waitlist']['getWaitlists'][number]
 export type WaitlistAvailabilityRecord = RouterOutputs['waitlist']['queryWaitlistAvailability']
@@ -37,11 +38,9 @@ export const WaitlistList = () => {
 
     const queryAvalibilityMapRef = useRef<Record<number, WaitlistAvailabilityRecord>>({})
 
-    const queryDate = useMemo(() => {
-        const newDate = new Date(date)
-        newDate.setHours(0, 0, 0, 0)
-        return newDate
-    }, [date])
+  
+
+    const queryDate = useStartOfDay(date)
 
     const { data: waitlists } = api.waitlist.getWaitlists.useQuery({
         date: queryDate

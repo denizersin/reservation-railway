@@ -5,6 +5,7 @@ import { ReservationHeader, TReservationsViewType } from './_components/reservat
 import dynamic from 'next/dynamic'
 import { TReservationRow } from '@/lib/reservation'
 import { api } from '@/server/trpc/react'
+import { useStartOfDay } from '@/hooks/useStartOfDay'
 
 // New context type
 type ReservationsContextType = {
@@ -35,11 +36,9 @@ const page = (props: {}) => {
     const [date, setDate] = useState<Date>(new Date());
     console.log('logg')
 
-    const queryDate = React.useMemo(() => {
-        const newDate = new Date(date)
-        newDate.setHours(0, 0, 0, 0)
-        return newDate
-    }, [date])
+  
+
+    const queryDate = useStartOfDay(date)
 
     const { data: rawReservationsData } = api.reservation.getReservations.useQuery({
         date: queryDate
@@ -57,7 +56,7 @@ const page = (props: {}) => {
         const filteredReservations = rawReservationsData.filter((reservation) => {
             const guestName = reservation.guest?.name.toLowerCase() ?? ''
             const guestSurname = reservation.guest?.surname.toLowerCase() ?? ''
-            const phone = reservation.guest?.phone.toLowerCase() ?? ''
+            const phone = reservation.guest?.fullPhone.toLowerCase() ?? ''
             const companyName = reservation.guest?.company?.companyName?.toLowerCase() ?? ''
             return guestName.includes(globalFilterLower) ||
                 guestSurname.includes(globalFilterLower) ||

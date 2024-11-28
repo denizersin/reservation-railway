@@ -65,7 +65,8 @@ const initFunctions = [
             email: 'holding@example.com',
             phone: '1234567890',
             languageId: 1,
-            phoneCodeId: 1,
+            phoneCodeId: 12,
+            fullPhone: '+905451234323',
             restaurantId: 1,
             surname: 'Reservation',
         })

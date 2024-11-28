@@ -17,6 +17,7 @@ import { RoomEntities } from "@/server/layer/entities/room";
 import { exit } from "process";
 import { tblUser } from "../../schema/user";
 import { seedDatas } from "../seedData";
+import { predefinedEntities } from "@/server/layer/entities/predefined";
 
 
 
@@ -83,18 +84,23 @@ const seedFunctions = [
         for (let i = 1; i < guestCount; i++) {
             const createdAt = new Date()
             createdAt.setMinutes(getRandom(0, 59))
+            const phoneCodeId = getRandom(1, 26)
+            const countryId = phoneCodeId
+            const fullPhone = await predefinedEntities.getFullPhone({ phone: `5331234567`, phoneCodeId: countryId })
+
             const newGuest = await guestEntities.createGuest({
                 guestData: {
                     name: `Guest ${i}`,
                     birthDate: brthdate,
-                    countryId: 1,
+                    countryId: countryId,
+                    fullPhone: fullPhone,
                     email: `guest${i}@example.com`,
                     gender: EnumGender.male,
                     languageId: languagesData.find(a => a.languageCode === EnumLanguage.en)!.id,
                     restaurantId: 1,
                     surname: `Surname ${i}`,
                     phone: `5331234567`,
-                    phoneCodeId: 1,
+                    phoneCodeId: phoneCodeId,
                     tagIds: [],
                     vipLevel: EnumVipLevel.goodSpender,
                     isSendReviewNotifs: false,

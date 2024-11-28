@@ -8,6 +8,8 @@ import { TReservationWaitingTableRow } from "@/lib/reservation"
 import { HourTabs } from "@/components/hour-tabs"
 import { EnumMealNumeric, EnumTableShape } from "@/shared/enums/predefined-enums"
 import ReactGridLayout, { Layout } from 'react-grid-layout'
+import { useStartOfDay } from "@/hooks/useStartOfDay"
+import { useReservationsContext } from "../../../../page"
 
 export type TWaitingTable = TTable & {
     reservedTableRow?: TReservationWaitingTableRow
@@ -28,11 +30,8 @@ export const WaitingTableStatus = () => {
         return roomsData?.find(r => r.isWaitingRoom)
     }, [roomsData])
 
-    const queryDate = useMemo(() => {
-        const date = new Date()
-        date.setHours(0, 0, 0, 0)
-        return date.toISOString()
-    }, [])
+
+    const { queryDate } = useReservationsContext()
 
     const { data: reservedWaitingTables } = api.reservation.getReservationWaitingTables.useQuery({
         date: queryDate,

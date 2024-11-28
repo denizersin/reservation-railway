@@ -4,22 +4,21 @@ import { tblReservation } from "@/server/db/schema/reservation";
 import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { ReservationEntities } from "@/server/layer/entities/reservation";
 import { reservationLimitationEntities } from "@/server/layer/entities/reservation-limitation";
+import { reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
 import { userEntities } from "@/server/layer/entities/user";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { reservationLimitationUseCases } from "@/server/layer/use-cases/reservation-limitation.ts";
 import { localHourToUtcHour } from "@/server/utils/server-utils";
 import { clientValidator } from "@/shared/validators/front/create";
+import { clientReviewValidator } from "@/shared/validators/front/reivew";
 import { reservatoinClientValidator } from "@/shared/validators/front/reservation";
 import { clientReservationActionValidator } from "@/shared/validators/front/reservation-actions";
 import { reservationValidator } from "@/shared/validators/reservation";
 import { limitationValidator } from "@/shared/validators/reservation-limitation/inex";
+import { reviewValidator } from "@/shared/validators/review";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { clientProcedure, createTRPCRouter, ownerProcedure } from "../trpc";
-import { waitlistValidators } from "@/shared/validators/waitlist/waitlist";
-import { reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
-import { clientReviewValidator } from "@/shared/validators/front/reivew";
-import { reviewValidator } from "@/shared/validators/review";
 
 
 
@@ -187,7 +186,7 @@ export const reservationRouter = createTRPCRouter({
         }),
     getReservationWaitingTables: ownerProcedure
         .input(z.object({
-            date: z.string()
+            date: z.date()
         }))
         .query(async ({ input, ctx }) => {
             const result = await reservationUseCases.getWaitingStatus({

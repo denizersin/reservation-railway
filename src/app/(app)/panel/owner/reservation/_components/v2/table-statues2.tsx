@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { api } from '@/server/trpc/react'
 import { useMemo } from 'react'
 import { TableStatuesRowCard } from './table-statues-row-card'
+import { useStartOfDay } from '@/hooks/useStartOfDay'
 
 type Props = {
     selectedTableId: number | undefined
@@ -32,11 +33,7 @@ export const TableStatues2 = ({
 }: Props) => {
 
 
-    const queryDate = useMemo(() => {
-        const newDate = new Date(date)
-        newDate.setHours(0, 0, 0, 0)
-        return newDate
-    }, [date])
+    const queryDate = useStartOfDay(date)
 
     const { data: avaliableTablesData } = api.reservation.getTableStatues.useQuery({
         date: queryDate,

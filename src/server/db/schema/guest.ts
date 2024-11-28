@@ -21,6 +21,7 @@ export const tblGuest = mysqlTable('guest', {
     email: varchar('email', { length: 256 }).notNull(),
     phone: varchar('phone', { length: 256 }).notNull(),
     phoneCodeId: int('phone_code_id').notNull(),
+    fullPhone: varchar('full_phone', { length: 256 }).notNull(),
     stablePhone: varchar('stable_phone', { length: 256 }),
     gender: mysqlEnum('gender', getEnumValues(EnumGender)),
     birthDate: date('birth_date'),
