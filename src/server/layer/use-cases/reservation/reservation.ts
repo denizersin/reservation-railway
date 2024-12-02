@@ -14,6 +14,8 @@ import { restaurantEntities } from "../../entities/restaurant";
 import { RoomEntities } from "../../entities/room";
 import { userEntities } from "../../entities/user";
 import { notificationUseCases } from "./notification";
+import { paymentSettingEntities, restaurantGeneralSettingEntities } from "../../entities/restaurant-setting";
+import { reservationPaymentService, reservationService } from "../../service/reservation";
 
 
 
@@ -30,113 +32,72 @@ export const createReservation = async ({
 
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
 
+
+
     //set reservation time to utc
     const hour = localHourToUtcHour(reservationData.hour)
 
-
-    const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
+    const restaurantPaymentSetting = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId })
+    const restaurantGeneralSetting = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId })
 
     const hasPrepayment = reservationData.prepaymentTypeId === EnumReservationPrepaymentNumeric.prepayment
-    const prePaymentAmount = data.customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount
+
+    const reservationStatusId = hasPrepayment ? EnumReservationStatusNumeric.prepayment : restaurantGeneralSetting.newReservationStatusId
+
     const isDefaultAmount = data.customPrepaymentAmount ? false : true
+
+    const prePaymentAmount = data.customPrepaymentAmount ?? await paymentSettingEntities.calculatePrepaymentAmount({
+        guestCount: reservationData.guestCount,
+        prePaymentPricePerGuest: restaurantPaymentSetting.prePaymentPricePerGuest
+    })
+
 
     const reservation = await db.transaction(async (trx) => {
 
-        const newReservation = await ReservationEntities.createReservation({
-            data: {
-
-                ...reservationData,
-                hour,
-                restaurantId,
-                reservationStatusId: restaurantSettings.newReservationStatusId,
-                prePaymentTypeId: reservationData.prepaymentTypeId,
-
-                //!TODO: split this to two different functions
-                createdOwnerId: ctx.session.user.userId,
-                isCreatedByOwner: true,
+        const newReservation = await reservationService.createReservation({
+            reservationEntityData: {
+                data: {
+                    ...reservationData,
+                    hour,
+                    restaurantId,
+                    reservationStatusId,
+                    prePaymentTypeId: reservationData.prepaymentTypeId,
+                    //!TODO: split this to two different functions
+                    createdOwnerId: ctx.session.user.userId,
+                    isCreatedByOwner: true,
+                },
+                relatedData: {
+                    tableIds: data.tableIds,
+                    reservationNote: data.reservationNote,
+                    reservationTagIds: data.reservationTagIds,
+                },
+                trx
             },
-            tableIds: data.tableIds,
+            reservationCreator: owner.name
+        })
+        
+
+
+        await reservationPaymentService.createPrepayment({
+            prepaymentEntityData: {
+                amount: prePaymentAmount,
+                isDefaultAmount,
+                reservationId: newReservation.id,
+                createdBy: owner.name
+            },
+            reservation: newReservation,
+            withEmail: newReservation.isSendEmail,
+            withSms: newReservation.isSendSms,
+            creator: owner.name,
             trx
         })
 
-        if (data.reservationNote) {
-            await ReservationEntities.createReservationNote({
-                reservationId: newReservation.id,
-                note: data.reservationNote,
-                trx
-            })
-        }
-
-        if (data.reservationTagIds.length > 0) {
-            await ReservationEntities.createReservationTags({
-                reservationId: newReservation.id,
-                reservationTagIds: data.reservationTagIds,
-                trx
-            })
-        }
-
-
-        if (hasPrepayment) {
-            const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
-                data: {
-                    reservationId: newReservation.id,
-                    amount: prePaymentAmount,
-                    isDefaultAmount,
-                    createdBy: owner.name
-                },
-                trx
-            })
-
-            await ReservationEntities.updateReservation({
-                data: {
-                    currentPrepaymentId: newPrepaymentId,
-                    reservationStatusId: EnumReservationStatusNumeric.prepayment,
-                },
-                reservationId: newReservation.id,
-                trx
-            })
-
-        }
-
         return newReservation
+    }).catch((error) => {
+        throw new Error(error)
     })
 
 
-    await ReservationLogEntities.createLog({
-        message: `Reservation created`,
-        reservationId: reservation.id,
-        owner: owner.name,
-    })
-
-
-
-    await notificationUseCases.handleReservationCreated({
-        reservationId: reservation.id,
-        withEmail: reservation.isSendEmail,
-        withSms: reservation.isSendSms,
-        ctx
-    })
-
-    await ReservationLogEntities.createLog({
-        message: `Reservation created notification sent`,
-        reservationId: reservation.id,
-        owner: owner.name,
-    })
-
-    //notifications
-    if (hasPrepayment) {
-        await notificationUseCases.handlePrePayment({
-            reservationId: reservation.id,
-            withEmail: reservation.isSendEmail,
-            withSms: reservation.isSendSms,
-            ctx
-        })
-        await ReservationLogEntities.createLog({
-            message: `Asked for prepayment`,
-            reservationId: reservation.id,
-            owner: owner.name,
-        })
-    }
 
 
 }
@@ -439,7 +400,7 @@ export const updateReservationTime = async ({
             }
         })
 
-    } 
+    }
 
     await ReservationEntities.updateReservation({
         reservationId,
@@ -459,7 +420,6 @@ export const updateReservationTime = async ({
             newValue: data.reservationDate.toLocaleString() + ' ' + data.hour,
             withEmail,
             withSms,
-            ctx
         })
     }
 
@@ -470,7 +430,6 @@ export const updateReservationTime = async ({
             newValue: data.guestCount.toString(),
             withEmail,
             withSms,
-            ctx
         })
     }
 

@@ -6,13 +6,13 @@ import TReservationValidator from "@/shared/validators/reservation";
 import { TRPCError } from "@trpc/server";
 import { ReservationEntities } from "../../entities/reservation";
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
-import { restaurantSettingEntities } from "../../entities/restaurant-setting";
 import { userEntities } from "../../entities/user";
 import { notificationUseCases } from "./notification";
+import { paymentSettingEntities, restaurantGeneralSettingEntities } from "../../entities/restaurant-setting";
 
 export const requestForPrepayment = async ({
+    ctx,
     input,
-    ctx
 }: TUseCaseOwnerLayer<TReservationValidator.requestForPrepayment>) => {
 
     const { reservationId,
@@ -48,12 +48,13 @@ export const requestForPrepayment = async ({
     //--------------------------------
 
     const restaurantId = reservation.restaurantId
-    const restaurantSettings = await restaurantSettingEntities.getGeneralSettingsByRestaurantId({ restaurantId })
+    const restaurantPaymentSetting = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId })
+    const restaurantGeneralSetting = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId })
 
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
 
 
-    const amount = customPrepaymentAmount ?? restaurantSettings.prePayemntPricePerGuest * reservation.guestCount
+    const amount = customPrepaymentAmount ?? restaurantPaymentSetting.prePaymentPricePerGuest * reservation.guestCount
     const isDefaultAmount = customPrepaymentAmount ? true : false
 
     const [result] = await db.insert(tblPrepayment).values({
@@ -90,7 +91,6 @@ export const requestForPrepayment = async ({
         reservationId,
         withEmail,
         withSms,
-        ctx
     })
 
 
@@ -98,7 +98,6 @@ export const requestForPrepayment = async ({
 
 export const cancelPrepayment = async ({
     input,
-    ctx
 }: TUseCaseOwnerLayer<TReservationValidator.cancelPrepayment>) => {
     const { reservationId,
         notificationOptions: { withEmail, withSms }
@@ -145,14 +144,13 @@ export const cancelPrepayment = async ({
         reservationId,
         withEmail,
         withSms,
-        ctx
     })
 
 }
 
 export const requestForConfirmation = async ({
+    ctx,
     input,
-    ctx
 }: TUseCaseOwnerLayer<TReservationValidator.requestForConfirmation>) => {
     const { reservationId,
         notificationOptions: { withEmail, withSms }
@@ -180,7 +178,6 @@ export const requestForConfirmation = async ({
             reservationId,
             withEmail,
             withSms,
-            ctx
         })
         await ReservationLogEntities.createLog({
             message: 'Asked for confirmation',
@@ -251,7 +248,6 @@ export const confirmReservation = async ({
         reservationId,
         withEmail,
         withSms,
-        ctx,
     })
 
     await ReservationLogEntities.createLog({
@@ -279,7 +275,6 @@ export const notifyPrepayment = async ({
         reservationId,
         withEmail,
         withSms,
-        ctx
     })
 
 }
@@ -359,7 +354,6 @@ export const cancelReservation = async ({
         reservationId,
         withEmail,
         withSms,
-        ctx
     })
 }
 

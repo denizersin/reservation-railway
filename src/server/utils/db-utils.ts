@@ -12,3 +12,10 @@ export async function createTransaction<T>(cb: (trx: typeof db) => Promise<T>): 
 }
 
 export type TTransaction = typeof db;
+
+
+export const createTransaction2 = async () => {
+    return await db.transaction(async (trx) => {
+        return trx;
+    });
+};

@@ -3,36 +3,69 @@ import { tblMeal } from '@/server/db/schema/predefined';
 import { tblRestaurant, tblRestaurantLanguage, tblRestaurantTranslations, TRestaurantInsert, TRestaurantLanguages } from '@/server/db/schema/restaurant';
 import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals, TMealHoursAdd, TRestaurantMealDaysCrud } from '@/server/db/schema/restaurant-assets';
 import { formatTimeWithoutSeconds, getEnumValues, utcHourToLocalHour } from '@/server/utils/server-utils';
-import { EnumDays, EnumLanguage, EnumMeals, EnumReservationStatus, EnumReviewSendDay, EnumReviewSendType } from '@/shared/enums/predefined-enums';
+import { EnumDays, EnumLanguage, EnumMeals, EnumReservationStatus, EnumReservationStatusNumeric, EnumReviewSendDay, EnumReviewSendType } from '@/shared/enums/predefined-enums';
 import TRestaurantAssetsValidator from '@/shared/validators/restaurant/restauran-assets';
 import { and, eq, inArray } from 'drizzle-orm';
 import { predefinedEntities } from '../predefined';
-import { restaurantSettingEntities, reviewSettingEntities } from '../restaurant-setting';
-import { tblRestaurantGeneralSetting, tblRestaurantReviewSettings, tblRestaurantTag, tblRoom, tblRoomTranslation } from '@/server/db/schema';
+import { tblRestaurantGeneralSetting, tblRestaurantPaymentSetting, tblRestaurantReviewSettings, tblRestaurantTag, tblRoom, tblRoomTranslation } from '@/server/db/schema';
 import { serverData } from '@/server/data';
 import { languagesData } from '@/shared/data/predefined';
-import TReviewSettingsValidator from '@/shared/validators/setting/review';
+import TReviewSettingsValidator from '@/shared/validators/restaurant-setting/review';
 import { restaurantTagEntities } from '../restaurant-tag';
+import { restaurantGeneralSettingEntities, reviewSettingEntities } from '../restaurant-setting';
 
 export const createRestaurant = async ({
     restaurant,
 }: {
-    restaurant: TRestaurantInsert
+    restaurant: Omit<TRestaurantInsert, 'paymentSettingId' | 'restaurantGeneralSettingId'>
 }) => {
-    const { translations, ...tblRestaurantValues } = restaurant
-    const [newRestaurant] = await db.insert(tblRestaurant).values(tblRestaurantValues).$returningId()
-    if (!newRestaurant?.id) {
-        console.log('restaurant not created')
-        throw new Error('Restaurant not created')
-    };
 
-    if (translations && translations.length > 0) {
-        await db.insert(tblRestaurantTranslations).values(translations)
-    }
+    const result = await db.transaction(async (tx) => {
 
-    await setDefaultsToRestaurant({ restaurantId: newRestaurant.id })
 
-    return newRestaurant.id
+        const enLanguage = await predefinedEntities.getLanguageByCode({ languageCode: EnumLanguage.en })
+
+        const [unclaimedRestaurantGeneralSetting] = await db.insert(tblRestaurantGeneralSetting).values({
+            defaultLanguageId: enLanguage?.id!,
+            defaultCountryId: (await predefinedEntities.getCountryByName({ countryName: 'turkey' }))?.id!,
+            newReservationStatusId: EnumReservationStatusNumeric.reservation,
+
+        }).$returningId()
+
+        const newGeneralSettingId = unclaimedRestaurantGeneralSetting?.id!
+
+
+
+        const [paymentSetting] = await db.insert(tblRestaurantPaymentSetting).values({
+            prePaymentPricePerGuest: 2000,
+        }).$returningId()
+
+        const newPaymentSettingId = paymentSetting?.id!
+
+
+        const { translations, ...tblRestaurantValues } = restaurant
+        const [newRestaurant] = await db.insert(tblRestaurant).values({
+            ...tblRestaurantValues,
+            paymentSettingId: newPaymentSettingId,
+            restaurantGeneralSettingId: newGeneralSettingId
+        }).$returningId()
+
+        if (!newRestaurant?.id) {
+            console.log('restaurant not created')
+            throw new Error('Restaurant not created')
+        };
+
+        if (translations && translations.length > 0) {
+            await db.insert(tblRestaurantTranslations).values(translations)
+        }
+
+        await setDefaultsToRestaurant({ restaurantId: newRestaurant.id })
+
+        return newRestaurant.id
+    })
+
+    return result
+
 }
 
 export const getRestaurant = async ({
@@ -73,6 +106,15 @@ export const getRestaurant = async ({
     }
 
 }
+export const getRestaurantById = async ({
+    restaurantId
+}: {
+    restaurantId: number
+}) => {
+    const restaurant = await db.query.tblRestaurant.findFirst({ where: eq(tblRestaurant.id, restaurantId) })
+    if (!restaurant) throw new Error('Restaurant not found')
+    return restaurant
+}
 
 export const setDefaultsToRestaurant = async ({
     restaurantId
@@ -87,16 +129,8 @@ export const setDefaultsToRestaurant = async ({
         const trLanguage = await predefinedEntities.getLanguageByCode({ languageCode: EnumLanguage.tr })
         const enLanguage = await predefinedEntities.getLanguageByCode({ languageCode: EnumLanguage.en })
 
-        const [generalSetting] = await db.insert(tblRestaurantGeneralSetting).values({
-            defaultCountryId: (await predefinedEntities.getCountryByName({ countryName: 'turkey' }))?.id!,
-            newReservationStatusId: (await predefinedEntities.getReservationStatusByStatus({ status: EnumReservationStatus.reservation }))?.id!,
-            defaultLanguageId: trLanguage?.id!,
-            restaurantId: restaurantId
-        }).$returningId()
 
-        if (!generalSetting) {
-            return
-        }
+
 
         const dinner = (await db.query.tblMeal.findFirst({
             where: eq(tblMeal.name, EnumMeals.dinner)
@@ -144,7 +178,7 @@ export const setDefaultsToRestaurant = async ({
         })
 
         //review categories
-       const reviews= serverData.reviewCategories.map((category, index) => ({
+        const reviews = serverData.reviewCategories.map((category, index) => ({
             review: {
                 isActive: true,
                 order: index + 1,
@@ -188,7 +222,7 @@ export const getRestaurantWithSettings = async ({
         where: eq(tblRestaurant.id, restaurantId),
     })
 
-    const generalSettings = await restaurantSettingEntities.getGeneralSettings({ restaurantId })
+    const generalSettings = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId })
 
     return {
         ...restaurantWithSettings,
@@ -474,7 +508,30 @@ export const getRestaurantRoomsWithTranslations = async ({
 export const getRestaurantSettings = async ({
     restaurantId
 }: { restaurantId: number }) => {
-    const restaurantSettings = await db.query.tblRestaurantGeneralSetting.findFirst({ where: eq(tblRestaurantGeneralSetting.restaurantId, restaurantId) })
-    if (!restaurantSettings) throw new Error('Restaurant settings not found')
-    return restaurantSettings
+
+    const restaurant = await db.query.tblRestaurant.findFirst({
+        where: eq(tblRestaurant.id, restaurantId),
+        with: {
+            restaurantGeneralSetting: true,
+            paymentSetting: true
+        }
+    })
+
+    if (!restaurant) throw new Error('Restaurant settings not found')
+    return restaurant
 }
+
+export const getRestaurantUserPreferences = async ({
+    restaurantId
+}: { restaurantId: number }) => {
+
+
+    const restaurantGeneralSetting = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId })
+
+    const { defaultLanguageId } = restaurantGeneralSetting
+    return {
+        defaultLanguageId
+    }
+
+}
+

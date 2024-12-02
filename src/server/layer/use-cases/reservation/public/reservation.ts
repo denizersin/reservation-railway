@@ -17,6 +17,9 @@ import { notificationUseCases } from "../notification";
 import { waitlistEntities } from "@/server/layer/entities/waitlist";
 import TClientReviewValidator from "@/shared/validators/front/reivew";
 import { getReservationById } from "@/server/layer/entities/reservation/waiting-session";
+import { predefinedEntities } from "@/server/layer/entities/predefined";
+import { reservationPaymentService, reservationService } from "@/server/layer/service/reservation";
+import { paymentSettingEntities, restaurantGeneralSettingEntities } from "@/server/layer/entities/restaurant-setting";
 
 export const createPublicReservation = async ({
     input,
@@ -41,12 +44,14 @@ export const createPublicReservation = async ({
     let guest: TGuestSelect | undefined = undefined
     guest = await guestEntities.getGuestByPhoneAndEmail({ phone, email, phoneCodeId })
     if (!guest) {
+        const fullPhone = await predefinedEntities.getFullPhone({ phone, phoneCodeId })
         const newGuestId = await guestEntities.createGuest({
             guestData: {
                 email,
                 phone,
                 phoneCodeId,
-                countryId:phoneCodeId,
+                fullPhone,
+                countryId: phoneCodeId,
                 name,
                 surname,
                 languageId: ctx.userPrefrences.language.id,
@@ -106,118 +111,58 @@ export const createPublicReservation = async ({
 
 
 
-    const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
+    const restaurantPaymentSetting = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId })
 
-    const prePaymentAmount = restaurantSettings.prePayemntPricePerGuest * guestCount
+    const prePaymentAmount = restaurantPaymentSetting.prePaymentPricePerGuest * guestCount
 
     const reservation = await db.transaction(async (trx) => {
-
-
-        const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
-
-        const newReservation = await ReservationEntities.createReservation({
-            data: {
-                guestCount,
-                hour: utcHour,
-                guestId: guest.id,
-                isSendEmail: true,
-                isSendSms: true,
-                mealId,
-                prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
-                reservationDate: reservationData.date,
-                reservationStatusId: EnumReservationStatusNumeric.reservation,
-                restaurantId,
-                roomId: avaliableTable.roomId,
-            },
-            tableIds: [avaliableTable.id],
-            trx
-        })
-
-        await ReservationEntities.updateUnClaimedReservationWaitingSession({
-            data: {
-                reservationId: newReservation.id,
-            },
-            waitingSessionId: newUnclaimedWaitingSessionId,
-            trx,
-        })
-
-        if (userInfo.guestNote) {
-            await ReservationEntities.createReservationNote({
-                reservationId: newReservation.id,
-                note: userInfo.guestNote,
+        const newReservation = await reservationService.createReservation({
+            reservationEntityData: {
+                data: {
+                    guestCount,
+                    hour: utcHour,
+                    guestId: guest.id,
+                    isSendEmail: true,
+                    isSendSms: true,
+                    mealId,
+                    prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+                    reservationDate: reservationData.date,
+                    reservationStatusId: EnumReservationStatusNumeric.reservation,
+                    restaurantId,
+                    roomId: avaliableTable.roomId,
+                },
+                relatedData: {
+                    tableIds: [avaliableTable.id],
+                    guestNote: userInfo.guestNote,
+                    reservationTagIds: reservationTags,
+                },
                 trx
-            })
-        }
-
-        if (reservationTags && reservationTags.length > 0) {
-            await ReservationEntities.createReservationTags({
-                reservationId: newReservation.id,
-                reservationTagIds: reservationTags,
-                trx
-            })
-        }
+            },
+            reservationCreator: guest.name
+        })
 
         //--------------------------------
         //create prepayment
-        const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
-            data: {
-                reservationId: newReservation.id,
+        await reservationPaymentService.createPrepayment({
+            prepaymentEntityData: {
                 amount: prePaymentAmount,
                 isDefaultAmount: true,
+                reservationId: newReservation.id,
                 createdBy: 'System'
             },
+            reservation: newReservation,
+            withEmail: newReservation.isSendEmail,
+            withSms: newReservation.isSendSms,
+            creator: 'System',
             trx
         })
-
-        await ReservationEntities.updateReservation({
-            data: {
-                currentPrepaymentId: newPrepaymentId,
-                reservationStatusId: EnumReservationStatusNumeric.prepayment,
-            },
-            reservationId: newReservation.id,
-            trx
-        })
-
         //--------------------------------
 
         return newReservation
 
     })
 
-    //-----------Reservation Created Log and Notification---------------------
-    await ReservationLogEntities.createLog({
-        message: `Reservation created`,
-        reservationId: reservation.id,
-        owner: 'Guest',
-    })
-    await notificationUseCases.handleReservationCreated({
-        reservationId: reservation.id,
-        withEmail: reservation.isSendEmail,
-        withSms: reservation.isSendSms,
-        ctx
-    })
-    await ReservationLogEntities.createLog({
-        message: `Reservation created notification sent`,
-        reservationId: reservation.id,
-        owner: 'Guest',
-    })
-    //--------------------------------
 
-
-    //-----------Prepayment Notification and log---------------------
-    await notificationUseCases.handlePrePayment({
-        reservationId: reservation.id,
-        withEmail: reservation.isSendEmail,
-        withSms: reservation.isSendSms,
-        ctx
-    })
-
-    await ReservationLogEntities.createLog({
-        message: `Asked for prepayment`,
-        reservationId: reservation.id,
-        owner: 'Guest',
-    })
-    //--------------------------------
 
     return reservation.id
 
@@ -243,9 +188,9 @@ export const createReservationFromHolding = async ({
     const utcHour = localHourToUtcHour(time)
 
 
-    const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
+    const restaurantPaymentSetting = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId })
 
-    const prePaymentAmount = restaurantSettings.prePayemntPricePerGuest * guestCount
+    const prePaymentAmount = restaurantPaymentSetting.prePaymentPricePerGuest * guestCount
 
     await db.transaction(async (trx) => {
 
@@ -333,7 +278,6 @@ export const createReservationFromHolding = async ({
         reservationId: holdedReservation.id,
         withEmail: holdedReservation.isSendEmail,
         withSms: holdedReservation.isSendSms,
-        ctx
     })
     await ReservationLogEntities.createLog({
         message: `Reservation created notification sent`,
@@ -348,7 +292,6 @@ export const createReservationFromHolding = async ({
         reservationId: holdedReservation.id,
         withEmail: holdedReservation.isSendEmail,
         withSms: holdedReservation.isSendSms,
-        ctx
     })
 
     await ReservationLogEntities.createLog({
@@ -395,24 +338,29 @@ export const holdTable = async ({
 
     const newReservation = await db.transaction(async (trx) => {
 
-        const newReservation = await ReservationEntities.createReservation({
-            data: {
-                guestCount,
-                hour: localHourToUtcHour(time),
-                reservationDate: date,
-                reservationStatusId: EnumReservationStatusNumeric.holding,
-                guestId: HOLDING_RESERVATION_GUEST_ID,
-                isSendEmail: true,
-                isSendSms: false,
-                mealId,
-                prePaymentTypeId: EnumReservationPrepaymentNumeric.none,
-                restaurantId,
-                roomId: avaliableTable.roomId,
-                holdedAt: new Date(),
-                holdExpiredAt: new Date(Date.now() + HOLDING_TIMEOUT),
+        const newReservation = await reservationService.createReservation({
+            reservationEntityData: {
+                data: {
+                    guestCount,
+                    hour: localHourToUtcHour(time),
+                    reservationDate: date,
+                    reservationStatusId: EnumReservationStatusNumeric.holding,
+                    guestId: HOLDING_RESERVATION_GUEST_ID,
+                    isSendEmail: true,
+                    isSendSms: false,
+                    mealId,
+                    prePaymentTypeId: EnumReservationPrepaymentNumeric.none,
+                    restaurantId,
+                    roomId: avaliableTable.roomId,
+                    holdedAt: new Date(),
+                    holdExpiredAt: new Date(Date.now() + HOLDING_TIMEOUT),
+                },
+                relatedData: {
+                    tableIds: [avaliableTable.id],
+                },
+                trx
             },
-            tableIds: [avaliableTable.id],
-            trx
+            reservationCreator: "System"
         })
 
         cookies().set(EnumCookieName.HOLDED_RESERVATION_ID, newReservation.id.toString())
@@ -543,7 +491,6 @@ export const cancelPublicReservation = async ({
         reservationId,
         withEmail: true,
         withSms: true,
-        ctx
     })
 
 
@@ -666,7 +613,6 @@ export const confirmPublicReservation = async ({
         reservationId,
         withEmail: true,
         withSms: true,
-        ctx
     })
 
 

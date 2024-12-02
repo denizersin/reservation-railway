@@ -39,7 +39,7 @@ const page = (props: {}) => {
   
 
     const queryDate = useStartOfDay(date)
-
+    console.log(queryDate, 'queryDate')
     const { data: rawReservationsData } = api.reservation.getReservations.useQuery({
         date: queryDate
     }, {

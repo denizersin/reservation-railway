@@ -1,6 +1,5 @@
 import { TMealHoursAdd, TRestaurantMealDaysCrud } from "@/server/db/schema/restaurant-assets"
 import { restaurantEntities } from "../../entities/restaurant"
-import { restaurantSettingEntities } from "../../entities/restaurant-setting"
 import TRestaurantAssetsValidator from "@/shared/validators/restaurant/restauran-assets"
 import { DEFAULT_UTC_OFFSET } from "@/server/utils/server-constants"
 import { formatimeWithSeconds, localHourToUtcHour } from "@/server/utils/server-utils"

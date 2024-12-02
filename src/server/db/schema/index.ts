@@ -11,6 +11,7 @@ export *  from './resrvation_limitation';
 
 export *  from "./restaurant-setting/restaurant-general-setting"
 export *  from './restaurant-setting/review-settings'
+export *  from './restaurant-setting/payment-setting'
 
 export *  from './reservation';
 export *  from './reservation/prepayment';

@@ -10,13 +10,13 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { jwtEntities } from "../layer/entities/jwt";
-import { cookies } from "next/headers";
-import { EnumHeader, EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
-import { TUserPreferences } from "../layer/use-cases/user/user";
-import { db } from "../db";
-import { userUseCases } from "../layer/use-cases/user";
 import { DEFAULT_LANGUAGE_DATA, languagesData } from "@/shared/data/predefined";
+import { EnumHeader, EnumLanguage, EnumTheme } from "@/shared/enums/predefined-enums";
+import { cookies } from "next/headers";
+import { jwtEntities } from "../layer/entities/jwt";
+import { restaurantEntities } from "../layer/entities/restaurant";
+import { userUseCases } from "../layer/use-cases/user";
+import { TUserPreferences } from "../layer/use-cases/user/user";
 import { EnumCookieName } from "../utils/server-constants";
 
 /**
@@ -34,21 +34,7 @@ import { EnumCookieName } from "../utils/server-constants";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await jwtEntities.getServerSession()
 
-  const language = (cookies().get(EnumCookieName.LANGUAGE)?.value) as EnumLanguage | undefined
-  const languageData = languagesData.find(l => l.languageCode === language)
 
-
-
-  const userPrefrences: TUserPreferences = {
-    theme: EnumTheme.light,
-    language: DEFAULT_LANGUAGE_DATA
-  }
-
-  if (language && languageData) {
-    userPrefrences.language = languageData
-  } else {
-    userUseCases.updateUserPreferences({ language: DEFAULT_LANGUAGE_DATA.languageCode })
-  }
 
   const restaurantId = session?.user.restaurantId
   // const toast = {
@@ -65,7 +51,6 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
   return {
     session,
-    userPrefrences,
     restaurantId,
     ...opts,
   };
@@ -158,7 +143,7 @@ export const publicProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
 });
 
 
-export const clientProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+export const clientProcedure = t.procedure.use(timingMiddleware).use(async ({ ctx, next }) => {
 
   const restaurantIdContext = ctx.restaurantId
   const restaurantId = ctx.headers.get(EnumHeader.RESTAURANT_ID);
@@ -167,6 +152,25 @@ export const clientProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
     throw new TRPCError({ code: "BAD_REQUEST", message: "Restaurant id header is required" });
   }
 
+  const language = (cookies().get(EnumCookieName.LANGUAGE)?.value) as EnumLanguage | undefined
+  const languageData = languagesData.find(l => l.languageCode === language)
+
+
+
+  const userPrefrences: TUserPreferences = {
+    theme: EnumTheme.light,
+    language: DEFAULT_LANGUAGE_DATA
+  }
+
+  if (language && languageData) {
+    userPrefrences.language = languageData
+  } else {
+    const { defaultLanguageId } = await restaurantEntities.getRestaurantUserPreferences({ restaurantId: restaurantIdContext || Number(restaurantId) })
+    const defaultLanguage = languagesData.find(l => l.id === defaultLanguageId)!
+    userUseCases.updateUserPreferences({ language: defaultLanguage.languageCode })
+    userPrefrences.language = defaultLanguage
+  }
+  
 
 
 
@@ -174,6 +178,7 @@ export const clientProcedure = t.procedure.use(timingMiddleware).use(({ ctx, nex
     ctx: {
       ...ctx,
       restaurantId: restaurantIdContext || Number(restaurantId),
+      userPrefrences
     }
   })
 });
@@ -217,6 +222,27 @@ export const ownerProcedure = t.procedure
     if (!ctx.session || !ctx.session.user || ctx.session.user.userRole !== 'owner') {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
+
+
+
+    const language = (cookies().get(EnumCookieName.LANGUAGE)?.value) as EnumLanguage | undefined
+    const languageData = languagesData.find(l => l.languageCode === language)
+  
+  
+  
+    const userPrefrences: TUserPreferences = {
+      theme: EnumTheme.light,
+      language: DEFAULT_LANGUAGE_DATA
+    }
+  
+    if (language && languageData) {
+      userPrefrences.language = languageData
+    } else {
+      userUseCases.updateUserPreferences({ language: DEFAULT_LANGUAGE_DATA.languageCode })
+    }
+
+
+
     return next({
       ctx: {
         ...ctx,
@@ -228,6 +254,7 @@ export const ownerProcedure = t.procedure
             restaurantId: ctx.session.user.restaurantId!,
           },
         },
+        userPrefrences
       },
     });
   });

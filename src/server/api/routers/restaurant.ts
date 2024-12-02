@@ -1,9 +1,8 @@
 import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { restaurantEntities } from "@/server/layer/entities/restaurant";
-import { restaurantSettingEntities } from "@/server/layer/entities/restaurant-setting";
+import { paymentSettingEntities, restaurantGeneralSettingEntities } from "@/server/layer/entities/restaurant-setting";
 import { restaurantTagEntities } from "@/server/layer/entities/restaurant-tag";
 import { restaurantUseCases } from "@/server/layer/use-cases/restaurant";
-import { restaurantGeneralSettingValidator } from "@/shared/validators/restaurant";
 import { restaurantTagValidator } from "@/shared/validators/restaurant-tag";
 import { restaurantAssetsValidator } from "@/shared/validators/restaurant/restauran-assets";
 import { personelValidator } from "@/shared/validators/user/personel";
@@ -11,30 +10,9 @@ import { z } from "zod";
 import { clientProcedure, createTRPCRouter, ownerProcedure, publicProcedure } from "../trpc";
 import { EnumDaysNumeric } from "@/shared/enums/predefined-enums";
 
+
 export const restaurantRouter = createTRPCRouter({
-    updateRestaurantGeneralSettings: ownerProcedure
-        .input(restaurantGeneralSettingValidator.updateRestaurantGeneralSettingSchema)
-        .mutation(async ({ input, ctx }) => {
-            await restaurantSettingEntities.updateRestaurantGeneralSettings({
-                generalSetting: input.generalSetting,
-                generalSettingID: input.generalSettingID,
-            })
-            return true
-        }),
-    getRestaurantGeneralSettings: ownerProcedure
-        .query(async ({ ctx }) => {
-            const { user: { restaurantId } } = ctx.session
-            console.log(restaurantId, 'ctx session restaurantId')
-            const generalSettings = await restaurantSettingEntities.getGeneralSettings({ restaurantId: restaurantId! })
-            return generalSettings
-        }),
-    getRestaurantGeneralSettingsToUpdate: ownerProcedure
-        .query(async ({ ctx }) => {
-            const { user: { restaurantId } } = ctx.session
-            console.log(restaurantId, 'ctx session restaurantId')
-            const generalSettings = await restaurantSettingEntities.getGeneralSettingsToUpdate({ restaurantId: restaurantId! })
-            return generalSettings
-        }),
+
     createTag: ownerProcedure
         .input(restaurantTagValidator.createRestaurantTagFormSchema)
         .mutation(async ({ input, ctx }) => {

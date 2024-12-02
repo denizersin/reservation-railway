@@ -76,7 +76,7 @@ export const generateReservationCreatedNotification = async ({
 
     const reservationMessage = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
-        languageId: languagesData.find(a => a.languageCode === EnumLanguage.en)!.id
+        languageId: reservation.guest.languageId
     })
 
     const message = reservationMessage.newReservationMessage

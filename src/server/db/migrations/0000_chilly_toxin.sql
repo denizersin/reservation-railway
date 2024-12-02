@@ -108,6 +108,8 @@ CREATE TABLE `restaurant` (
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`name` varchar(255) NOT NULL,
 	`owner_id` int NOT NULL,
+	`payment_setting_id` int NOT NULL,
+	`restaurant_general_setting_id` int NOT NULL,
 	CONSTRAINT `restaurant_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -349,7 +351,6 @@ CREATE TABLE `reservation_limitation` (
 --> statement-breakpoint
 CREATE TABLE `restaurant_general_setting` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`restaurant_id` int NOT NULL,
 	`is_auto_check_out` boolean NOT NULL,
 	`new_reservation_state_id` int NOT NULL DEFAULT 2,
 	`default_language_id` int NOT NULL,
@@ -384,6 +385,15 @@ CREATE TABLE `restaurant_review_translation` (
 	`title` varchar(256) NOT NULL,
 	`description` varchar(256) NOT NULL,
 	CONSTRAINT `restaurant_review_translation_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_payment_setting` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`prepayment_price_per_guest` int NOT NULL,
+	`convert_prepayment_to_sale` boolean NOT NULL,
+	`prepayment_cancellation_hours` int NOT NULL,
+	`prepayment_at_no_show` enum('convertToSale','refund','none') NOT NULL,
+	CONSTRAINT `restaurant_payment_setting_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `reservation` (

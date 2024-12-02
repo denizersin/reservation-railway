@@ -117,20 +117,17 @@ const seedFunctions = [
         const owner = await db.query.tblUser.findFirst({ where: eq(tblUser.email, 'owner@gmail.com') })
         const owner2 = await db.query.tblUser.findFirst({ where: eq(tblUser.email, 'owner2@gmail.com') })
 
-
+        console.log('1')
         const restauran1Id = await restaurantEntities.createRestaurant({
             restaurant: {
                 ...seedDatas.restaurant[0]!,
                 ownerId: owner?.id!
             }
         })
+        console.log('2')
 
         const restaurant1 = await db.query.tblRestaurant.findFirst({ where: eq(schema.tblRestaurant.id, restauran1Id) })
 
-        await db.update(schema.tblRestaurantGeneralSetting).set({
-            prePayemntPricePerGuest: 2000,
-            restaurantId: restaurant1?.id!
-        })
 
         await new Promise((resolve) => setTimeout(resolve, 1000))
 

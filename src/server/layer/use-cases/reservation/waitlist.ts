@@ -1,19 +1,21 @@
-import { TUseCaseClientLayer, TUseCaseOwnerLayer } from "@/server/types/types";
-import TWaitlistValidator from "@/shared/validators/waitlist/waitlist";
-import { waitlistEntities } from "../../entities/waitlist";
-import { restaurantEntities } from "../../entities/restaurant";
 import { db } from "@/server/db";
-import { ReservationEntities } from "../../entities/reservation";
-import { EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumWaitlistStatus } from "@/shared/enums/predefined-enums";
-import { TRPCError } from "@trpc/server";
-import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
-import { notificationUseCases } from "./notification";
-import TclientValidator from "@/shared/validators/front/create";
 import { TGuestSelect } from "@/server/db/schema";
-import { guestEntities } from "../../entities/guest";
-import { reservationUseCases } from ".";
+import { TUseCaseClientLayer, TUseCaseOwnerLayer } from "@/server/types/types";
 import { localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
+import { EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumWaitlistStatus } from "@/shared/enums/predefined-enums";
+import TclientValidator from "@/shared/validators/front/create";
+import TWaitlistValidator from "@/shared/validators/waitlist/waitlist";
+import { reservationUseCases } from ".";
+import { guestEntities } from "../../entities/guest";
+import { predefinedEntities } from "../../entities/predefined";
+import { ReservationEntities } from "../../entities/reservation";
+import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
+import { restaurantEntities } from "../../entities/restaurant";
 import { userEntities } from "../../entities/user";
+import { waitlistEntities } from "../../entities/waitlist";
+import { reservationService } from "../../service/reservation";
+import { notificationUseCases } from "./notification";
+import { paymentSettingEntities, restaurantGeneralSettingEntities } from "../../entities/restaurant-setting";
 
 
 
@@ -31,11 +33,13 @@ export const createWaitlist = async ({
     let guest: TGuestSelect | undefined = undefined
     guest = await guestEntities.getGuestByPhoneAndEmail({ phone, email, phoneCodeId })
     if (!guest) {
+        const fullPhone = await predefinedEntities.getFullPhone({ phone, phoneCodeId })
         const newGuestId = await guestEntities.createGuest({
             guestData: {
                 email,
                 phone,
                 phoneCodeId,
+                fullPhone,
                 name,
                 surname,
                 languageId: ctx.userPrefrences.language.id,
@@ -65,8 +69,6 @@ export const createWaitlist = async ({
     //     withSms: true,
     //     ctx
     // })
-
-
 
     return waitlistId
 
@@ -103,27 +105,33 @@ export const createReservationFromWaitlist = async ({
     const hour = localHourToUtcHour(reservationData.hour)
 
 
-    const restaurantSettings = await restaurantEntities.getRestaurantSettings({ restaurantId })
+    const restaurantGeneralSetting = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId })
+    const restaurantPaymentSetting = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId })
 
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
     const reservation = await db.transaction(async (trx) => {
 
-        const newReservation = await ReservationEntities.createReservation({
-            data: {
+        const newReservation = await reservationService.createReservation({
+            reservationEntityData: {
+                data: {
 
-                ...reservationData,
-                hour,
-                restaurantId,
-                reservationStatusId: restaurantSettings.newReservationStatusId,
-                prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+                    ...reservationData,
+                    hour,
+                    restaurantId,
+                    reservationStatusId: restaurantGeneralSetting.newReservationStatusId,
+                    prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
 
-                waitlistId: data.waitlistId,
-                //!TODO: split this to two different functions
-                createdOwnerId: ctx.session.user.userId,
-                isCreatedByOwner: true,
+                    waitlistId: data.waitlistId,
+                    //!TODO: split this to two different functions
+                    createdOwnerId: ctx.session.user.userId,
+                    isCreatedByOwner: true,
+                },
+                relatedData: {
+                    tableIds: data.tableIds,
+                },
+                trx
             },
-            tableIds: data.tableIds,
-            trx
+            reservationCreator: owner.name
         })
 
 
@@ -136,7 +144,7 @@ export const createReservationFromWaitlist = async ({
             })
         }
 
-        const amount = restaurantSettings.prePayemntPricePerGuest * reservationData.guestCount
+        const amount = restaurantPaymentSetting.prePaymentPricePerGuest * reservationData.guestCount
         const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
             data: {
                 reservationId: newReservation.id,
@@ -174,7 +182,6 @@ export const createReservationFromWaitlist = async ({
         waitlistId: data.waitlistId,
         withEmail: reservation.isSendEmail,
         withSms: reservation.isSendSms,
-        ctx
     })
 
     await ReservationLogEntities.createLog({
@@ -188,7 +195,6 @@ export const createReservationFromWaitlist = async ({
         reservationId: reservation.id,
         withEmail: reservation.isSendEmail,
         withSms: reservation.isSendSms,
-        ctx
     })
     await ReservationLogEntities.createLog({
         message: `Asked for prepayment`,
@@ -206,7 +212,7 @@ export const createReservationFromWaitlist = async ({
         }
     })
 
-    
+
 
 
 }

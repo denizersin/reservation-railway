@@ -8,7 +8,7 @@ import { useHoursSelectData } from '@/hooks/predefined/predfined'
 import { api } from '@/server/trpc/react'
 import { getEnumValues } from '@/server/utils/server-utils'
 import { EnumReviewSendDay, EnumReviewSendType } from '@/shared/enums/predefined-enums'
-import TReviewSettingsValidator from '@/shared/validators/setting/review'
+import TReviewSettingsValidator from '@/shared/validators/restaurant-setting/review'
 import React, { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useToast } from "@/hooks/use-toast"

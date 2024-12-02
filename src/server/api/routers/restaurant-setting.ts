@@ -1,8 +1,10 @@
-import { reviewSettingsValidator } from "@/shared/validators/setting/review";
-import { createTRPCRouter, ownerProcedure } from "../trpc";
-import { reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
+import { paymentSettingEntities, restaurantGeneralSettingEntities, reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
 import { localHourToUtcHour } from "@/server/utils/server-utils";
+import { restaurantGeneralSettingValidator } from "@/shared/validators/restaurant-setting/general";
+import { paymentSettingValidator } from "@/shared/validators/restaurant-setting/payment";
+import { reviewSettingsValidator } from "@/shared/validators/restaurant-setting/review";
 import { z } from "zod";
+import { createTRPCRouter, ownerProcedure } from "../trpc";
 
 export const restaurantSettingRouter = createTRPCRouter({
     updateReviewSettings: ownerProcedure
@@ -43,6 +45,47 @@ export const restaurantSettingRouter = createTRPCRouter({
         .mutation(async ({ input, ctx }) => {
             const restaurantId = ctx.restaurantId
             await reviewSettingEntities.createReview({ review: { ...input.review, restaurantId }, translations: input.translations })
+        }),
+
+
+        updateRestaurantGeneralSettings: ownerProcedure
+        .input(restaurantGeneralSettingValidator.updateRestaurantGeneralSettingSchema)
+        .mutation(async ({ input, ctx }) => {
+            await restaurantGeneralSettingEntities.updateRestaurantGeneralSettings({
+                generalSetting: input.generalSetting,
+                generalSettingID: input.generalSettingID,
+            })
+            return true
+        }),
+    getRestaurantGeneralSettings: ownerProcedure
+        .query(async ({ ctx }) => {
+            const { user: { restaurantId } } = ctx.session
+            console.log(restaurantId, 'ctx session restaurantId')
+            const generalSettings = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId: restaurantId! })
+            return generalSettings
+        }),
+    getRestaurantPaymentSettings: ownerProcedure
+        .query(async ({ ctx }) => {
+            const { user: { restaurantId } } = ctx.session
+            const paymentSettings = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId: restaurantId! })
+            return paymentSettings
+        }),
+    updateRestaurantPaymentSetting: ownerProcedure
+        .input(paymentSettingValidator.updatePaymentSettingSchema)
+        .mutation(async ({ input, ctx }) => {
+            await paymentSettingEntities.updateRestaurantPaymentSetting({
+                paymentSettingId: input.paymentSettingId,
+                data: input.paymentSetting
+            })
+            return true
+        }),
+
+    getRestaurantGeneralSettingsToUpdate: ownerProcedure
+        .query(async ({ ctx }) => {
+            const { user: { restaurantId } } = ctx.session
+            console.log(restaurantId, 'ctx session restaurantId')
+            const generalSettings = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId: restaurantId! })
+            return generalSettings
         }),
 
 

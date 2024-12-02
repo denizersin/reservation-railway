@@ -269,3 +269,11 @@ export enum EnumReviewStatus {
     PENDING = 'PENDING',
     REVIEWED = 'REVIEWED',
 }
+
+
+//payment setting
+export enum EnumPrepaymentAtNoShow {
+    convertToSale = 'convertToSale',
+    refund = 'refund',
+    none = 'none',
+}

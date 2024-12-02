@@ -15,14 +15,21 @@ import { ReservationEntities } from ".";
 
 
 export const createReservation = async ({
-    tableIds,
     data,
+    relatedData,
     trx = db
 }: {
     data: Omit<TReservationInsert, 'waitingSessionId' | 'reviewId'>,
-    tableIds: number[],
+    relatedData: {
+        tableIds: number[],
+        reservationNote?: string,
+        reservationTagIds?: number[],
+        guestNote?: string,
+    }
     trx?: TTransaction
 }) => {
+
+    const { tableIds, reservationNote, reservationTagIds, guestNote } = relatedData
 
     const newUnclaimedWaitingSessionId = await ReservationEntities.createUnClaimedReservationWaitingSession({ trx })
     const newUnclaimedReviewId = await ReservationEntities.createUnClaimedReservationReview({
@@ -62,18 +69,54 @@ export const createReservation = async ({
         trx
     })
 
-    const reservation = await db.query.tblReservation.findFirst({
-        where: eq(tblReservation.id, reservationId),
-    })
+
+    if (reservationNote) {
+        await ReservationEntities.createReservationNote({
+            reservationId: reservationId,
+            note: reservationNote,
+            trx
+        })
+    }
+
+    if (reservationTagIds && reservationTagIds.length > 0) {
+        await ReservationEntities.createReservationTags({
+            reservationId: reservationId,
+            reservationTagIds: reservationTagIds,
+            trx
+        })
+    }
+
+    if (guestNote) {
+        await ReservationEntities.createReservationNote({
+            reservationId: reservationId,
+            note: guestNote,
+            trx
+        })
+    }
+
+
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
     return reservation!
 }
+
+export const getReservationById = async ({
+    reservationId,
+    trx = db
+}: {
+    reservationId: number,
+    trx?: TTransaction
+}) => {
+    return trx.query.tblReservation.findFirst({ where: eq(tblReservation.id, reservationId) })
+}
+
 
 export const updateReservation = async ({
     data,
     reservationId,
     trx = db
 }: {
-    data: Partial<TReservationSelect> &{
+    data: Partial<TReservationSelect> & {
         tagIds?: number[],
     },
     reservationId: number,
@@ -214,7 +257,7 @@ export const getReservationDetail = async ({
             assignedPersonal: true,
             tags: {
                 with: {
-                    tag:{
+                    tag: {
                         with: {
                             translations: {
                                 where: eq(tblRestaurantTagTranslation.languageId, languageId)

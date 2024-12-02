@@ -1,16 +1,17 @@
 "use client"
 import { Button } from '@/components/custom/button'
+import { CustomComboSelect } from '@/components/custom/custom-combo-select'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
-import { Input } from '@/components/ui/input'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useCountriesSelectData, useRestaurantLanguagesSelectData } from '@/hooks/predefined/predfined'
 import { getChangedFields } from '@/lib/utils'
 import { api } from '@/server/trpc/react'
-import TRestaurantGeneralSettingValidator, { restaurantGeneralSettingValidator } from '@/shared/validators/restaurant'
+import TRestaurantGeneralSettingValidator, { restaurantGeneralSettingValidator } from '@/shared/validators/restaurant-setting/general'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect } from 'react'
 import { useForm } from "react-hook-form"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 
 
@@ -26,10 +27,12 @@ export const GeneralSettings = ({ }: Props) => {
         data: generalSettings,
         isLoading,
         error,
-    } = api.restaurant.getRestaurantGeneralSettingsToUpdate.useQuery()
+    } = api.restaurantSetting.getRestaurantGeneralSettingsToUpdate.useQuery()
 
-    const updateGeneralSettingMutation = api.restaurant.updateRestaurantGeneralSettings.useMutation()
+    const updateGeneralSettingMutation = api.restaurantSetting.updateRestaurantGeneralSettings.useMutation()
 
+    const { selectData: countries, isLoading: isLoadingCountries } = useCountriesSelectData();
+    const { selectData: languages, isLoading: isLoadingLanguages } = useRestaurantLanguagesSelectData();
 
     const onSubmit = (data: TRestaurantGeneralSettingValidator.updateRestaurantGeneralSettingFormSchema) => {
 
@@ -112,26 +115,39 @@ export const GeneralSettings = ({ }: Props) => {
                     )}
                 />
 
-                {/* prepayment_price_per_guest input */}
                 <FormField
                     control={form.control}
-                    name="prePayemntPricePerGuest"
+                    name="defaultLanguageId"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Prepayment Price Per Guest</FormLabel>
-                            <FormControl>
-                                <Input
-
-                                    {...field}
-                                    type='text'
-                                    onChange={(e) => field.onChange(Number(e.target.value)??0)}
-                                    className="w-full"
-                                />
-                            </FormControl>
+                            <FormLabel>Default Language</FormLabel>
+                            <CustomComboSelect
+                                buttonClass='w-full'
+                                data={languages}
+                                onValueChange={(value) => field.onChange(Number(value))}
+                                value={String(field.value)}
+                            />
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
 
+                <FormField
+                    control={form.control}
+                    name="defaultCountryId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Default Country</FormLabel>
+                            <CustomComboSelect
+                                buttonClass='w-full'
+                                data={countries}
+                                onValueChange={(value) => field.onChange(Number(value))}
+                                value={String(field.value)}
+                            />
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
                 <Button
                     loading={updateGeneralSettingMutation.isPending}

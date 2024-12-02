@@ -1,4 +1,3 @@
-import { TCtx } from "@/server/api/trpc"
 import { TReservationNotificationInsert, TWaitlistNotificationInsert } from "@/server/db/schema"
 import { EnumNotificationMessageType, EnumNotificationStatus, EnumNotificationType, EnumWaitlistNotificationMessageType } from "@/shared/enums/predefined-enums"
 import { NotificationEntities, TReservationMessageInstance, TWaitlistMessageInstance } from "../../entities/notification/reservation-notification"
@@ -26,28 +25,26 @@ export const handlePrePayment = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: {
     reservationId: number
     withSms: boolean
     withEmail: boolean,
-    ctx: TCtx
 }) => {
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
     const emailMessage = withEmail ? await NotificationEntities.generatePrePaymentNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generatePrePaymentNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.SMS
     }) : ''
 
-    const guest = reservationWithGuest.guest
+    const guest = reservationMessageInstance.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
@@ -61,22 +58,23 @@ export const handlePrePayment = async ({
     }
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.AskedForPrepayment,
         emailMessage,
         smsMessage,
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'prepayment notification',
-        ctx
     })
+
+
+    
 }
 
 export const handlePrepaymentCancelled = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams) => {
 
 }
@@ -89,7 +87,6 @@ const handleNotificationSending = async ({
     shouldSendEmail,
     shouldSendSms,
     logPrefix,
-    ctx
 }: {
     reservation: TReservationMessageInstance
     notificationType: EnumNotificationMessageType
@@ -98,7 +95,6 @@ const handleNotificationSending = async ({
     logPrefix: string,
     emailMessage: string,
     smsMessage: string,
-    ctx?: TCtx
 }) => {
     const guest = reservation.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
@@ -164,7 +160,6 @@ const handleWaitlistNotificationSending = async ({
     logPrefix,
     emailMessage,
     smsMessage,
-    ctx
 }: {
     waitlist: TWaitlistMessageInstance
     notificationType: EnumWaitlistNotificationMessageType
@@ -173,7 +168,6 @@ const handleWaitlistNotificationSending = async ({
     logPrefix: string,
     emailMessage: string,
     smsMessage: string,
-    ctx?: TCtx
 }) => {
     const guest = waitlist.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
@@ -215,27 +209,24 @@ type NotificationHandlerParams = {
     reservationId: number
     withSms: boolean
     withEmail: boolean
-    ctx?: TCtx
 }
 
 type WaitlistNotificationHandlerParams = {
     waitlistId: number
     withSms: boolean
     withEmail: boolean
-    ctx?: TCtx
 }
 
 export const handleReservationCreated = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams) => {
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
-    const guest = reservationWithGuest.guest
+    const guest = reservationMessageInstance.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
@@ -248,25 +239,30 @@ export const handleReservationCreated = async ({
     }
 
     const emailMessage = withEmail ? await NotificationEntities.generateReservationCreatedNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generateReservationCreatedNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.SMS
     }) : ''
 
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.ReservationCreated,
         emailMessage,
         smsMessage,
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'reservation created notification',
-        ctx
+    })
+
+    await ReservationLogEntities.createLog({
+        message: `Reservation created notification sent`,
+        reservationId,
+        owner: 'system',
     })
 }
 
@@ -274,13 +270,12 @@ export const handleReservationCancelled = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams) => {
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
-    const guest = reservationWithGuest.guest
+    const guest = reservationMessageInstance.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
@@ -293,17 +288,17 @@ export const handleReservationCancelled = async ({
     }
 
     const emailMessage = withEmail ? await NotificationEntities.generateReservationCancelledNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generateReservationCancelledNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.SMS
     }) : ''
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.ReservationCancellation,
         emailMessage,
         smsMessage,
@@ -318,11 +313,11 @@ export const handleReservationConfirmed = async ({
     withSms,
     withEmail,
 }: NotificationHandlerParams) => {
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
-    const guest = reservationWithGuest.guest
+    const guest = reservationMessageInstance.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
@@ -335,17 +330,17 @@ export const handleReservationConfirmed = async ({
     }
 
     const emailMessage = withEmail ? await NotificationEntities.generateReservationConfirmedNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generateReservationConfirmedNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.SMS
     }) : ''
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.ReservationConfirmed,
         emailMessage,
         smsMessage,
@@ -359,13 +354,12 @@ export const handleConfirmationRequest = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams) => {
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
-    const guest = reservationWithGuest.guest
+    const guest = reservationMessageInstance.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
@@ -378,24 +372,23 @@ export const handleConfirmationRequest = async ({
     }
 
     const emailMessage = withEmail ? await NotificationEntities.generateConfirmationNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generateConfirmationNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.SMS
     }) : ''
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.ReservationConfirmationRequest,
         emailMessage,
         smsMessage,
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'confirmation request notification',
-        ctx
     })
 }
 
@@ -403,7 +396,6 @@ export const handleConfirmationRequestCancelled = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams) => {
 
 }
@@ -413,13 +405,12 @@ export const handleNotifyPrepayment = async ({
     reservationId,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams) => {
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
-    const guest = reservationWithGuest.guest
+    const guest = reservationMessageInstance.guest
     const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
     const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
 
@@ -432,24 +423,23 @@ export const handleNotifyPrepayment = async ({
     }
 
     const emailMessage = withEmail ? await NotificationEntities.generateNotifyPrePaymentNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generateNotifyPrePaymentNotification({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         type: EnumNotificationType.SMS
     }) : ''
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.NotifiedForPrepayment,
         emailMessage,
         smsMessage,
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'notify prepayment notification',
-        ctx
     })
 }
 
@@ -459,38 +449,36 @@ export const handleReservationGuestCountChange = async ({
     newValue,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams & {
     oldValue: string,
     newValue: string
 }) => {
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
     const emailMessage = withEmail ? await NotificationEntities.generateReservationGuestCountChange({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         oldGuestCount: oldValue,
         newGuestCount: newValue,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generateReservationGuestCountChange({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         oldGuestCount: oldValue,
         newGuestCount: newValue,
         type: EnumNotificationType.SMS
     }) : ''
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.ReservationGuestCountChange,
         emailMessage,
         smsMessage,
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'reservation guest count change notification',
-        ctx
     })
 }
 
@@ -500,36 +488,34 @@ export const handleReservationTimeChange = async ({
     newValue,
     withSms,
     withEmail,
-    ctx
 }: NotificationHandlerParams & { oldValue: string, newValue: string }) => {
 
-    const reservationWithGuest = await ReservationEntities.geTReservationMessageInstance({
+    const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
         reservationId
     })
 
     const emailMessage = withEmail ? await NotificationEntities.generateReservationTimeChange({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         oldTime: oldValue,
         newTime: newValue,
         type: EnumNotificationType.EMAIL
     }) : ''
 
     const smsMessage = withSms ? await NotificationEntities.generateReservationTimeChange({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         oldTime: oldValue,
         newTime: newValue,
         type: EnumNotificationType.SMS
     }) : ''
 
     await handleNotificationSending({
-        reservation: reservationWithGuest,
+        reservation: reservationMessageInstance,
         notificationType: EnumNotificationMessageType.ReservationTimeChange,
         emailMessage,
         smsMessage,
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'reservation time change notification',
-        ctx
     })
 }
 
@@ -539,7 +525,6 @@ export const handleCreatedReservationFromWaitlist = async ({
     waitlistId,
     withSms,
     withEmail,
-    ctx
 }: WaitlistNotificationHandlerParams) => {
     const waitlistWithGuest = await waitlistEntities.getWaitlistMessageInstance({
         waitlistId
@@ -563,7 +548,6 @@ export const handleCreatedReservationFromWaitlist = async ({
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'created reservation from waitlist notification',
-        ctx
     })
 }
 
@@ -572,7 +556,6 @@ export const handleAddedToWaitlist = async ({
     waitlistId,
     withSms,
     withEmail,
-    ctx
 }: WaitlistNotificationHandlerParams) => {
     const waitlistWithGuest = await waitlistEntities.getWaitlistMessageInstance({
         waitlistId
@@ -596,7 +579,6 @@ export const handleAddedToWaitlist = async ({
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'added to waitlist notification',
-        ctx
     })
 }
 
@@ -604,7 +586,6 @@ export const handleCancelWaitlist = async ({
     waitlistId,
     withSms,
     withEmail,
-    ctx
 }: WaitlistNotificationHandlerParams) => {
     const waitlistWithGuest = await waitlistEntities.getWaitlistMessageInstance({
         waitlistId
@@ -628,7 +609,6 @@ export const handleCancelWaitlist = async ({
         shouldSendEmail: withEmail,
         shouldSendSms: withSms,
         logPrefix: 'cancel waitlist notification',
-        ctx
     })
 }
 

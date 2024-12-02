@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import { adminProcedure, clientProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { jwtEntities } from "@/server/layer/entities/jwt";
 import { userUseCases } from "@/server/layer/use-cases/user";
 import { userValidator } from "@/shared/validators/user";
@@ -37,7 +37,7 @@ export const userRouter = createTRPCRouter({
             const updatedUserPreferences = await userUseCases.updateUserPreferences(input)
             return updatedUserPreferences
         }),
-    getUserPreferences: publicProcedure.query(async ({ ctx }) => {
+    getUserPreferences: clientProcedure.query(async ({ ctx }) => {
         const userPreferences = ctx.userPrefrences
         return userPreferences
     }),

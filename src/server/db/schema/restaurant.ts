@@ -10,6 +10,7 @@ import { tblMealHours, tblRestaurantMealDays, tblRestaurantMeals } from './resta
 import { tblPrepaymentMessage, tblProvisionMessage, tblReservationMessage, tblRestaurantTexts, tblWaitlistMessage } from './restaurant-texts';
 import { tblRoom } from './room';
 import { tblGuest } from './guest';
+import { tblRestaurantPaymentSetting } from './restaurant-setting/payment-setting';
 
 export const tblRestaurant = mysqlTable('restaurant', {
     id: int('id').autoincrement().primaryKey(),
@@ -17,6 +18,9 @@ export const tblRestaurant = mysqlTable('restaurant', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     ownerId: int('owner_id').notNull(),
+
+    paymentSettingId: int('payment_setting_id').notNull(),
+    restaurantGeneralSettingId: int('restaurant_general_setting_id').notNull(),
 
 },);
 
@@ -28,6 +32,7 @@ export const restaurantRelations = relations(tblRestaurant, ({ many, one }) => (
 
 
     restaurantGeneralSetting: one(tblRestaurantGeneralSetting),
+    paymentSetting: one(tblRestaurantPaymentSetting),
     owner: one(tblUser, { fields: [tblRestaurant.ownerId], references: [tblUser.id] }),
     languages: many(tblRestaurantLanguage),
     tags: many(tblRestaurantTag),
