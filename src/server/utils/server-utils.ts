@@ -99,3 +99,8 @@ export function getMonthDays(startDate: Date, endDate: Date) {
 export function getRandom(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+
+export function excludeSecondsFromTime(string: string) {
+    return string.slice(0, 5)
+}

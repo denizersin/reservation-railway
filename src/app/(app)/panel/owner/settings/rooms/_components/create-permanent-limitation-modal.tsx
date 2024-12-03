@@ -63,6 +63,9 @@ const CreatePermanentLimitationModal: React.FC<Props> = ({ isOpen, setOpen }) =>
 
         const edate = new Date(endDate)
 
+        if(edate.toUTCString()===sdate.toUTCString()){
+            edate.setHours(23,59,59,0)
+        }
 
 
         const formattedValues = {

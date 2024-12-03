@@ -2,17 +2,15 @@ import { db } from "@/server/db"
 import { tblRestaurantDailySettings } from "@/server/db/schema/restaurant-setting/daily-settings"
 import { and, between, eq } from "drizzle-orm"
 import { restaurantEntities } from "../restaurant"
-import { getStartAndEndOfDay } from "@/server/utils/server-utils"
+import { getLocalTime, getStartAndEndOfDay, utcHourToLocalHour } from "@/server/utils/server-utils"
 import TRestaurantDailySettingValidator, { TRestaurantDailySettingInsert, TRestaurantDailySettingSelect } from "@/shared/validators/restaurant-setting/daily"
 
 export const getDailySettings = async ({ restaurantId, date }: { restaurantId: number, date: Date }) => {
-    console.log( date,'date')
-    const { start, end } = getStartAndEndOfDay({ date })
-    console.log(start, end, 'start end')
+    const { start, end } = getStartAndEndOfDay({ date:getLocalTime(date) })
     let dailySettings: TRestaurantDailySettingSelect | undefined = undefined
     dailySettings = await db.query.tblRestaurantDailySettings.findFirst({
         where: and(eq(tblRestaurantDailySettings.restaurantId, restaurantId),
-            between(tblRestaurantDailySettings.date, date, date)
+            between(tblRestaurantDailySettings.date, start, end)
         )
     })
 
@@ -35,6 +33,7 @@ export const getDailySettings = async ({ restaurantId, date }: { restaurantId: n
 
     if (!dailySettings) throw new Error('Daily settings not found')
 
+    dailySettings.closedDinnerHours = dailySettings.closedDinnerHours.map(h => utcHourToLocalHour(h))
 
     return dailySettings
 }

@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "6e117d73-0196-44f7-a642-c5ba50bb1a6f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "62ff5f4f-49a5-403d-94af-87d3624e4455",
+  "prevId": "6e117d73-0196-44f7-a642-c5ba50bb1a6f",
   "tables": {
     "guest": {
       "name": "guest",
@@ -2114,15 +2114,7 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "unique_permanent_limitation": {
-          "name": "unique_permanent_limitation",
-          "columns": [
-            "restaurant_id",
-            "room_id"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "reservation_limitation": {
       "name": "reservation_limitation",

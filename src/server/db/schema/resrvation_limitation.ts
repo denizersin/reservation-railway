@@ -44,7 +44,7 @@ export const tblPermanentLimitation= mysqlTable('permanent_limitation', {
     startDate: timestamp('start_date').notNull(),
     endDate: timestamp('end_date').notNull(),
 }, (t) => ({
-    unq: unique('unique_permanent_limitation').on(t.restaurantId, t.roomId),
+    // unq: unique('unique_permanent_limitation').on(t.restaurantId, t.roomId),
 }));
 
 

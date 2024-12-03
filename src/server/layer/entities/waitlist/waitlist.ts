@@ -5,7 +5,7 @@ import { getLocalTime, getStartAndEndOfDay } from "@/server/utils/server-utils";
 import { and, between, eq, isNull } from "drizzle-orm";
 
 import { TRPCError } from "@trpc/server";
-import { getStatusWithLimitation } from "../../use-cases/reservation/client-queries";
+import { reservationUseCases } from "../../use-cases/reservation";
 
 export const createWaitlist = async (data: TWaitlistInsert) => {
     try {
@@ -88,7 +88,7 @@ export const getWaitlistStatues = async ({ restaurantId, date }: { restaurantId:
     })[] = [];
 
     for (const waitlist of waitlists) {
-        const statusWithLimitation = await getStatusWithLimitation({
+        const statusWithLimitation = await reservationUseCases.queryTableAvailabilitiesByGuestCount({
             date: waitlist.waitlistDate,
             mealId: waitlist.mealId,
             restaurantId,
@@ -97,7 +97,7 @@ export const getWaitlistStatues = async ({ restaurantId, date }: { restaurantId:
 
         wailistStatuesRow.push({
             ...waitlist,
-            isAvailable: statusWithLimitation[0]?.avaliableGuest! > 0
+            isAvailable: statusWithLimitation[0]?.isRoomHasAvaliableTable!
         })
     }
 

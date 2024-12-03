@@ -118,6 +118,9 @@ export const restaurantSettingRouter = createTRPCRouter({
     updateDailySettings: ownerProcedure
         .input(restaurantDailySettingValidator.updateDailySettingSchema)
         .mutation(async ({ input }) => {
+            if (input.dailySetting.closedDinnerHours && input.dailySetting.closedDinnerHours.length > 0) {
+                input.dailySetting.closedDinnerHours = input.dailySetting.closedDinnerHours.map(h => localHourToUtcHour(h))
+            }
             await dailySettingEntities.updateDailySettings(input)
             return true
         }),

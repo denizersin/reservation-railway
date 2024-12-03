@@ -88,7 +88,7 @@ export const AreaSelect = ({
         const row = monthAvailabilityData?.find(r => format(r.date, 'dd-mm-yy') === format(selectedDate, 'dd-mm-yy'))
 
         const avaliableRooms = row?.roomStatus.map(roomRecord =>{
-            const isRoomAvaliable = roomRecord.hours.some(hourRecord => hourRecord.isAvaliable && hourRecord.hour === selectedTime)
+            const isRoomAvaliable = roomRecord.isRoomHasAvaliableTable && roomRecord.hours.some(hourRecord => hourRecord.isAvaliable && hourRecord.hour === selectedTime)
             return {
                 ...roomRecord,
                 isAvailableForTime: isRoomAvaliable

@@ -40,11 +40,6 @@ export const useMutationCallback = () => {
                 })
             })
 
-            // queryClient.invalidateQueries({
-            //     queryKey: getQueryKey(api.reservation.getAllAvailableReservation2, {
-            //         date: queryDate
-            //     })
-            // })
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.reservation.getTableStatues, {
                     date: queryDate
@@ -56,11 +51,6 @@ export const useMutationCallback = () => {
         onSuccessCreateReservation: (date: Date) => {
 
 
-            // queryClient.invalidateQueries({
-            //     queryKey: getQueryKey(api.reservation.getAllAvailableReservation2, {
-            //         date,
-            //     })
-            // })
 
             queryClient.invalidateQueries({
                 queryKey: getQueryKey(api.reservation.getTableStatues, {
