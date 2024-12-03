@@ -37,7 +37,7 @@ export const WaitingTableStatus = () => {
         date: queryDate,
     })
 
-    const { data } = api.restaurant.getRestaurantMealHours.useQuery({ mealId: 1 })
+    const { data } = api.restaurant.getRestaurantMealHours.useQuery({ mealId: EnumMealNumeric.dinner })
 
     const hours = data?.[0]?.mealHours?.map(r => r.hour) || []
 

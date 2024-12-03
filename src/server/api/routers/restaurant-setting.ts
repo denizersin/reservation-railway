@@ -1,10 +1,13 @@
-import { paymentSettingEntities, restaurantGeneralSettingEntities, reviewSettingEntities } from "@/server/layer/entities/restaurant-setting";
+import { calendarSettingEntities, paymentSettingEntities, restaurantGeneralSettingEntities, reviewSettingEntities, dailySettingEntities } from "@/server/layer/entities/restaurant-setting";
 import { localHourToUtcHour } from "@/server/utils/server-utils";
 import { restaurantGeneralSettingValidator } from "@/shared/validators/restaurant-setting/general";
 import { paymentSettingValidator } from "@/shared/validators/restaurant-setting/payment";
 import { reviewSettingsValidator } from "@/shared/validators/restaurant-setting/review";
+import { restaurantDailySettingValidator } from "@/shared/validators/restaurant-setting/daily";
 import { z } from "zod";
 import { createTRPCRouter, ownerProcedure } from "../trpc";
+import { generalSettingUseCase } from "@/server/layer/use-cases/restaurant-setting";
+import { restaurantCalendarSettingValidator } from "@/shared/validators/restaurant-setting/calendar";
 
 export const restaurantSettingRouter = createTRPCRouter({
     updateReviewSettings: ownerProcedure
@@ -48,13 +51,15 @@ export const restaurantSettingRouter = createTRPCRouter({
         }),
 
 
-        updateRestaurantGeneralSettings: ownerProcedure
+    updateRestaurantGeneralSettings: ownerProcedure
         .input(restaurantGeneralSettingValidator.updateRestaurantGeneralSettingSchema)
         .mutation(async ({ input, ctx }) => {
-            await restaurantGeneralSettingEntities.updateRestaurantGeneralSettings({
-                generalSetting: input.generalSetting,
-                generalSettingID: input.generalSettingID,
+
+            await generalSettingUseCase.updateRestaurantGeneralSetting({
+                input,
+                ctx
             })
+
             return true
         }),
     getRestaurantGeneralSettings: ownerProcedure
@@ -86,6 +91,35 @@ export const restaurantSettingRouter = createTRPCRouter({
             console.log(restaurantId, 'ctx session restaurantId')
             const generalSettings = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId: restaurantId! })
             return generalSettings
+        }),
+
+    getRestaurantCalendarSettings: ownerProcedure
+        .query(async ({ ctx }) => {
+            const { user: { restaurantId } } = ctx.session
+            const calendarSettings = await calendarSettingEntities.getCalendarSetting({ restaurantId: restaurantId! })
+            return calendarSettings
+        }),
+
+    updateRestaurantCalendarSetting: ownerProcedure
+        .input(restaurantCalendarSettingValidator.updateCalendarSettingSchema)
+        .mutation(async ({ input, ctx }) => {
+            await calendarSettingEntities.updateCalendarSetting(input)
+        }),
+
+    getDailySettings: ownerProcedure
+        .input(z.object({ date: z.date() }))
+        .query(async ({ input, ctx }) => {
+            return await dailySettingEntities.getDailySettings({
+                restaurantId: ctx.restaurantId,
+                date: input.date
+            })
+        }),
+
+    updateDailySettings: ownerProcedure
+        .input(restaurantDailySettingValidator.updateDailySettingSchema)
+        .mutation(async ({ input }) => {
+            await dailySettingEntities.updateDailySettings(input)
+            return true
         }),
 
 

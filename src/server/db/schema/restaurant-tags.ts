@@ -1,11 +1,12 @@
 import { relations } from "drizzle-orm";
-import { int, mysqlTable, unique, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlTable, unique, varchar } from "drizzle-orm/mysql-core";
 import { tblRestaurant } from "./restaurant";
 
 
 export const tblRestaurantTag = mysqlTable('restaurant_tags', {
     id: int('id').autoincrement().primaryKey(),
     restaurantId: int('restaurant_id').notNull(),
+    isAvailable: boolean('is_available').$default(() => false).notNull(),
     color: varchar('color', { length: 10 }).notNull(),
 }, (t) => ({
 }));
@@ -50,6 +51,6 @@ export type TRestaurantTagWithTranslations = TRestaurantTag & {
 
 export type TRestaurantTagWithTranslationsUpdate = {
     id: number,
-    tag: Omit<TRestaurantTag, 'restaurantId'|'id'>,
+    tag: Partial<Omit<TRestaurantTag, 'restaurantId'|'id'>>,
     translations: TRestaurantTagInsretWithTranslationsInsert['translations']
 }

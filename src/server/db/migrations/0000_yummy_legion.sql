@@ -110,6 +110,7 @@ CREATE TABLE `restaurant` (
 	`owner_id` int NOT NULL,
 	`payment_setting_id` int NOT NULL,
 	`restaurant_general_setting_id` int NOT NULL,
+	`restaurant_calendar_setting_id` int NOT NULL,
 	CONSTRAINT `restaurant_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -168,6 +169,7 @@ CREATE TABLE `reservation_prepayment_type` (
 CREATE TABLE `restaurant_tags` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
+	`is_available` boolean NOT NULL,
 	`color` varchar(10) NOT NULL,
 	CONSTRAINT `restaurant_tags_id` PRIMARY KEY(`id`)
 );
@@ -394,6 +396,27 @@ CREATE TABLE `restaurant_payment_setting` (
 	`prepayment_cancellation_hours` int NOT NULL,
 	`prepayment_at_no_show` enum('convertToSale','refund','none') NOT NULL,
 	CONSTRAINT `restaurant_payment_setting_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_calendar_setting` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`max_advance_booking_days` int NOT NULL DEFAULT 30,
+	`closed_months` json NOT NULL,
+	CONSTRAINT `restaurant_calendar_setting_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `restaurant_daily_settings` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`restaurant_id` int NOT NULL,
+	`online_reservations` boolean NOT NULL DEFAULT true,
+	`waitlist` boolean NOT NULL DEFAULT true,
+	`dinner` boolean NOT NULL DEFAULT true,
+	`min_guests` int NOT NULL DEFAULT 1,
+	`max_guests` int NOT NULL DEFAULT 5,
+	`closed_dinner_hours` json NOT NULL DEFAULT ('[]'),
+	`closed_areas` json NOT NULL DEFAULT ('[]'),
+	`date` timestamp NOT NULL,
+	CONSTRAINT `restaurant_daily_settings_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `reservation` (

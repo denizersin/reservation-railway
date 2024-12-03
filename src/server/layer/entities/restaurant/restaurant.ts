@@ -13,6 +13,7 @@ import { languagesData } from '@/shared/data/predefined';
 import TReviewSettingsValidator from '@/shared/validators/restaurant-setting/review';
 import { restaurantTagEntities } from '../restaurant-tag';
 import { restaurantGeneralSettingEntities, reviewSettingEntities } from '../restaurant-setting';
+import { tblRestaurantCalendarSetting } from '@/server/db/schema/restaurant-setting/calendar-setting';
 
 export const createRestaurant = async ({
     restaurant,
@@ -42,12 +43,20 @@ export const createRestaurant = async ({
 
         const newPaymentSettingId = paymentSetting?.id!
 
+        const [calendarSetting] = await db.insert(tblRestaurantCalendarSetting).values({
+            maxAdvanceBookingDays: 130,
+            closedMonths: []
+        }).$returningId()
+
+        const newCalendarSettingId = calendarSetting?.id!
+
 
         const { translations, ...tblRestaurantValues } = restaurant
         const [newRestaurant] = await db.insert(tblRestaurant).values({
             ...tblRestaurantValues,
             paymentSettingId: newPaymentSettingId,
-            restaurantGeneralSettingId: newGeneralSettingId
+            restaurantGeneralSettingId: newGeneralSettingId,
+            restaurantCalendarSettingId: newCalendarSettingId
         }).$returningId()
 
         if (!newRestaurant?.id) {
@@ -200,7 +209,7 @@ export const setDefaultsToRestaurant = async ({
 
         console.log('serverData.reservationTags', restaurantId, 'restaurantId')
         await Promise.all(serverData.reservationTags.map(tag => restaurantTagEntities.createRestaurantTag({
-            tag: { restaurantId, color: tag.color },
+            tag: { restaurantId, color: tag.color, isAvailable: tag.isAvailable },
             translations: tag.translations
         })))
 
@@ -432,7 +441,7 @@ export const getMealHours = async ({
     const mealHours = await db.query.tblMealHours.findMany({
         where: and(
             eq(tblMealHours.restaurantId, restaurantId),
-            // mealId ? eq(tblMealHours.mealId, mealId) : undefined
+            mealId ? eq(tblMealHours.mealId, mealId) : undefined
         ),
         with: {
             meal: true

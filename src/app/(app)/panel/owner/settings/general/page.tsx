@@ -1,10 +1,10 @@
 "use client"
 import { Button } from '@/components/custom/button'
 import { api } from '@/server/trpc/react'
+import { CalendarSetting } from './_components/calendar-setting'
 import { GeneralSettings } from './_components/general-setting'
-import { ReviewSettings } from './_components/review/review-settings'
-import { Reviews } from './_components/review/reviews'
 import { PaymentSettings } from './_components/payment-setting'
+import { Reviews } from './_components/review/reviews'
 
 type Props = {}
 
@@ -20,6 +20,7 @@ const Page =  (props: Props) => {
             <GeneralSettings />
             <Reviews />
             <PaymentSettings />
+            <CalendarSetting/>
             <Button className='my-6' loading={isSyncHoldingReservationPending} onClick={() => syncHoldingReservationMutation({})}>Sync Holding Reservations</Button>
         </>
     )

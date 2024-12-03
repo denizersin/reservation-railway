@@ -37,7 +37,7 @@ export const updateRestaurantGeneralSettings = async ({
     generalSetting,
     generalSettingID
 }: {
-    generalSetting: TUpdateGeneralSetting,
+    generalSetting: Omit<Partial<TUpdateGeneralSetting>, 'restaurantId' | 'id'>,
     generalSettingID: number
 }) => {
 

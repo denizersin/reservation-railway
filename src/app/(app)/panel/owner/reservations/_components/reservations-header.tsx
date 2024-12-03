@@ -12,6 +12,7 @@ import { useReservationsContext } from "../page";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { api } from "@/server/trpc/react";
+import { DailySettingsModal } from "./dailiy-settings-modal";
 
 export type TReservationsViewType = 'list' | 'table'
 
@@ -57,7 +58,11 @@ export function ReservationHeader() {
         })
     }
 
+    const [open, setOpen] = useState(false)
 
+    const onClickSettings = () => {
+        setOpen(true)
+    }
 
     return (
         <div>
@@ -105,7 +110,7 @@ export function ReservationHeader() {
                         <Button onClick={onRefresh} tooltip="yenile" variant="ghost" size="icon" className="">
                             <RefreshCwIcon className="h-4 w-4" />
                         </Button>
-                        <Button tooltip="ayarlar" variant="ghost" size="icon" className="">
+                        <Button onClick={onClickSettings} tooltip="ayarlar" variant="ghost" size="icon" className="">
                             <SettingsIcon className="h-4 w-4" />
                         </Button>
                         <Button tooltip="ara" variant="ghost" size="icon" className="">
@@ -182,6 +187,8 @@ export function ReservationHeader() {
                 </div>
 
             </div>
+
+            <DailySettingsModal open={open} onOpenChange={setOpen} />
         </div>
 
     )

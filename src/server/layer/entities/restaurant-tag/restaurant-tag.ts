@@ -1,5 +1,5 @@
 import { db } from "@/server/db"
-import { tblRestaurantTag, tblRestaurantTagTranslation, TRestaurantTagInsert, TRestaurantTagInsretWithTranslationsInsert, TRestaurantTagTranslationInsert, TRestaurantTagWithTranslations, TRestaurantTagWithTranslationsUpdate } from "@/server/db/schema/restaurant-tags"
+import { tblRestaurantTag, tblRestaurantTagTranslation, TRestaurantTag, TRestaurantTagInsert, TRestaurantTagInsretWithTranslationsInsert, TRestaurantTagTranslationInsert, TRestaurantTagWithTranslations, TRestaurantTagWithTranslationsUpdate } from "@/server/db/schema/restaurant-tags"
 import { TPagination } from "@/server/types/types"
 import TRestaurantTagValidator from "@/shared/validators/restaurant-tag"
 import { and, eq, like } from "drizzle-orm"
@@ -101,7 +101,7 @@ export const getAllRestaurantTags2 = async ({
 
     const whereConditions = [];
     whereConditions.push(eq(tblRestaurantTagTranslation.languageId, languageId));
-    
+
 
     if (name) {
         whereConditions.push(like(tblRestaurantTagTranslation.name, `%${name}%`));
@@ -140,4 +140,15 @@ export const getAllRestaurantTags2 = async ({
             totalPages: page === -1 ? 1 : Math.ceil(totalCount / limit)
         }
     };
+}
+
+
+export const updateRestaurantTag = async ({
+    data,
+    tagId
+}: {
+    data: Omit<Partial<TRestaurantTag>, 'restaurantId' | 'id'>,
+    tagId: number
+}) => {
+    await db.update(tblRestaurantTag).set(data).where(eq(tblRestaurantTag.id, tagId))
 }

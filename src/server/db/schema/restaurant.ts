@@ -11,6 +11,8 @@ import { tblPrepaymentMessage, tblProvisionMessage, tblReservationMessage, tblRe
 import { tblRoom } from './room';
 import { tblGuest } from './guest';
 import { tblRestaurantPaymentSetting } from './restaurant-setting/payment-setting';
+import { tblRestaurantCalendarSetting } from './restaurant-setting/calendar-setting';
+import { tblRestaurantDailySettings } from './restaurant-setting/daily-settings';
 
 export const tblRestaurant = mysqlTable('restaurant', {
     id: int('id').autoincrement().primaryKey(),
@@ -21,6 +23,7 @@ export const tblRestaurant = mysqlTable('restaurant', {
 
     paymentSettingId: int('payment_setting_id').notNull(),
     restaurantGeneralSettingId: int('restaurant_general_setting_id').notNull(),
+    restaurantCalendarSettingId: int('restaurant_calendar_setting_id').notNull(),
 
 },);
 
@@ -30,9 +33,13 @@ export const restaurantRelations = relations(tblRestaurant, ({ many, one }) => (
     mealHours: many(tblMealHours),
     mealDays: many(tblRestaurantMealDays),
 
+    dailySettings: many(tblRestaurantDailySettings),
+
 
     restaurantGeneralSetting: one(tblRestaurantGeneralSetting),
     paymentSetting: one(tblRestaurantPaymentSetting),
+    restaurantCalendarSetting: one(tblRestaurantCalendarSetting),
+
     owner: one(tblUser, { fields: [tblRestaurant.ownerId], references: [tblUser.id] }),
     languages: many(tblRestaurantLanguage),
     tags: many(tblRestaurantTag),

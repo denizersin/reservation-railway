@@ -101,6 +101,36 @@ export enum EnumDaysNumeric{
     saturday = 6,
 }
 
+export enum EnumMonths {
+    january = 'january',
+    february = 'february',
+    march = 'march',
+    april = 'april',
+    may = 'may',
+    june = 'june',
+    july = 'july',
+    august = 'august',
+    september = 'september',
+    october = 'october',
+    november = 'november',
+    december = 'december',
+}
+
+export enum EnumMonthsNumeric {
+    january = 0,
+    february = 1,
+    march = 2,
+    april = 3,
+    may = 4,
+    june = 5,
+    july = 6,
+    august = 7,
+    september = 8,
+    october = 9,
+    november = 10,
+    december = 11,
+}
+
 export const DaysToSelect = getEnumValues(EnumDays).map(day => ({
     label: day as string,
     value: day as string

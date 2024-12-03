@@ -16,11 +16,12 @@ export const MelHoursTabs = ({
 }: Props) => {
 
     const { data: mealHours } = api.restaurant.getRestaurantMealHours.useQuery({
-        // mealId: selectedMeal.id,
+        mealId: selectedMealId!,
 
     }, {
-        select: (data) => data.find((d) => d.meal.id === selectedMealId)?.mealHours
-    })
+        select: (data) => data.find((d) => d.meal.id === selectedMealId)?.mealHours,
+        enabled: !!selectedMealId
+    },)
     return (
         <div>
             <div className='flex gap-x-2 my-2'>

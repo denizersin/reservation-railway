@@ -21,6 +21,7 @@ const translationSchema = z.array(z.object({
 
 export const createRestaurantTagFormSchema = z.object({
     color: z.string().min(2, "Color must be at least 2 characters"),
+    isAvailable: z.boolean().optional(),
     translations: translationSchema
 })
 

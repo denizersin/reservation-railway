@@ -18,7 +18,8 @@ const updateRestaurantGeneralSettingFormSchema = generealSettingSchema
 
 const updateRestaurantGeneralSettingSchema = z.object({
     generalSettingID: z.number().int().positive(),
-    generalSetting: generealSettingSchema.partial()
+    generalSetting: generealSettingSchema.partial(),
+    availableLaTags: z.array(z.number().int().positive())
 })
 
 

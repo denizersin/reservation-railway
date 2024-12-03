@@ -5,6 +5,7 @@ import { boolean, int, mysqlEnum, mysqlTable } from 'drizzle-orm/mysql-core';
 import { tblCountry } from '../predefined';
 import { tblReserVationStatus } from '../reservation/reservation-status';
 import { tblRestaurant, tblRestaurantLanguage } from '../restaurant';
+import { tblRestaurantTag } from '../restaurant-tags';
 
 
 
