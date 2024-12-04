@@ -75,7 +75,7 @@ export const createReservation = async ({
             },
             reservationCreator: owner.name
         })
-        
+
 
 
         await reservationPaymentService.createPrepayment({
@@ -111,10 +111,12 @@ export const updateReservation = async ({
     trx?: TTransaction,
     owner?: string
 }>) => {
-    await ReservationEntities.updateReservation({
-        data: input.data,
-        reservationId: input.reservationId,
-        trx
+    await reservationService.updateReservation({
+        entityData: {
+            data: input.data,
+            reservationId: input.reservationId,
+            trx
+        }
     })
 
 }
@@ -239,15 +241,16 @@ export const makeReservationNotExist = async ({
 
     const reservation = await ReservationEntities.getReservationById({ reservationId })
 
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist],
-            isCheckedin: false,
-            checkedinAt: null,
-            enteredMainTableAt: null,
-            checkedoutAt: null,
-
+    await reservationService.updateReservation({
+        entityData: {
+            reservationId,
+            data: {
+                reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.notExist],
+                isCheckedin: false,
+                checkedinAt: null,
+                enteredMainTableAt: null,
+                checkedoutAt: null,
+            }
         }
     })
 
@@ -328,12 +331,14 @@ export const checkOutAndCompleteReservation = async ({
     const { reservationId } = input
 
     const reservation = await ReservationEntities.getReservationById({ reservationId })
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            reservationStatusId: EnumReservationStatusNumeric.completed,
-            reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.checkedOut],
-            checkedoutAt: new Date(),
+    await reservationService.updateReservation({
+        entityData: {
+            reservationId,
+            data: {
+                reservationStatusId: EnumReservationStatusNumeric.completed,
+                reservationExistenceStatusId: EnumReservationExistanceStatusNumeric[EnumReservationExistanceStatus.checkedOut],
+                checkedoutAt: new Date(),
+            }
         }
     })
 
@@ -393,22 +398,26 @@ export const updateReservationTime = async ({
 
 
 
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
-                roomId: table.roomId
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
+                    roomId: table.roomId
+                }
             }
         })
 
     }
 
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            reservationDate: data.reservationDate,
-            hour,
-            guestCount: data.guestCount,
-        },
+    await reservationService.updateReservation({
+        entityData: {
+            reservationId,
+            data: {
+                reservationDate: data.reservationDate,
+                hour,
+                guestCount: data.guestCount,
+            }
+        }
     })
 
 
@@ -448,10 +457,12 @@ export const updateReservationTable = async ({
             reservationId,
             tableId
         })
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
-                roomId: table.roomId
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
+                    roomId: table.roomId
+                }
             }
         })
     }
@@ -475,10 +486,12 @@ export const updateReservationAssignedPersonal = async ({
 }: TUseCaseOwnerLayer<TReservationValidator.updateReservationAssignedPersonal>) => {
     const { reservationId, assignedPersonalId } = input
 
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            assignedPersonalId
+    await reservationService.updateReservation({
+        entityData: {
+            reservationId,
+            data: {
+                assignedPersonalId
+            }
         }
     })
 }
@@ -528,11 +541,13 @@ export const updateReservationTagAndNote = async ({
 }: TUseCaseOwnerLayer<TReservationValidator.updateReservationTagAndNote>) => {
     const { reservationId, reservationTagIds, note } = input
 
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
+    await reservationService.updateReservation({
+        entityData: {
+            reservationId,
+            data: {
             tagIds: reservationTagIds,
-            guestNote: note
+                guestNote: note
+            }
         }
     })
 }

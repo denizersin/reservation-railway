@@ -9,6 +9,7 @@ import { ReservationLogEntities } from "../../entities/reservation/reservation-l
 import { userEntities } from "../../entities/user";
 import { notificationUseCases } from "./notification";
 import { paymentSettingEntities, restaurantGeneralSettingEntities } from "../../entities/restaurant-setting";
+import { reservationService } from "../../service/reservation";
 
 export const requestForPrepayment = async ({
     ctx,
@@ -72,13 +73,15 @@ export const requestForPrepayment = async ({
         message: 'Failed to create prepayment',
     })
 
-    await ReservationEntities.updateReservation({
-        reservationId,
-        data: {
-            currentPrepaymentId: newPrepaymentId,
-            reservationStatusId: EnumReservationStatusNumeric.prepayment,
-            prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
-        },
+    await reservationService.updateReservation({
+        entityData: {
+            reservationId,
+            data: {
+                currentPrepaymentId: newPrepaymentId,
+                reservationStatusId: EnumReservationStatusNumeric.prepayment,
+                prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+            }
+        }
     })
 
     await ReservationLogEntities.createLog({
@@ -129,14 +132,16 @@ export const cancelPrepayment = async ({
             },
             trx
         })
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
-                reservationStatusId: EnumReservationStatusNumeric[EnumReservationStatus.reservation],
-                currentPrepaymentId: null,
-                prePaymentTypeId: EnumReservationPrepaymentNumeric.none,
-            },
-            trx
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
+                    reservationStatusId: EnumReservationStatusNumeric[EnumReservationStatus.reservation],
+                    currentPrepaymentId: null,
+                    prePaymentTypeId: EnumReservationPrepaymentNumeric.none,
+                },
+                trx
+            }
         })
     })
 
@@ -168,11 +173,13 @@ export const requestForConfirmation = async ({
             },
             trx
         })
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
                 reservationStatusId: EnumReservationStatusNumeric.confirmation,
-            },
+                },
+            }
         })
         await notificationUseCases.handleConfirmationRequest({
             reservationId,
@@ -208,12 +215,14 @@ export const cancelConfirmationRequest = async ({
 
     await db.transaction(async (trx) => {
         await ReservationEntities.deleteReservationConfirmationRequests({ reservationId, trx })
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
                 reservationStatusId: EnumReservationStatusNumeric.reservation,
             },
-            trx
+                trx
+            }
         })
     })
 
@@ -233,14 +242,16 @@ export const confirmReservation = async ({
 
 
     await db.transaction(async (trx) => {
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
                 reservationStatusId: EnumReservationStatusNumeric.confirmed,
                 confirmedBy: owner.name,
                 confirmedAt: new Date(),
             },
-            trx
+                trx
+            }
         })
     })
 
@@ -310,15 +321,17 @@ export const cancelReservation = async ({
         if (isPrepaymentNotPaid) {
             // await ReservationEntities.deletePrepayment({ reservationId, trx })
             // await 
-            await ReservationEntities.updateReservation({
-                reservationId,
-                data: {
+            await reservationService.updateReservation({
+                entityData: {
+                    reservationId,
+                    data: {
                     currentPrepaymentId: null,
                     reservationStatusId: EnumReservationStatusNumeric.cancel,
                     canceledBy: owner.name,
                     canceledAt: new Date(),
                 },
-                trx
+                    trx
+                }
             })
             await ReservationEntities.updateReservationPrepayment({
                 data: {
@@ -334,12 +347,14 @@ export const cancelReservation = async ({
             await ReservationEntities.deleteReservationConfirmationRequests({ reservationId, trx })
         }
 
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
                 reservationStatusId: EnumReservationStatusNumeric.cancel,
             },
-            trx
+                trx
+            }
         })
 
     })

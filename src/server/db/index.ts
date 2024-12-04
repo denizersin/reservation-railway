@@ -14,3 +14,4 @@ export const db = drizzle(connection, {
 });
 
 
+console.log("INIT DB2312")

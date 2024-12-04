@@ -9,6 +9,7 @@ import { guestRouter } from "./routers/guest";
 import { testRouter } from "./routers/test";
 import { waitlistRouter } from "./routers/waitlist";
 import { restaurantSettingRouter } from "./routers/restaurant-setting";
+import { initializeReservationCron } from "../jobs/reservation-jobs";
 
 
 /**
@@ -40,3 +41,7 @@ export type AppRouter = typeof appRouter;
  *       ^? Post[]
  */
 export const createCaller = createCallerFactory(appRouter);
+
+
+
+initializeReservationCron()

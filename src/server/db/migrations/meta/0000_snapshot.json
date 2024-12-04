@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "6e117d73-0196-44f7-a642-c5ba50bb1a6f",
+  "id": "1e898d79-3093-44d6-b6e8-2a7d9e4c35a6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -2114,15 +2114,7 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "unique_permanent_limitation": {
-          "name": "unique_permanent_limitation",
-          "columns": [
-            "restaurant_id",
-            "room_id"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "reservation_limitation": {
       "name": "reservation_limitation",
@@ -3430,6 +3422,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "numeric_notification_message_type_id": {
+          "name": "numeric_notification_message_type_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "message": {
           "name": "message",
           "type": "text",
@@ -3482,6 +3481,36 @@
       "compositePrimaryKeys": {
         "reservation_notification_id": {
           "name": "reservation_notification_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "reservation_notification_message_type": {
+      "name": "reservation_notification_message_type",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "type": {
+          "name": "type",
+          "type": "enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation Request','Reservation Confirmed','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created','Reservation Date Change','Reservation Time Change','Reservation Guest Count Change')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "reservation_notification_message_type_id": {
+          "name": "reservation_notification_message_type_id",
           "columns": [
             "id"
           ]

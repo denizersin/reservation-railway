@@ -235,6 +235,25 @@ export enum EnumNotificationMessageType {
     ReservationGuestCountChange = "Reservation Guest Count Change",
 }
 
+export const EnumNotificationMessageTypeNumeric: Record<EnumNotificationMessageType, number> = {
+    [EnumNotificationMessageType.NewReservation]: 1,
+    [EnumNotificationMessageType.DateTimeChange]: 2,
+    [EnumNotificationMessageType.GuestCountChange]: 3,
+    [EnumNotificationMessageType.ReservationCancellation]: 4,
+    [EnumNotificationMessageType.ReservationConfirmationRequest]: 5,
+    [EnumNotificationMessageType.ReservationConfirmed]: 6,
+    [EnumNotificationMessageType.ReservationCompleted]: 7,
+    [EnumNotificationMessageType.ReservationReminder]: 8,
+    [EnumNotificationMessageType.ReservationFeedback]: 9,
+    [EnumNotificationMessageType.NotifiedForPrepayment]: 10,
+    [EnumNotificationMessageType.AskedForPrepayment]: 11,
+    [EnumNotificationMessageType.ReservationCreated]: 12,
+    [EnumNotificationMessageType.ReservationDateChange]: 13,
+    [EnumNotificationMessageType.ReservationTimeChange]: 14,
+    [EnumNotificationMessageType.ReservationGuestCountChange]: 15,
+
+}
+
 export enum EnumWaitlistNotificationMessageType {
     CreatedReservationFromWaitlist = "Created Reservation From Waitlist",
     CancelWaitlist = "Cancel Waitlist",

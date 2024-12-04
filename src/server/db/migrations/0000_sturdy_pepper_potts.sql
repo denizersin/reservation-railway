@@ -330,8 +330,7 @@ CREATE TABLE `permanent_limitation` (
 	`room_id` int,
 	`start_date` timestamp NOT NULL,
 	`end_date` timestamp NOT NULL,
-	CONSTRAINT `permanent_limitation_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_permanent_limitation` UNIQUE(`restaurant_id`,`room_id`)
+	CONSTRAINT `permanent_limitation_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `reservation_limitation` (
@@ -526,6 +525,7 @@ CREATE TABLE `reservation_notification` (
 	`reservation_id` int NOT NULL,
 	`type` enum('SMS','EMAIL') NOT NULL,
 	`notification_message_type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation Request','Reservation Confirmed','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created','Reservation Date Change','Reservation Time Change','Reservation Guest Count Change') NOT NULL,
+	`numeric_notification_message_type_id` int NOT NULL,
 	`message` text NOT NULL,
 	`sent_at` timestamp,
 	`status` enum('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
@@ -533,6 +533,12 @@ CREATE TABLE `reservation_notification` (
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` timestamp,
 	CONSTRAINT `reservation_notification_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `reservation_notification_message_type` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`type` enum('NewReservation','DateTime Change','Guest Count Change','Reservation Cancellation','Reservation Confirmation Request','Reservation Confirmed','Reservation Completed','Reservation Reminder','Reservation Feedback','Notified For Prepayment','Asked For Prepayment','Reservation Created','Reservation Date Change','Reservation Time Change','Reservation Guest Count Change') NOT NULL,
+	CONSTRAINT `reservation_notification_message_type_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `waitlist_notification` (

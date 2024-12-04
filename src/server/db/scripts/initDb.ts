@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import { getEnumValues } from "@/server/utils/server-utils";
-import { EnumMealNumeric, EnumMeals, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationPrepaymentType, EnumReservationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
+import { EnumMealNumeric, EnumMeals, EnumNotificationMessageType, EnumNotificationMessageTypeNumeric, EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationPrepaymentType, EnumReservationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import { exit } from "process";
@@ -55,6 +55,15 @@ const initFunctions = [
                 await db.insert(schema.tblReservationPrepaymentType).values({
                     type: status,
                     id: EnumReservationPrepaymentNumeric[status]
+                })
+            })
+        )
+        
+        await Promise.all(
+            getEnumValues(EnumNotificationMessageType).map(async (type) => {
+                await db.insert(schema.tblReservationNotificationMessageType).values({
+                    type: type,
+                    id: EnumNotificationMessageTypeNumeric[type]
                 })
             })
         )

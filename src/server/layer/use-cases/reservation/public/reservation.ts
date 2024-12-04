@@ -115,6 +115,7 @@ export const createPublicReservation = async ({
 
     const prePaymentAmount = restaurantPaymentSetting.prePaymentPricePerGuest * guestCount
 
+
     const reservation = await db.transaction(async (trx) => {
         const newReservation = await reservationService.createReservation({
             reservationEntityData: {
@@ -196,23 +197,25 @@ export const createReservationFromHolding = async ({
 
         //assume this as created reservation
 
-        await ReservationEntities.updateReservation({
-            reservationId: holdedReservation.id,
-            data: {
-                guestCount,
-                hour: utcHour,
-                guestId: guest.id,
-                isSendEmail: true,
-                isSendSms: true,
-                mealId,
-                prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
-                reservationDate: reservationData.date,
-                reservationStatusId: EnumReservationStatusNumeric.reservation,
-                restaurantId,
-                holdExpiredAt: null,
-                holdedAt: null,
-            },
-            trx
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId: holdedReservation.id,
+                data: {
+                    guestCount,
+                    hour: utcHour,
+                    guestId: guest.id,
+                    isSendEmail: true,
+                    isSendSms: true,
+                    mealId,
+                    prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
+                    reservationDate: reservationData.date,
+                    reservationStatusId: EnumReservationStatusNumeric.reservation,
+                    restaurantId,
+                    holdExpiredAt: null,
+                    holdedAt: null,
+                },
+                trx
+            }
         })
 
 
@@ -237,25 +240,19 @@ export const createReservationFromHolding = async ({
 
         //--------------------------------
         //create prepayment
-        const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
-            data: {
-                reservationId: holdedReservation.id,
+        await reservationPaymentService.createPrepayment({
+            prepaymentEntityData: {
                 amount: prePaymentAmount,
                 isDefaultAmount: true,
+                reservationId: holdedReservation.id,
                 createdBy: 'System'
             },
+            reservation: holdedReservation,
+            withEmail: holdedReservation.isSendEmail,
+            withSms: holdedReservation.isSendSms,
+            creator: 'System',
             trx
         })
-
-        await ReservationEntities.updateReservation({
-            data: {
-                currentPrepaymentId: newPrepaymentId,
-                reservationStatusId: EnumReservationStatusNumeric.prepayment,
-            },
-            reservationId: holdedReservation.id,
-            trx
-        })
-
         //--------------------------------
 
 
@@ -447,15 +444,17 @@ export const cancelPublicReservation = async ({
         if (isPrepaymentNotPaid) {
             // await ReservationEntities.deletePrepayment({ reservationId, trx })
             // await 
-            await ReservationEntities.updateReservation({
-                reservationId,
-                data: {
+            await reservationService.updateReservation({
+                entityData: {
+                    reservationId,
+                    data: {
                     currentPrepaymentId: null,
                     reservationStatusId: EnumReservationStatusNumeric.cancel,
                     canceledBy: 'Guest',
                     canceledAt: new Date(),
                 },
-                trx
+                    trx
+                }
             })
             await ReservationEntities.updateReservationPrepayment({
                 data: {
@@ -471,12 +470,14 @@ export const cancelPublicReservation = async ({
             await ReservationEntities.deleteReservationConfirmationRequests({ reservationId, trx })
         }
 
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
                 reservationStatusId: EnumReservationStatusNumeric.cancel,
             },
-            trx
+                trx
+            }
         })
 
     })
@@ -541,16 +542,18 @@ export const handleSuccessPrepaymentPublicReservation = async ({
             trx
         })
 
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
                 reservationStatusId: EnumReservationStatusNumeric.confirmed,
                 confirmedAt: new Date(),
                 confirmedBy: 'Guest',
                 isCreatedByOwner: false,
 
-            },
-            trx
+                },
+                trx
+            }
         })
 
 
@@ -592,14 +595,16 @@ export const confirmPublicReservation = async ({
         throw new Error('Reservation not in confirmation status')
 
     await db.transaction(async (trx) => {
-        await ReservationEntities.updateReservation({
-            reservationId,
-            data: {
+        await reservationService.updateReservation({
+            entityData: {
+                reservationId,
+                data: {
                 reservationStatusId: EnumReservationStatusNumeric.confirmed,
                 confirmedBy: 'Guest',
                 confirmedAt: new Date(),
             },
-            trx
+                trx
+            }
         })
     })
 

@@ -20,7 +20,6 @@ export const getGeneralSettings = async ({
         }
     })
 
-    console.log(restaurantGeneralSetting, '12restaurantGeneralSetting')
 
     if (!restaurantGeneralSetting) {
         throw new Error('Restaurant general setting not found')

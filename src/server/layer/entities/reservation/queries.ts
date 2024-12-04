@@ -2,11 +2,11 @@ import { db } from "@/server/db";
 import { tblReservation, tblReservationTable } from "@/server/db/schema/reservation";
 import { tblReservationLimitation } from "@/server/db/schema/resrvation_limitation";
 import { getLocalTime, getStartAndEndOfDay } from "@/server/utils/server-utils";
-import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
+import { EnumNotificationMessageTypeNumeric, EnumNotificationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import { and, between, count, eq, isNotNull, isNull, ne, sql, sum } from "drizzle-orm";
 
 import { ReservationEntities } from ".";
-import { tblMeal, tblMealHours, tblRoom, tblTable, TTable } from "@/server/db/schema";
+import { tblGuest, tblMeal, tblMealHours, tblReservationNotification, tblRestaurant, tblRoom, tblTable, TTable } from "@/server/db/schema";
 
 
 
@@ -364,7 +364,7 @@ export const getLimitationStatusGusetCount2 = async ({ date,
 
 
 
-export const getGuestReservationCountOfTodayReservation = async ({  restaurantId, date }: {
+export const getGuestReservationCountOfTodayReservation = async ({ restaurantId, date }: {
     restaurantId: number,
     date: Date
 }) => {
@@ -375,12 +375,14 @@ export const getGuestReservationCountOfTodayReservation = async ({  restaurantId
         reservationCount: count(),
         guestId: tblReservation.guestId
     })
-    .from(tblReservation)
-    .where(and(
-        eq(tblReservation.restaurantId, restaurantId),
-        between(tblReservation.reservationDate, start, end)
-    ))
-    .groupBy(tblReservation.guestId)
-    
+        .from(tblReservation)
+        .where(and(
+            eq(tblReservation.restaurantId, restaurantId),
+            between(tblReservation.reservationDate, start, end)
+        ))
+        .groupBy(tblReservation.guestId)
+
     return result
 }
+
+

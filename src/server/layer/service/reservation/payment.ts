@@ -4,6 +4,7 @@ import { ReservationLogEntities } from "@/server/layer/entities/reservation/rese
 import { notificationUseCases } from "@/server/layer/use-cases/reservation/notification"
 import { TTransaction } from "@/server/utils/db-utils"
 import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums"
+import { reservationService } from "."
 
 
 type TCreatePrepaymentEntityData = Parameters<typeof ReservationEntities.createReservationPrepayment>[0]
@@ -31,13 +32,15 @@ export const createPrepayment = async ({
         trx
     })
 
-    await ReservationEntities.updateReservation({
-        data: {
-            currentPrepaymentId: newPrepaymentId,
-            reservationStatusId: EnumReservationStatusNumeric.prepayment,
-        },
-        reservationId: reservation.id,
-        trx
+    await reservationService.updateReservation({
+        entityData: {
+            data: {
+                currentPrepaymentId: newPrepaymentId,
+                reservationStatusId: EnumReservationStatusNumeric.prepayment,
+            },
+            reservationId: reservation.id,
+            trx
+        }
     })
 
     if (withEmail || withSms) {

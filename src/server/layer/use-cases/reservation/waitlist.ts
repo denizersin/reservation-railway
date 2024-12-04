@@ -13,7 +13,7 @@ import { ReservationLogEntities } from "../../entities/reservation/reservation-l
 import { restaurantEntities } from "../../entities/restaurant";
 import { userEntities } from "../../entities/user";
 import { waitlistEntities } from "../../entities/waitlist";
-import { reservationService } from "../../service/reservation";
+import { reservationPaymentService, reservationService } from "../../service/reservation";
 import { notificationUseCases } from "./notification";
 import { paymentSettingEntities, restaurantGeneralSettingEntities } from "../../entities/restaurant-setting";
 
@@ -108,6 +108,7 @@ export const createReservationFromWaitlist = async ({
     const restaurantGeneralSetting = await restaurantGeneralSettingEntities.getGeneralSettings({ restaurantId })
     const restaurantPaymentSetting = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId })
 
+
     const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
     const reservation = await db.transaction(async (trx) => {
 
@@ -120,7 +121,6 @@ export const createReservationFromWaitlist = async ({
                     restaurantId,
                     reservationStatusId: restaurantGeneralSetting.newReservationStatusId,
                     prePaymentTypeId: EnumReservationPrepaymentNumeric.prepayment,
-
                     waitlistId: data.waitlistId,
                     //!TODO: split this to two different functions
                     createdOwnerId: ctx.session.user.userId,
@@ -145,22 +145,19 @@ export const createReservationFromWaitlist = async ({
         }
 
         const amount = restaurantPaymentSetting.prePaymentPricePerGuest * reservationData.guestCount
-        const newPrepaymentId = await ReservationEntities.createReservationPrepayment({
-            data: {
-                reservationId: newReservation.id,
+
+
+        await reservationPaymentService.createPrepayment({
+            prepaymentEntityData: {
                 amount,
                 isDefaultAmount: true,
-                createdBy: "System-Waitlist"
+                reservationId: newReservation.id,
+                createdBy: "System"
             },
-            trx
-        })
-
-        await ReservationEntities.updateReservation({
-            data: {
-                currentPrepaymentId: newPrepaymentId,
-                reservationStatusId: EnumReservationStatusNumeric.prepayment,
-            },
-            reservationId: newReservation.id,
+            reservation: newReservation,
+            withEmail: newReservation.isSendEmail,
+            withSms: newReservation.isSendSms,
+            creator: "System",
             trx
         })
 

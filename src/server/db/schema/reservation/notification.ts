@@ -11,6 +11,7 @@ export const tblReservationNotification = mysqlTable('reservation_notification',
     reservationId: int('reservation_id').notNull(),
     type: mysqlEnum('type', getEnumValues(EnumNotificationType)).notNull(),
     notificationMessageType: mysqlEnum('notification_message_type', getEnumValues(EnumNotificationMessageType)).notNull(),
+    notificationMessageTypeId: int('numeric_notification_message_type_id').notNull(),
     message: text('message').notNull(),
     sentAt: timestamp('sent_at'),
     status: mysqlEnum('status', getEnumValues(EnumNotificationStatus)).notNull().default(EnumNotificationStatus.PENDING),
@@ -22,6 +23,7 @@ export const tblReservationNotification = mysqlTable('reservation_notification',
 
 export const tblReservationNotificationRelations = relations(tblReservationNotification, ({ one }) => ({
     reservation: one(tblReservation, { fields: [tblReservationNotification.reservationId], references: [tblReservation.id] }),
+    notificationMessageType: one(tblReservationNotificationMessageType, { fields: [tblReservationNotification.notificationMessageTypeId], references: [tblReservationNotificationMessageType.id] }),
 }));
 
 
@@ -29,6 +31,13 @@ export const tblReservationNotificationRelations = relations(tblReservationNotif
 
 export type TReservationNotification = typeof tblReservationNotification.$inferSelect
 export type TReservationNotificationInsert = typeof tblReservationNotification.$inferInsert
+
+
+
+export const tblReservationNotificationMessageType = mysqlTable('reservation_notification_message_type', {
+    id: int('id').autoincrement().primaryKey(),
+    type: mysqlEnum('type', getEnumValues(EnumNotificationMessageType)).notNull(),
+})
 
 
 

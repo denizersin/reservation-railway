@@ -1,4 +1,4 @@
-import * as cron from 'node-cron';
+
 import * as schedule from 'node-schedule';
 
 export type JobType = {
@@ -6,11 +6,15 @@ export type JobType = {
   type: 'payment_check' | 'reminder';
   executeAt: Date;
   data: {
-    reservationId: string;
-    restaurantId: string;
+    reservationId: number;
+    restaurantId: number;
     deadlineHours?: number;
+    reservationDate?: Date;
   };
 }
 
 // Aktif jobları memory'de tutacağız
-export const activeJobs = new Map<string, schedule.Job>(); 
+export const activeJobs = new Map<string, schedule.Job>();
+
+// Job verilerini tutacağımız map
+export const jobsData = new Map<string, JobType>();

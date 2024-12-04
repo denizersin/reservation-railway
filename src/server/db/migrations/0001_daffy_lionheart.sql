@@ -1,1 +1,0 @@
-ALTER TABLE `permanent_limitation` DROP INDEX `unique_permanent_limitation`;
