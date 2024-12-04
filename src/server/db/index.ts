@@ -15,3 +15,7 @@ export const db = drizzle(connection, {
 
 
 console.log("INIT DB2312")
+
+console.log(env.DATABASE_URL, 'database url')
+console.log(env.NODE_ENV, 'node env22')
+console.log(env.NODE_ENV_2, 'node env22')

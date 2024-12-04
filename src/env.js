@@ -1,6 +1,8 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+console.log(process.env.NODE_ENV, 'node env44')
+
 export const env = createEnv({
   /**
    * Specify your server-side environment variables schema here. This way you can ensure the app
@@ -26,9 +28,8 @@ export const env = createEnv({
     PROD_BASE_URL: z.string(),
     BASE_URL: z.string(),
     IYZIPAY_CALLBACK_URL: z.string(),
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+    NODE_ENV: z.string(),
+    NODE_ENV_2: z.string(),
   },
 
   /**
@@ -46,10 +47,11 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    DATABASE_URL: process.env.NODE_ENV === "production" ? process.env.DATABASE_URL_PROD : process.env.DATABASE_URL_DEV,
+    DATABASE_URL: process.env.NODE_ENV_2 === "production" ? process.env.DATABASE_URL_PROD : process.env.DATABASE_URL_DEV,
     DATABASE_URL_DEV: process.env.DATABASE_URL_DEV,
     DATABASE_URL_PROD: process.env.DATABASE_URL_PROD,
     NODE_ENV: process.env.NODE_ENV,
+    NODE_ENV_2: process.env.NODE_ENV_2,
     JWT_SECRET: process.env.JWT_SECRET,
     DB_NAME: process.env.DB_NAME,
     IYZIPAY_DEV_API_KEY: process.env.IYZIPAY_DEV_API_KEY,
@@ -58,13 +60,13 @@ export const env = createEnv({
     IYZIPAY_PROD_SECRET_KEY: process.env.IYZIPAY_PROD_SECRET_KEY,
     IYZIPAY_DEV_URI: process.env.IYZIPAY_DEV_URI,
     IYZIPAY_PROD_URI: process.env.IYZIPAY_PROD_URI,
-    IYZIPAY_URI: process.env.NODE_ENV === "production" ? process.env.IYZIPAY_PROD_URI : process.env.IYZIPAY_DEV_URI,
-    IYZIPAY_API_KEY: process.env.NODE_ENV === "production" ? process.env.IYZIPAY_PROD_API_KEY : process.env.IYZIPAY_DEV_API_KEY,
-    IYZIPAY_SECRET_KEY: process.env.NODE_ENV === "production" ? process.env.IYZIPAY_PROD_SECRET_KEY : process.env.IYZIPAY_DEV_SECRET_KEY,
-    DEV_BASE_URL: process.env.NODE_ENV === "production" ? process.env.PROD_BASE_URL : process.env.DEV_BASE_URL,
+    IYZIPAY_URI: process.env.NODE_ENV_2 === "production" ? process.env.IYZIPAY_PROD_URI : process.env.IYZIPAY_DEV_URI,
+    IYZIPAY_API_KEY: process.env.NODE_ENV_2 === "production" ? process.env.IYZIPAY_PROD_API_KEY : process.env.IYZIPAY_DEV_API_KEY,
+    IYZIPAY_SECRET_KEY: process.env.NODE_ENV_2 === "production" ? process.env.IYZIPAY_PROD_SECRET_KEY : process.env.IYZIPAY_DEV_SECRET_KEY,
+    DEV_BASE_URL: process.env.NODE_ENV_2 === "production" ? process.env.PROD_BASE_URL : process.env.DEV_BASE_URL,
     PROD_BASE_URL: process.env.PROD_BASE_URL,
     BASE_URL: process.env.BASE_URL,
-    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV === "production" ?( process.env.PROD_BASE_URL + "/api/iyzipay/callback") : (process.env.DEV_BASE_URL + "/api/iyzipay/callback"),
+    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV_2 === "production" ?( process.env.PROD_BASE_URL + "/api/iyzipay/callback") : (process.env.DEV_BASE_URL + "/api/iyzipay/callback"),
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
