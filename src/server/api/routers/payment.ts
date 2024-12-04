@@ -4,6 +4,7 @@ import { env } from "@/env";
 import Iyzipay, { BASKET_ITEM_TYPE, LOCALE } from "iyzipay";
 import { z } from "zod";
 import { createTRPCRouter } from "../trpc";
+import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 export const iyzipay = new Iyzipay({
     apiKey: env.IYZIPAY_API_KEY,
     secretKey: env.IYZIPAY_SECRET_KEY,
@@ -12,11 +13,19 @@ export const iyzipay = new Iyzipay({
 
 export const paymentRouter = createTRPCRouter({
     createPayment: clientProcedure.input(z.object({
-        // amount: z.number(),
-    })).mutation(async ({  }) => {
+        reservationId: z.number(),
+    })).mutation(async ({ input }) => {
 
         type TPaymentData = Omit<Parameters<typeof iyzipay.threedsInitialize.create>[0], 'shippingAddress'>
-    
+        type TResult = {
+            status: string,
+            locale: string,
+            systemTime: number,
+            conversationId: string,
+            threeDSHtmlContent: string,
+            paymentId: string,
+            signature: string
+        }
         var request: TPaymentData = {
             "locale": LOCALE.EN,
             "price": "1.1",
@@ -76,23 +85,24 @@ export const paymentRouter = createTRPCRouter({
             "callbackUrl": env.IYZIPAY_CALLBACK_URL
         }
         
-        const result = await new Promise((resolve, reject) => {
+        const result: TResult = await new Promise((resolve, reject) => {
             iyzipay.threedsInitialize.create(request as any, function (err, result) {
                 console.log(err, result);
-                resolve(result);
+                resolve(result as TResult);
             });
         });
-    
-    
-        return result as {
-            status: string,
-            locale: string,
-            systemTime: number,
-            conversationId: string,
-            threeDSHtmlContent: string,
-            paymentId: string,
-            signature: string
+
+        if(result.status==="success"){
+            const result = await reservationUseCases.handleSuccessPrepaymentPublicReservation({
+                reservationId: input.reservationId
+            })
+
+        }else{
+            throw new Error("Payment failed");
         }
+        
+    
+        return result
 
     }),
 });

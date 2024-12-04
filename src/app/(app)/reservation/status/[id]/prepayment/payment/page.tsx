@@ -72,7 +72,9 @@ export default function Page() {
         console.log(values)
         // Handle payment submission
         // makePrepayment({ reservationId: reservationStatusData?.id! })
-        createPayment({})
+        createPayment({
+            reservationId: reservationStatusData?.id!
+        })
 
     }
 
