@@ -92,14 +92,9 @@ export const paymentRouter = createTRPCRouter({
             });
         });
 
-        if(result.status==="success"){
-            const result = await reservationUseCases.handleSuccessPrepaymentPublicReservation({
-                reservationId: input.reservationId
-            })
+        console.log(env.IYZIPAY_CALLBACK_URL, 'callback url')
+        console.log(result, 'result')
 
-        }else{
-            throw new Error("Payment failed");
-        }
         
     
         return result

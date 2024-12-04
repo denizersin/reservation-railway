@@ -1,5 +1,6 @@
 import { env } from "@/env";
 import { iyzipay } from "@/server/api/routers/payment";
+import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { NextRequest, NextResponse } from "next/server";
 
 export type TPaymentResult = {
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
           resolve(result);
         });
       });
-      result.status = 'success' 
+      result.status = 'success'
     } catch (error) {
       console.log(error, 'error')
       result.status = 'error'
@@ -51,6 +52,16 @@ export async function POST(req: NextRequest) {
     result.status = 'error'
   }
 
+  if (result.status === "success") {
+    const result = await reservationUseCases.handleSuccessPrepaymentPublicReservation({
+      reservationId: Number(paymentData.conversationData)
+    })
+
+  } else {
+    throw new Error("Payment failed");
+  }
+
+  
 
 
   const jsonResult = JSON.stringify(result)
