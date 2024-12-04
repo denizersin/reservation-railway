@@ -60,7 +60,7 @@ export const paymentRouter = createTRPCRouter({
                 // "lastLoginDate": "2015-10-05 12:43:35",
                 // "zipCode": "34732",
             },
-            "conversationId": "deviyzico",
+            "conversationId": `${input.reservationId}`,
 
             //required
             "billingAddress": {
@@ -82,7 +82,9 @@ export const paymentRouter = createTRPCRouter({
                 },
             ],
             "currency": "TRY",
-            "callbackUrl": env.IYZIPAY_CALLBACK_URL
+            "callbackUrl": env.IYZIPAY_CALLBACK_URL,
+
+
         }
         
         const result: TResult = await new Promise((resolve, reject) => {

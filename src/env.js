@@ -7,7 +7,10 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.string(),
+    DATABASE_URL_DEV: z.string(),
+    DATABASE_URL_PROD: z.string(),
+
     JWT_SECRET: z.string(),
     DB_NAME: z.string(),
     IYZIPAY_DEV_API_KEY: z.string(),
@@ -43,7 +46,9 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_URL: process.env.NODE_ENV === "production" ? process.env.DATABASE_URL_PROD : process.env.DATABASE_URL_DEV,
+    DATABASE_URL_DEV: process.env.DATABASE_URL_DEV,
+    DATABASE_URL_PROD: process.env.DATABASE_URL_PROD,
     NODE_ENV: process.env.NODE_ENV,
     JWT_SECRET: process.env.JWT_SECRET,
     DB_NAME: process.env.DB_NAME,
@@ -59,7 +64,7 @@ export const env = createEnv({
     DEV_BASE_URL: process.env.NODE_ENV === "production" ? process.env.PROD_BASE_URL : process.env.DEV_BASE_URL,
     PROD_BASE_URL: process.env.PROD_BASE_URL,
     BASE_URL: process.env.BASE_URL,
-    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV === "production" ? process.env.PROD_BASE_URL + "/api/payment/callback" : process.env.DEV_BASE_URL + "/api/payment/callback",
+    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV === "production" ?( process.env.PROD_BASE_URL + "/api/iyzipay/callback") : (process.env.DEV_BASE_URL + "/api/iyzipay/callback"),
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

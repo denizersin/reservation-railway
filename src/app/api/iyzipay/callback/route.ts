@@ -9,6 +9,8 @@ export type TPaymentResult = {
 }
 
 export async function POST(req: NextRequest) {
+
+  console.log(env.IYZIPAY_CALLBACK_URL, 'callback url')
   // Get raw text body
   const rawBody = await req.text();
   console.log('Raw body:', rawBody);
@@ -54,14 +56,14 @@ export async function POST(req: NextRequest) {
 
   if (result.status === "success") {
     const result = await reservationUseCases.handleSuccessPrepaymentPublicReservation({
-      reservationId: Number(paymentData.conversationData)
+      reservationId: Number(paymentData.conversationId)
     })
 
   } else {
-    throw new Error("Payment failed");
+    result.status = 'error'
   }
 
-  
+
 
 
   const jsonResult = JSON.stringify(result)

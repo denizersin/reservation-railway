@@ -17,6 +17,7 @@ const db = drizzle(connection, {
     mode: 'default',
 });
 
+console.log(env.DATABASE_URL, 'database url')
 
 async function deleteAllReservations() {
     await db.delete(schema.tblReservation).where(
@@ -46,7 +47,7 @@ async function initDb() {
         const startDate = new Date()
         let total = 0;
 
-        const dates = Array.from({ length: 30 }, (_, i) => {
+        const dates = Array.from({ length: 1 }, (_, i) => {
             const date = new Date(startDate)
             date.setDate(date.getDate() + i)
             return date
@@ -100,7 +101,7 @@ async function initDb() {
     }
 }
 
-initDb()
+// initDb()
 
 
 
