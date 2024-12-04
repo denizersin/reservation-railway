@@ -20,11 +20,12 @@ import { useShowLoadingModal } from "@/hooks/useShowLoadingModal";
 import { api } from "@/server/trpc/react";
 import TclientValidator, { clientValidator } from "@/shared/validators/front/create";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
+import { ReservationStatusHeader } from "@/app/(app)/reservation/_components/reservation-status-header";
+import { TPaymentResult } from "@/app/api/iyzipay/callback/route";
+import { CustomComboSelect } from "@/components/custom/custom-combo-select";
 import {
     Select,
     SelectContent,
@@ -33,16 +34,16 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ReservationStatusHeader } from "@/app/(app)/reservation/_components/reservation-status-header";
-import { useReservationStatusContext } from "../../layout";
 import { usePhoneCodesSelectData } from "@/hooks/predefined/predfined";
-import { CustomComboSelect } from "@/components/custom/custom-combo-select";
-import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+import { useReservationStatusContext } from "../../layout";
+import { ThreeDModal } from "./_components/ThreeDModal";
 
 export default function Page() {
     const { selectData: phoneCodes, isLoading: isLoadingPhoneCodes } = usePhoneCodesSelectData();
 
-    const { reservationStatusData } = useReservationStatusContext()
+    const { reservationStatusData, inValidateReservationStatusData } = useReservationStatusContext()
 
     const amount = reservationStatusData?.currentPrepayment?.amount
 
@@ -70,29 +71,63 @@ export default function Page() {
     function onSubmit(values: TclientValidator.TPrePaymentForm) {
         console.log(values)
         // Handle payment submission
-        makePrepayment({ reservationId: reservationStatusData?.id! })
+        // makePrepayment({ reservationId: reservationStatusData?.id! })
+        createPayment({})
+
     }
 
-    const queryClient = useQueryClient()
 
-    const {
-        mutate: makePrepayment,
-        isPending: isMakingPrepayment
-    } = api.test.makePrepayment.useMutation({
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getQueryKey(api.reservation.getReservationStatusData) })
+    const [threeDSContent, setThreeDSContent] = useState<string | null>(null);
+
+    const { mutate: createPayment, isPending: isCreatingPayment } = api.payment.createPayment.useMutation({
+        onSuccess: (data) => {
+            if (data.status === 'success') {
+                setThreeDSContent(data.threeDSHtmlContent);
+                setIsThreeDModalOpen(true)
+            } else {
+                toast({
+                    title: data.status,
+                    description: "Something went wrong",
+                    variant: 'destructive',
+                    
+                })
+            }
         }
-    })
+    });
 
-    useShowLoadingModal([isMakingPrepayment])
 
     const invoiceRequired = form.watch("invoice.invoiceRequired")
     const invoiceType = form.watch("invoice.invoiceType")
 
+    const { toast } = useToast();
+    const onMessageFromThreeDModal = (data: TPaymentResult) => {
+        toast({
+            title: data.status,
+            description: data.status === 'success' ? 'Payment successful' : 'Payment failed',
+            variant: data.status === 'success' ? 'default' : 'destructive'
+        })
+        if (data.status === 'success') {
+            inValidateReservationStatusData()
+        }
+        setIsThreeDModalOpen(false)
+        setThreeDSContent(null)
+    }
 
     useEffect(() => {
         form.setValue("name", reservationStatusData?.guest?.name ?? "")
     }, [reservationStatusData?.guest?.name])
+
+    const [isThreeDModalOpen, setIsThreeDModalOpen] = useState(false)
+
+    const onChangeModal = (value: boolean) => {
+        setIsThreeDModalOpen(value)
+        if (!value) {
+            setThreeDSContent(null)
+        }
+    }
+
+    useShowLoadingModal([isCreatingPayment])
+
 
     return (
         <div>
@@ -543,12 +578,18 @@ export default function Page() {
                         </div>
 
                         <Button
-                            loading={isMakingPrepayment}
+                            loading={isCreatingPayment}
                             type="submit" className="w-full">
                             Start Prepayment (3D)
                         </Button>
                     </form>
                 </Form>
+                {threeDSContent && <ThreeDModal
+                    threeDSContent={threeDSContent}
+                    isOpen={isThreeDModalOpen}
+                    setIsOpen={onChangeModal}
+                    onMessage={onMessageFromThreeDModal}
+                />}
             </FrontMaxWidthWrapper>
         </div>
     );

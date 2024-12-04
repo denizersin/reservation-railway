@@ -10,6 +10,7 @@ import { testRouter } from "./routers/test";
 import { waitlistRouter } from "./routers/waitlist";
 import { restaurantSettingRouter } from "./routers/restaurant-setting";
 import { initializeReservationCron } from "../jobs/reservation-jobs";
+import { paymentRouter } from "./routers/payment";
 
 
 /**
@@ -27,7 +28,8 @@ export const appRouter = createTRPCRouter({
   guest:guestRouter,
   test:testRouter,
   waitlist: waitlistRouter,
-  restaurantSetting: restaurantSettingRouter
+  restaurantSetting: restaurantSettingRouter,
+  payment: paymentRouter
 });
 
 // export type definition of API

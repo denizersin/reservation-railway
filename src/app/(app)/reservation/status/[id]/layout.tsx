@@ -2,6 +2,8 @@
 import { useShowLoadingModal } from "@/hooks/useShowLoadingModal"
 import { api, RouterOutputs } from "@/server/trpc/react"
 import { EnumReservationStatus } from "@/shared/enums/predefined-enums"
+import { useQueryClient } from "@tanstack/react-query"
+import { getQueryKey } from "@trpc/react-query"
 import { useParams, useRouter } from "next/navigation"
 
 import React, { createContext, useContext, useEffect } from 'react'
@@ -10,6 +12,7 @@ type TReservationStatusData = RouterOutputs['reservation']['getReservationStatus
 
 type TReservationStatusContext = {
     reservationStatusData: TReservationStatusData | undefined
+    inValidateReservationStatusData: () => void
     isLoading: boolean
 }
 
@@ -69,12 +72,17 @@ const Layout = (props: Props) => {
 
     }, [reservationStatusData])
 
+    const queryClient = useQueryClient()
+
     useShowLoadingModal([isLoading])
 
     return (
         <ReservationStatusContext.Provider value={{
             reservationStatusData: reservationStatusData!,
-            isLoading
+            isLoading,
+            inValidateReservationStatusData: () => {
+                queryClient.invalidateQueries({ queryKey: getQueryKey(api.reservation.getReservationStatusData) })
+            }
         }}>
             {props.children}
         </ReservationStatusContext.Provider>

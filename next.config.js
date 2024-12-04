@@ -13,6 +13,9 @@ const config = {
     eslint: {
         ignoreDuringBuilds: true,
     },
+    experimental: {
+        serverComponentsExternalPackages: ["iyzipay"],
+    },
     webpack: (config) => {
         //@ts-ignore
         const fileLoaderRule = config.module.rules.find((rule) =>
