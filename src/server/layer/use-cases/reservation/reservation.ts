@@ -1,8 +1,7 @@
 import { db } from "@/server/db";
 import { tblReservationLog, tblReservationNote, tblReservationNotification, tblReservationTag } from "@/server/db/schema";
 import { tblReservation } from "@/server/db/schema/reservation";
-import { TUseCaseOwnerLayer, TUseCasePublicLayer } from "@/server/types/types";
-import { TTransaction } from "@/server/utils/db-utils";
+import { TUseCaseOwnerLayer } from "@/server/types/types";
 import { getLocalTime, getStartAndEndOfDay, localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { EnumReservationExistanceStatus, EnumReservationExistanceStatusNumeric, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumReviewStatus } from "@/shared/enums/predefined-enums";
 import TReservationValidator from "@/shared/validators/reservation";
@@ -10,12 +9,11 @@ import { format } from 'date-fns';
 import { and, asc, between, eq } from "drizzle-orm";
 import { ReservationEntities } from "../../entities/reservation";
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log";
-import { restaurantEntities } from "../../entities/restaurant";
+import { paymentSettingEntities, restaurantGeneralSettingEntities, reviewSettingEntities } from "../../entities/restaurant-setting";
 import { RoomEntities } from "../../entities/room";
 import { userEntities } from "../../entities/user";
-import { notificationUseCases } from "./notification";
-import { paymentSettingEntities, restaurantGeneralSettingEntities } from "../../entities/restaurant-setting";
 import { reservationPaymentService, reservationService } from "../../service/reservation";
+import { notificationUseCases } from "./notification";
 
 
 
@@ -102,24 +100,6 @@ export const createReservation = async ({
 
 }
 
-//update reservation without relations and with logging 
-export const updateReservation = async ({
-    input,
-    trx,
-    owner
-}: TUseCasePublicLayer<TReservationValidator.updateReservation, {
-    trx?: TTransaction,
-    owner?: string
-}>) => {
-    await reservationService.updateReservation({
-        entityData: {
-            data: input.data,
-            reservationId: input.reservationId,
-            trx
-        }
-    })
-
-}
 
 export const getWaitingStatus = async ({
     date,
@@ -329,7 +309,7 @@ export const checkOutAndCompleteReservation = async ({
     ctx
 }: TUseCaseOwnerLayer<TReservationValidator.checkOutAndCompleteReservation>) => {
     const { reservationId } = input
-
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
     const reservation = await ReservationEntities.getReservationById({ reservationId })
     await reservationService.updateReservation({
         entityData: {
@@ -342,13 +322,22 @@ export const checkOutAndCompleteReservation = async ({
         }
     })
 
-    //!TODO: add schedule for sending review
-    await ReservationEntities.updateReservationReview({
-        reviewId: reservation.reviewId,
-        data: {
-            status: EnumReviewStatus.PENDING
-        }
+    await ReservationLogEntities.createLog({
+        message: `Reservation checked out`,
+        reservationId,
+        owner: owner.name
     })
+
+    //!TODO review settings schedule??
+    const reviewSettings = await reviewSettingEntities.getRestaurantReviewSettings({ restaurantId: ctx.restaurantId })
+    if (reviewSettings.isReviewEnabled) {
+        await ReservationEntities.updateReservationReview({
+            reviewId: reservation.reviewId,
+            data: {
+                status: EnumReviewStatus.PENDING
+            }
+        })
+    }
 }
 
 export const updateReservationTime = async ({
@@ -545,7 +534,7 @@ export const updateReservationTagAndNote = async ({
         entityData: {
             reservationId,
             data: {
-            tagIds: reservationTagIds,
+                tagIds: reservationTagIds,
                 guestNote: note
             }
         }

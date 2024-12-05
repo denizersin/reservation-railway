@@ -101,11 +101,12 @@ export const requestForPrepayment = async ({
 
 export const cancelPrepayment = async ({
     input,
+    ctx
 }: TUseCaseOwnerLayer<TReservationValidator.cancelPrepayment>) => {
     const { reservationId,
         notificationOptions: { withEmail, withSms }
     } = input
-
+    const owner = await userEntities.getUserById({ userId: ctx.session.user.userId })
     const reservation = await ReservationEntities.getReservationById({ reservationId })
     if (!reservation.currentPrepaymentId) throw new TRPCError({
         code: 'BAD_REQUEST',
@@ -149,6 +150,12 @@ export const cancelPrepayment = async ({
         reservationId,
         withEmail,
         withSms,
+    })
+
+    ReservationLogEntities.createLog({
+        message: 'Prepayment cancelled',
+        reservationId,
+        owner: owner.name
     })
 
 }

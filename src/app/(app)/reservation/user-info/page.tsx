@@ -57,7 +57,7 @@ export default function UserInfo() {
         defaultValues: reservationUserInfoFormValues || {
             name: "erdem",
             surname: "yilmaz",
-            email: "erdem@gmail.com",
+            email: "",
             phoneCodeId: 1,
             phone: "5321234567",
             allergenWarning: false,

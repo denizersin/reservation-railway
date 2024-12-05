@@ -23,7 +23,7 @@ function parseMessage(template: string, params: MessageParams): string {
 export const getBaseParams = (reservation: TReservationMessageInstance) => {
     return {
         Client: reservation.guest.name,
-        Date: reservation.reservationDate.toISOString(),
+        Date: reservation.reservationDate.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }),
         Person: reservation.guestCount.toString(),
         Restaurant: reservation.restaurant.name
     }
@@ -57,6 +57,43 @@ export const createWaitlistNotification = async (data: TWaitlistNotificationInse
     return notification
 };
 
+function generateLink(type: EnumNotificationType, link: string): string {
+    const emailLink = `<a href="${link}">${link}</a>`;
+    return type === EnumNotificationType.EMAIL ? emailLink : link;
+}
+
+async function generateNotificationMessage({
+    instance,
+    type,
+    message,
+    linkType,
+    linkParams,
+    customParams = {}
+}: {
+    instance: TReservationMessageInstance | TWaitlistMessageInstance,
+    type: EnumNotificationType,
+    message: string,
+    linkType?: keyof typeof reservationLinks,
+    linkParams?: Record<string, any>,
+    customParams?: MessageParams
+}): Promise<string> {
+    const baseParams = 'waitlistDate' in instance 
+        ? getWaitlistBaseParams(instance as TWaitlistMessageInstance)
+        : getBaseParams(instance as TReservationMessageInstance);
+
+    const params: MessageParams = { ...baseParams, ...customParams };
+    
+    if (linkType && linkParams) {
+        const link = generateLink(type, reservationLinks[linkType](linkParams as any));
+        params.Link = link;
+    }
+
+    if (!message) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Message template not found' });
+    }
+
+    return parseMessage(message, params);
+}
 
 export const generateReservationCreatedNotification = async ({
     reservation,
@@ -65,27 +102,19 @@ export const generateReservationCreatedNotification = async ({
     reservation: TReservationMessageInstance,
     type: EnumNotificationType
 }) => {
-
-    const reservationLink = reservationLinks.detail({ reservationId: reservation.id })
-    const emailLink = `<a href="${reservationLink}">${reservationLink}</a>`
-
-    const link = type === EnumNotificationType.EMAIL ? emailLink : reservationLink
-
-    const params: MessageParams = getBaseParams(reservation)
-    params.Link = link
-
-    const reservationMessage = await LanguageEntity.getReservationMessagesByLang({
+    const messages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
-    })
+    });
 
-    const message = reservationMessage.newReservationMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation message not found' })
-    const notificationMessage = parseMessage(message, params)
-
-    return notificationMessage
-
-}
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.newReservationMessage,
+        linkType: 'detail',
+        linkParams: { reservationId: reservation.id }
+    });
+};
 
 export const generateReservationCancelledNotification = async ({
     reservation,
@@ -94,21 +123,18 @@ export const generateReservationCancelledNotification = async ({
     reservation: TReservationMessageInstance,
     type: EnumNotificationType
 }) => {
-
-    const params: MessageParams = getBaseParams(reservation)
-
-    const reservationMessage = await LanguageEntity.getReservationMessagesByLang({
+    const messages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
-    })
+    });
 
-    const msg = reservationMessage.reservationCancellationMessage
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.reservationCancellationMessage
+    });
+};
 
-    if (!msg) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation cancellation message not found' })
-    const notificationMessage = parseMessage(msg, params)
-
-    return notificationMessage
-}
 export const generateConfirmationNotification = async ({
     reservation,
     type
@@ -116,26 +142,19 @@ export const generateConfirmationNotification = async ({
     reservation: TReservationMessageInstance,
     type: EnumNotificationType
 }) => {
-
-    const confirmationLink = reservationLinks.confirmation({ reservationId: reservation.id })
-    const emailLink = `<a href="${confirmationLink}">${confirmationLink}</a>`
-
-    const link = type === EnumNotificationType.EMAIL ? emailLink : confirmationLink
-
-    const params: MessageParams = getBaseParams(reservation)
-    params.Link = link
-
-    const reservationMessage = await LanguageEntity.getReservationMessagesByLang({
+    const messages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
-    })
+    });
 
-    const message = reservationMessage.reservationConfirmationRequestMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation confirmation message not found' })
-    const notificationMessage = parseMessage(message, params)
-
-    return notificationMessage
-}
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.reservationConfirmationRequestMessage,
+        linkType: 'status',
+        linkParams: { reservationId: reservation.id }
+    });
+};
 
 export const generateReservationConfirmedNotification = async ({
     reservation,
@@ -144,50 +163,19 @@ export const generateReservationConfirmedNotification = async ({
     reservation: TReservationMessageInstance,
     type: EnumNotificationType
 }) => {
-
-
-    const params: MessageParams = getBaseParams(reservation)
-
-    const reservationMessage = await LanguageEntity.getReservationMessagesByLang({
+    const messages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
-    })
+    });
 
-    const message = reservationMessage.reservationConfirmedMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation confirmed message not found' })
-    const notificationMessage = parseMessage(message, params)
-
-    return notificationMessage
-}
-
-
-export const generateNotifyPrePaymentNotification = async ({
-    reservation,
-    type
-}: {
-    reservation: TReservationMessageInstance,
-    type: EnumNotificationType
-}) => {
-
-    const prepaymentLink = reservationLinks.prepayment({ reservationId: reservation.id })
-    const emailLink = `<a href="${prepaymentLink}">${prepaymentLink}</a>`
-
-    const link = type === EnumNotificationType.EMAIL ? emailLink : prepaymentLink
-
-    const params: MessageParams = getBaseParams(reservation)
-    params.Link = link
-
-    const reservationMessage = await LanguageEntity.getPrepaymentMessagesByLang({
-        restaurantId: reservation.restaurantId,
-        languageId: reservation.guest.languageId
-    })
-
-    const message = reservationMessage.prepaymentReminderMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation prepayment reminder message not found' })
-    const notificationMessage = parseMessage(message, params)
-
-    return notificationMessage
-}
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.reservationConfirmedMessage,
+        linkType: 'status',
+        linkParams: { reservationId: reservation.id }
+    });
+};
 
 export const generatePrePaymentNotification = async ({
     reservation,
@@ -196,38 +184,61 @@ export const generatePrePaymentNotification = async ({
     reservation: TReservationMessageInstance,
     type: EnumNotificationType
 }) => {
-
-    const prepaymentLink = reservationLinks.prepayment({ reservationId: reservation.id })
-    const emailLink = `<a href="${prepaymentLink}">${prepaymentLink}</a>`
-
-    const link = type === EnumNotificationType.EMAIL ? emailLink : prepaymentLink
-
-    const params: MessageParams = getBaseParams(reservation)
-    params.Link = link
-
-    const guest = reservation.guest
-
-    const restaurantPrepaymentMessages = await LanguageEntity.getPrepaymentMessagesByLang({
+    const messages = await LanguageEntity.getPrepaymentMessagesByLang({
         restaurantId: reservation.restaurantId,
-        languageId: guest.languageId
-    })
+        languageId: reservation.guest.languageId
+    });
 
-    const msg = restaurantPrepaymentMessages?.accountPaymentRequestMessage
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.prepaymentMessage,
+        linkType: 'prepayment',
+        linkParams: { reservationId: reservation.id }
+    });
+};
 
-    if (!msg) throw new TRPCError({ code: 'NOT_FOUND', message: 'Prepayment message not found' })
-
-    const notificationMessage = parseMessage(msg, params)
-
-    return notificationMessage
-}
-
-
-export const updateNotification = (data: Partial<TReservationNotification> & {
-    id: number
+export const generatePrePaymentCancelledNotification = async ({
+    reservation,
+    type
+}: {
+    reservation: TReservationMessageInstance,
+    type: EnumNotificationType
 }) => {
-    return db.update(tblReservationNotification).set(data).where(eq(tblReservationNotification.id, data.id))
+    const messages = await LanguageEntity.getPrepaymentMessagesByLang({
+        restaurantId: reservation.restaurantId,
+        languageId: reservation.guest.languageId
+    });
 
-}
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.prepaymentCancellationMessage,
+        linkType: 'status',
+        linkParams: { reservationId: reservation.id }
+    });
+};
+
+export const generateNotifyPrePaymentNotification = async ({
+    reservation,
+    type
+}: {
+    reservation: TReservationMessageInstance,
+    type: EnumNotificationType
+}) => {
+    const messages = await LanguageEntity.getPrepaymentMessagesByLang({
+        restaurantId: reservation.restaurantId,
+        languageId: reservation.guest.languageId
+    });
+
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.prepaymentReminderMessage,
+        linkType: 'status',
+        linkParams: { reservationId: reservation.id }
+    });
+};
 
 export const generateReservationGuestCountChange = async ({
     reservation,
@@ -240,29 +251,23 @@ export const generateReservationGuestCountChange = async ({
     newGuestCount: string,
     type: EnumNotificationType
 }) => {
-
-
-    const statusLink = reservationLinks.status({ reservationId: reservation.id })
-    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
-
-    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
-
-    const params: MessageParams = getBaseParams(reservation)
-    params.Link = link
-
-    const restaurantReservationMessages = await LanguageEntity.getReservationMessagesByLang({
+    const messages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
-    })
+    });
 
-    const message = restaurantReservationMessages.guestCountChangeMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation guest count change message not found' })
-    const notificationMessage = parseMessage(message, params)
-
-
-
-    return notificationMessage
-}
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.guestCountChangeMessage,
+        linkType: 'status',
+        linkParams: { reservationId: reservation.id },
+        customParams: {
+            OldCount: oldGuestCount,
+            NewCount: newGuestCount
+        }
+    });
+};
 
 export const generateReservationTimeChange = async ({
     reservation,
@@ -275,124 +280,98 @@ export const generateReservationTimeChange = async ({
     newTime: string,
     type: EnumNotificationType
 }) => {
-
-    const statusLink = reservationLinks.status({ reservationId: reservation.id })
-    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
-
-    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
-
-    const params: MessageParams = {
-        ...getBaseParams(reservation),
-        Date: newTime
-    }
-    params.Link = link
-
-    const restaurantReservationMessages = await LanguageEntity.getReservationMessagesByLang({
+    const messages = await LanguageEntity.getReservationMessagesByLang({
         restaurantId: reservation.restaurantId,
         languageId: reservation.guest.languageId
-    })
+    });
 
-    const message = restaurantReservationMessages.dateTimeChangeMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation date time change message not found' })
+    return generateNotificationMessage({
+        instance: reservation,
+        type,
+        message: messages.dateTimeChangeMessage,
+        linkType: 'status',
+        linkParams: { reservationId: reservation.id },
+        customParams: {
+            Date: newTime,
+            OldTime: oldTime,
+            NewTime: newTime
+        }
+    });
+};
 
-    const notificationMessage = parseMessage(message, params)
-
-    return notificationMessage
-
-}
-
-const generateCreatedReservationFromWaitlistNotification = async ({
+// Waitlist notifications
+export const generateCreatedReservationFromWaitlistNotification = async ({
     waitlist,
     type
 }: {
     waitlist: TWaitlistMessageInstance,
     type: EnumNotificationType
 }) => {
-    const statusLink = reservationLinks.waitlistStatus({ waitlistId: waitlist.id })
-    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
-    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
-
-    const params: MessageParams = getWaitlistBaseParams(waitlist)
-    params.Link = link
-
-    const restaurantWaitlistMessages = await LanguageEntity.getWaitlistMessagesByLang({
+    const messages = await LanguageEntity.getWaitlistMessagesByLang({
         restaurantId: waitlist.restaurantId,
         languageId: waitlist.guest.languageId
-    })
+    });
 
-    const message = restaurantWaitlistMessages.calledFromWaitlistMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation created from waitlist message not found' })
-    const notificationMessage = parseMessage(message, params)
+    return generateNotificationMessage({
+        instance: waitlist,
+        type,
+        message: messages.calledFromWaitlistMessage,
+        linkType: 'waitlistStatus',
+        linkParams: { waitlistId: waitlist.id }
+    });
+};
 
-    return notificationMessage
-}
-
-
-
-//added to waitlist
-const generateAddedToWaitlistNotification = async ({
+export const generateAddedToWaitlistNotification = async ({
     waitlist,
     type
 }: {
     waitlist: TWaitlistMessageInstance,
     type: EnumNotificationType
 }) => {
-    const statusLink = reservationLinks.waitlistStatus({ waitlistId: waitlist.id })
-    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
-    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
-
-    const params: MessageParams = getWaitlistBaseParams(waitlist)
-    params.Link = link
-
-    const restaurantWaitlistMessages = await LanguageEntity.getWaitlistMessagesByLang({
+    const messages = await LanguageEntity.getWaitlistMessagesByLang({
         restaurantId: waitlist.restaurantId,
         languageId: waitlist.guest.languageId
-    })
+    });
 
-    const message = restaurantWaitlistMessages.addedToWaitlistMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation created from waitlist message not found' })
-    const notificationMessage = parseMessage(message, params)
+    return generateNotificationMessage({
+        instance: waitlist,
+        type,
+        message: messages.addedToWaitlistMessage,
+        linkType: 'waitlistStatus',
+        linkParams: { waitlistId: waitlist.id }
+    });
+};
 
-    return notificationMessage
-}
-
-//cancel waitlist
-const generateCancelWaitlistNotification = async ({
+export const generateCancelWaitlistNotification = async ({
     waitlist,
     type
 }: {
     waitlist: TWaitlistMessageInstance,
     type: EnumNotificationType
 }) => {
-    const statusLink = reservationLinks.waitlistStatus({ waitlistId: waitlist.id })
-    const emailLink = `<a href="${statusLink}">${statusLink}</a>`
-    const link = type === EnumNotificationType.EMAIL ? emailLink : statusLink
-
-    const params: MessageParams = getWaitlistBaseParams(waitlist)
-    params.Link = link
-
-    const restaurantWaitlistMessages = await LanguageEntity.getWaitlistMessagesByLang({
+    const messages = await LanguageEntity.getWaitlistMessagesByLang({
         restaurantId: waitlist.restaurantId,
         languageId: waitlist.guest.languageId
-    })
+    });
 
-    const message = restaurantWaitlistMessages.cancelWaitlistMessage
-    if (!message) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reservation created from waitlist message not found' })
-    const notificationMessage = parseMessage(message, params)
-
-    return notificationMessage
-}
-
-
+    return generateNotificationMessage({
+        instance: waitlist,
+        type,
+        message: messages.cancelWaitlistMessage,
+        linkType: 'waitlistStatus',
+        linkParams: { waitlistId: waitlist.id }
+    });
+};
 
 export const NotificationEntities = {
     createReservationNotification,
     createWaitlistNotification,
 
 
-    updateNotification,
     generateReservationCreatedNotification,
     generatePrePaymentNotification,
+    generatePrePaymentCancelledNotification,
+    
     generateReservationCancelledNotification,
     generateReservationConfirmedNotification,
     generateConfirmationNotification,

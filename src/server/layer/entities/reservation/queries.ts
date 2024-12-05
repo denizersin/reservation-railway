@@ -364,13 +364,10 @@ export const getLimitationStatusGusetCount2 = async ({ date,
 
 
 
-export const getGuestReservationCountOfTodayReservation = async ({ restaurantId, date }: {
+export const getGuestReservationCountOfTodayReservation = async ({ restaurantId }: {
     restaurantId: number,
-    date: Date
 }) => {
-    const { start, end } = getStartAndEndOfDay({
-        date: getLocalTime(date)
-    })
+
     const result = await db.select({
         reservationCount: count(),
         guestId: tblReservation.guestId
@@ -378,7 +375,6 @@ export const getGuestReservationCountOfTodayReservation = async ({ restaurantId,
         .from(tblReservation)
         .where(and(
             eq(tblReservation.restaurantId, restaurantId),
-            between(tblReservation.reservationDate, start, end)
         ))
         .groupBy(tblReservation.guestId)
 

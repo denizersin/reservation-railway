@@ -13,6 +13,9 @@ import React, { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
+import { useQueryClient } from "@tanstack/react-query"
+import { getQueryKey } from "@trpc/react-query"
 
 type Props = {}
 
@@ -21,7 +24,7 @@ export const ReviewSettings = (props: Props) => {
     const { toast } = useToast()
 
     const { data: reviewSettings } = api.restaurantSetting.getRestaurantReviewSettings.useQuery()
-
+    const queryClient = useQueryClient()
     const { selectData: mealHoursToSelect } = useHoursSelectData()
 
     //radio
@@ -53,11 +56,14 @@ export const ReviewSettings = (props: Props) => {
                     title: "Review settings updated successfully",
                     description: "Review settings updated successfully",
                 })
+                queryClient.invalidateQueries({ queryKey: getQueryKey(api.restaurantSetting.getRestaurantReviewSettings)})
             }
         })
 
     const onSubmit = (values: TReviewSettingsValidator.TUpdateReviewSettingsFormSchema) => {
         if (!reviewSettings?.id) return
+
+        console.log(values)
         updateReviewSettings({
             reviewSettingId: reviewSettings.id,
             reviewSetting: values
@@ -70,6 +76,25 @@ export const ReviewSettings = (props: Props) => {
 
         <Form {...form} >
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mb-6">
+
+                {/* isReviewEnabled as switch */}
+
+                <FormField  
+                    control={form.control}
+                    name="isReviewEnabled"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Review Enabled</FormLabel>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+
                 <FormField
                     control={form.control}
                     name="reviewSendTime"

@@ -43,6 +43,12 @@ export const createPrepayment = async ({
         }
     })
 
+    await ReservationLogEntities.createLog({
+        message: `Reservation prepayment created`,
+        reservationId: reservation.id,
+        owner: creator,
+    })
+
     if (withEmail || withSms) {
         await notificationUseCases.handlePrePayment({
             reservationId: reservation.id,
@@ -52,11 +58,7 @@ export const createPrepayment = async ({
     }
 
 
-    await ReservationLogEntities.createLog({
-        message: `Reservation prepayment created`,
-        reservationId: reservation.id,
-        owner: creator,
-    })
+
 
 
 

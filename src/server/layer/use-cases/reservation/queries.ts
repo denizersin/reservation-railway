@@ -227,7 +227,6 @@ export const getReservations = async ({
 
     const guestReservationCount = await ReservationEntities.getGuestReservationCountOfTodayReservation({
         restaurantId,
-        date:input.date,
     })
 
     const mapped = reservations.map(r => ({

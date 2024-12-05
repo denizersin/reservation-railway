@@ -7,7 +7,6 @@ import { cache } from "react";
 import { createCaller, type AppRouter } from "@/server/api/root";
 import { createTRPCContext } from "@/server/api/trpc";
 import { createQueryClient } from "./query-client";
-import { initializeReservationCron } from "../jobs/reservation-jobs";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when

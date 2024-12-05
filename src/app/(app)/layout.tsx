@@ -6,6 +6,8 @@ import NextTopLoader from 'nextjs-toploader';
 import { TRPCReactProvider } from "@/server/trpc/react";
 import { cn } from "@/lib/utils";
 import { inter } from "../font";
+import { initCronsIntercepter } from "@/server/api/root";
+import { env } from "@/env";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -13,9 +15,14 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+
+  if (env.NODE_ENV_2 === "development") {
+    await initCronsIntercepter("test-api")
+  }
+
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <head>

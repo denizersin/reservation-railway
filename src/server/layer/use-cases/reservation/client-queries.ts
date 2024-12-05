@@ -12,6 +12,7 @@ import { and, between, eq, isNull, ne, sql, sum } from "drizzle-orm";
 import { reservationLimitationEntities } from "../../entities/reservation-limitation";
 import { restaurantEntities } from "../../entities/restaurant";
 import { dailySettingEntities } from "../../entities/restaurant-setting";
+import { env } from "@/env";
 
 
 
@@ -60,7 +61,7 @@ export const getMonthAvailabilityByGuestCount = async ({
 
 
     // GMT+3'e göre bugünün tarihini al
-    const todayLocal = getLocalTime(new Date());
+    const todayLocal = env.NODE_ENV_2 === "production" ? getLocalTime(new Date()) : (new Date());
     todayLocal.setHours(0, 0, 0, 0);
 
     // GMT+3'e göre bugünün ayını al

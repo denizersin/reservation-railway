@@ -18,6 +18,8 @@ export const tblRestaurantPaymentSetting = mysqlTable('restaurant_payment_settin
     prepaymentCancellationHours: int('prepayment_cancellation_hours').$default(() => 72).notNull(),
     //misafir gelmezse ödeme nasıl işlenir?
     prepaymentAtNoShow: mysqlEnum('prepayment_at_no_show', getEnumValues(EnumPrepaymentAtNoShow)).$default(() => EnumPrepaymentAtNoShow.convertToSale).notNull(),
+
+    notifyPrepaymentReminderHoursBefore: int('notify_prepayment_reminder_hours_before').default(4)
 })
 
 

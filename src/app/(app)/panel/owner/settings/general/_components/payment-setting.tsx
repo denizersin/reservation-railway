@@ -114,6 +114,23 @@ export const PaymentSettings = () => {
 
                         <FormField
                             control={form.control}
+                            name="notifyPrepaymentReminderHoursBefore"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Notify Prepayment Reminder Hours Before</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            {...field}
+                                            onChange={e => field.onChange(Number(e.target.value))}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+    
+                        <FormField
+                            control={form.control}
                             name="prepaymentAtNoShow"
                             render={({ field }) => (
                                 <FormItem>

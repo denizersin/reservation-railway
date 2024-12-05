@@ -16,3 +16,4 @@ export enum EnumCookieName {
     HOLDED_RESERVATION_ID = 'holdingReservationId'
 }
 
+

@@ -9,8 +9,9 @@ import { guestRouter } from "./routers/guest";
 import { testRouter } from "./routers/test";
 import { waitlistRouter } from "./routers/waitlist";
 import { restaurantSettingRouter } from "./routers/restaurant-setting";
-import { initializeReservationCron } from "../jobs/reservation-jobs";
 import { paymentRouter } from "./routers/payment";
+import { CRONS } from "../cron";
+import { env } from "@/env";
 
 
 /**
@@ -24,9 +25,9 @@ export const appRouter = createTRPCRouter({
   predefiend: predefinedRouter,
   reservation: reservationRouter,
   language: languageRouter,
-  room:roomRouter,
-  guest:guestRouter,
-  test:testRouter,
+  room: roomRouter,
+  guest: guestRouter,
+  test: testRouter,
   waitlist: waitlistRouter,
   restaurantSetting: restaurantSettingRouter,
   payment: paymentRouter
@@ -45,5 +46,27 @@ export type AppRouter = typeof appRouter;
 export const createCaller = createCallerFactory(appRouter);
 
 
+const globalForJobs = global as unknown as {
+  isCronInitialized: boolean;
+};
 
-initializeReservationCron()
+function initializeCrons() {
+
+  if (globalForJobs.isCronInitialized) return;
+  console.log('CRONS INITIALIZED23')
+  CRONS.initializePaymentCheckCron()
+  // CRONS.initializePaymentReminderCron()
+  globalForJobs.isCronInitialized = true;
+}
+
+
+
+
+export function initCronsIntercepter(from?: "test-api") {
+  const canStart = from === "test-api" || env.NODE_ENV_2 === "production"
+  if (canStart) {
+    initializeCrons()
+  }
+}
+
+initCronsIntercepter()

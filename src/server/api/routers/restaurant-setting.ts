@@ -1,5 +1,5 @@
 import { calendarSettingEntities, paymentSettingEntities, restaurantGeneralSettingEntities, reviewSettingEntities, dailySettingEntities } from "@/server/layer/entities/restaurant-setting";
-import { localHourToUtcHour } from "@/server/utils/server-utils";
+import { localHourToUtcHour, utcHourToLocalHour } from "@/server/utils/server-utils";
 import { restaurantGeneralSettingValidator } from "@/shared/validators/restaurant-setting/general";
 import { paymentSettingValidator } from "@/shared/validators/restaurant-setting/payment";
 import { reviewSettingsValidator } from "@/shared/validators/restaurant-setting/review";
@@ -24,7 +24,9 @@ export const restaurantSettingRouter = createTRPCRouter({
         }),
     getRestaurantReviewSettings: ownerProcedure
         .query(async ({ ctx }) => {
-            return await reviewSettingEntities.getRestaurantReviewSettings({ restaurantId: ctx.restaurantId })
+            const reviewSettings = await reviewSettingEntities.getRestaurantReviewSettings({ restaurantId: ctx.restaurantId })
+            reviewSettings.reviewSendTime = utcHourToLocalHour(reviewSettings.reviewSendTime) 
+            return reviewSettings
         }),
     updateReview: ownerProcedure
         .input(reviewSettingsValidator.updateReviewValidator)

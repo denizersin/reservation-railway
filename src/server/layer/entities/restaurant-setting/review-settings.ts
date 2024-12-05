@@ -9,6 +9,9 @@ export const updateReviewSettings = async ({ reviewSettingId, reviewSetting }: {
 
 export const getRestaurantReviewSettings = async ({ restaurantId }: { restaurantId: number }) => {
     const reviewSettings = await db.query.tblRestaurantReviewSettings.findFirst({ where: eq(tblRestaurantReviewSettings.restaurantId, restaurantId) })
+    if (!reviewSettings) {
+        throw new Error("Review settings not found")
+    }
     return reviewSettings
 }
 

@@ -1,10 +1,12 @@
+import { env } from "@/env"
+
 const getConfirmationLink = ({
     reservationId
 
 }: {
     reservationId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
+    return `${env.BASE_URL}/reservation/status/${reservationId}`
 }
 
 
@@ -13,7 +15,7 @@ const getPrepaymentLink = ({
 }: {
     reservationId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
+    return `${env.BASE_URL}/reservation/status/${reservationId}`
 }
 
 const getReservationDetailLink = ({
@@ -21,7 +23,7 @@ const getReservationDetailLink = ({
 }: {
     reservationId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
+    return `${env.BASE_URL}/reservation/status/${reservationId}`
 }
 
 const getReservationStatusLink = ({
@@ -29,7 +31,7 @@ const getReservationStatusLink = ({
 }: {
     reservationId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reservation/status/${reservationId}`
+    return `${env.BASE_URL}/reservation/status/${reservationId}`
 }
 
 const getWaitlistStatusLink = ({
@@ -37,7 +39,7 @@ const getWaitlistStatusLink = ({
 }: {
     waitlistId: number
 }) => {
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL}/waitlist/status/${waitlistId}`
+    return `${env.BASE_URL}/waitlist/status/${waitlistId}`
 }
 
 

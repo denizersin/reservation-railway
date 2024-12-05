@@ -6,6 +6,7 @@ import * as schema from "../schema/index";
 import { queryTableAvailabilitiesByGuestCount } from "@/server/layer/use-cases/reservation/client-queries";
 import { count, isNotNull } from "drizzle-orm";
 import { exit } from "process";
+import { mailService } from "@/server/layer/service/notification";
 
 
 const connection = await mysql.createConnection({
@@ -106,3 +107,4 @@ async function initDb() {
 
 
 // console.log(env.DATABASE_URL)
+

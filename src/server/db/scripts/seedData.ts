@@ -41,7 +41,7 @@ const languages = [
 
 export const restaurant = [
     {
-        name: 'burger-king',
+        name: 'TURK FATIH TUTAK',
         phoneNumber: '+905555555555',
         id: 1
     }, {

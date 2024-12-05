@@ -4,6 +4,7 @@ import { NotificationEntities, TReservationMessageInstance, TWaitlistMessageInst
 import { ReservationEntities } from "../../entities/reservation"
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log"
 import { waitlistEntities } from "../../entities/waitlist"
+import { mailService } from "../../service/notification"
 
 
 
@@ -72,13 +73,56 @@ export const handlePrePayment = async ({
     
 }
 
-export const handlePrepaymentCancelled = async ({
-    reservationId,
-    withSms,
-    withEmail,
-}: NotificationHandlerParams) => {
-
-}
+    export const handlePrepaymentCancelled = async ({
+        reservationId,
+        withSms,
+        withEmail,
+    }: {
+        reservationId: number
+        withSms: boolean
+        withEmail: boolean,
+    }) => {
+        const reservationMessageInstance = await ReservationEntities.geTReservationMessageInstance({
+            reservationId
+        })
+    
+        const emailMessage = withEmail ? await NotificationEntities.generatePrePaymentCancelledNotification({
+            reservation: reservationMessageInstance,
+            type: EnumNotificationType.EMAIL
+        }) : ''
+    
+        const smsMessage = withSms ? await NotificationEntities.generatePrePaymentCancelledNotification({
+            reservation: reservationMessageInstance,
+            type: EnumNotificationType.SMS
+        }) : ''
+    
+        const guest = reservationMessageInstance.guest
+        const email = guest.isContactAssistant ? guest.assistantEmail : guest.email
+        const phone = guest.isContactAssistant ? guest.assistantPhone : guest.phone
+    
+    
+        if (withSms && !phone) {
+            // toastOptions.setToast('Phone not set')
+        }
+    
+        if (withEmail && !email) {
+            // toastOptions.setToast('Email not set')
+        }
+    
+        await handleNotificationSending({
+            reservation: reservationMessageInstance,
+            notificationType: EnumNotificationMessageType.AskedForPrepayment,
+            notificationMessageTypeId: EnumNotificationMessageTypeNumeric[EnumNotificationMessageType.AskedForPrepayment],
+            emailMessage,
+            smsMessage,
+            shouldSendEmail: withEmail,
+            shouldSendSms: withSms,
+            logPrefix: 'prepayment notification',
+        })
+    
+    
+        
+    }
 
 const handleNotificationSending = async ({
     reservation,
@@ -112,9 +156,14 @@ const handleNotificationSending = async ({
     }
 
     if (shouldSendEmail && email) {
+        notification.type = EnumNotificationType.EMAIL
         try {
-            await sendEmail({});
-            notification.type = EnumNotificationType.EMAIL
+            await mailService.sendMail({
+                to: email,
+                subject: "Reservation",
+                html: emailMessage
+            });
+            notification.sentAt = new Date()
             await NotificationEntities.createReservationNotification(notification);
             await ReservationLogEntities.createLog({
                 message: `sent email ${logPrefix}`,
@@ -122,6 +171,7 @@ const handleNotificationSending = async ({
                 owner: 'system'
             });
         } catch (e) {
+            console.log(e, 'error sending email',notificationType)
             notification.status = EnumNotificationStatus.FAILED
             await NotificationEntities.createReservationNotification(notification);
             await ReservationLogEntities.createLog({
@@ -134,9 +184,11 @@ const handleNotificationSending = async ({
 
     if (shouldSendSms && phone) {
         notification.message = smsMessage
+        notification.type = EnumNotificationType.SMS
+
         try {
             await sendSms({});
-            notification.type = EnumNotificationType.SMS
+            notification.sentAt = new Date()
             await NotificationEntities.createReservationNotification(notification);
             await ReservationLogEntities.createLog({
                 message: `sent sms ${logPrefix}`,

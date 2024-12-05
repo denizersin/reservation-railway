@@ -7,6 +7,7 @@ const updatePaymentSettingFormSchema = z.object({
     convertPrepaymentToSale: z.boolean(),
     prepaymentCancellationHours: z.number().int().positive(),
     prepaymentAtNoShow: z.enum(getEnumValues(EnumPrepaymentAtNoShow)),
+    notifyPrepaymentReminderHoursBefore: z.number().optional().nullable(),
 })
 
 export const updatePaymentSettingSchema = z.object({

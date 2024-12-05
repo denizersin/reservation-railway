@@ -3,7 +3,7 @@ import * as schedule from 'node-schedule';
 
 export type JobType = {
   id: string;
-  type: 'payment_check' | 'reminder';
+  type: 'payment_check' | 'payemt_reminder';
   executeAt: Date;
   data: {
     reservationId: number;
@@ -18,3 +18,5 @@ export const activeJobs = new Map<string, schedule.Job>();
 
 // Job verilerini tutacağımız map
 export const jobsData = new Map<string, JobType>();
+
+

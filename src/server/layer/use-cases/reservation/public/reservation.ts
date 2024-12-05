@@ -214,6 +214,7 @@ export const createReservationFromHolding = async ({
                     holdExpiredAt: null,
                     holdedAt: null,
                 },
+
                 trx
             }
         })
@@ -236,6 +237,11 @@ export const createReservationFromHolding = async ({
                 trx
             })
         }
+
+        await reservationService.handleConvertHoldingToReservation({
+            reservationId: holdedReservation.id,
+            reservationCreator: guest.name
+        })
 
 
         //--------------------------------
@@ -265,38 +271,6 @@ export const createReservationFromHolding = async ({
 
 
 
-    //-----------Reservation Created Log and Notification---------------------
-    await ReservationLogEntities.createLog({
-        message: `Reservation created`,
-        reservationId: holdedReservation.id,
-        owner: 'Guest',
-    })
-    await notificationUseCases.handleReservationCreated({
-        reservationId: holdedReservation.id,
-        withEmail: holdedReservation.isSendEmail,
-        withSms: holdedReservation.isSendSms,
-    })
-    await ReservationLogEntities.createLog({
-        message: `Reservation created notification sent`,
-        reservationId: holdedReservation.id,
-        owner: 'Guest',
-    })
-    //--------------------------------
-
-
-    //-----------Prepayment Notification and log---------------------
-    await notificationUseCases.handlePrePayment({
-        reservationId: holdedReservation.id,
-        withEmail: holdedReservation.isSendEmail,
-        withSms: holdedReservation.isSendSms,
-    })
-
-    await ReservationLogEntities.createLog({
-        message: `Asked for prepayment`,
-        reservationId: holdedReservation.id,
-        owner: 'Guest',
-    })
-    //--------------------------------
 
     return holdedReservation.id
 
@@ -335,7 +309,7 @@ export const holdTable = async ({
 
     const newReservation = await db.transaction(async (trx) => {
 
-        const newReservation = await reservationService.createReservation({
+        const newReservation = await reservationService.createHoldingReservation({
             reservationEntityData: {
                 data: {
                     guestCount,
@@ -344,7 +318,7 @@ export const holdTable = async ({
                     reservationStatusId: EnumReservationStatusNumeric.holding,
                     guestId: HOLDING_RESERVATION_GUEST_ID,
                     isSendEmail: true,
-                    isSendSms: false,
+                    isSendSms: true,
                     mealId,
                     prePaymentTypeId: EnumReservationPrepaymentNumeric.none,
                     restaurantId,

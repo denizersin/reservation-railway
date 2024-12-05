@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "ebb1af9e-70f0-4625-978a-df914bc95013",
+  "id": "5d21d51d-f063-4b8e-814e-18579c272ab7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guest": {
@@ -1366,50 +1366,57 @@
           "name": "prepayment_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "prepayment_cancellation_message": {
           "name": "prepayment_cancellation_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "prepayment_reminder_message": {
           "name": "prepayment_reminder_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "prepayment_refund_message": {
           "name": "prepayment_refund_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "prepayment_received_message": {
           "name": "prepayment_received_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "account_payment_request_message": {
           "name": "account_payment_request_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "account_payment_success_message": {
           "name": "account_payment_success_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         }
       },
       "indexes": {},
@@ -1460,50 +1467,57 @@
           "name": "provision_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "provision_reminder_message": {
           "name": "provision_reminder_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "provision_received_message": {
           "name": "provision_received_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "provision_cancellation_message": {
           "name": "provision_cancellation_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "provision_refund_message": {
           "name": "provision_refund_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "provision_charge_message": {
           "name": "provision_charge_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "charge_refund_message": {
           "name": "charge_refund_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         }
       },
       "indexes": {},
@@ -1554,78 +1568,89 @@
           "name": "new_reservation_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "date_time_change_message": {
           "name": "date_time_change_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "guest_count_change_message": {
           "name": "guest_count_change_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "reservation_cancellation_message": {
           "name": "reservation_cancellation_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "reservation_cancellation_with_reason_message": {
           "name": "reservation_cancellation_with_reason_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "reservation_confirmation_request_message": {
           "name": "reservation_confirmation_request_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "reservation_confirmed_message": {
           "name": "reservation_confirmed_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "reservation_reminder_message": {
           "name": "reservation_reminder_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "reservation_feedback_request_message": {
           "name": "reservation_feedback_request_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "cake_received_message": {
           "name": "cake_received_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "flower_received_message": {
           "name": "flower_received_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         }
       },
       "indexes": {},
@@ -1742,29 +1767,33 @@
           "name": "added_to_waitlist_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "added_to_waitlist_walkin_message": {
           "name": "added_to_waitlist_walkin_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "called_from_waitlist_message": {
           "name": "called_from_waitlist_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         },
         "cancel_waitlist_message": {
           "name": "cancel_waitlist_message",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('message')"
         }
       },
       "indexes": {},
@@ -2500,6 +2529,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "notify_prepayment_reminder_hours_before": {
+          "name": "notify_prepayment_reminder_hours_before",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 4
         }
       },
       "indexes": {},

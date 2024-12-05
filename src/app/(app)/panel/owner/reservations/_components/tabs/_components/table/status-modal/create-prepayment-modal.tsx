@@ -34,7 +34,7 @@ export const CreatePrepaymentModal = ({
             setOpen(false)
         }
     })
-    const { data: restaurantSettings } = api.restaurant.getRestaurantGeneralSettings.useQuery()
+    const { data: restaurantSettings } = api.restaurantSetting.getRestaurantPaymentSettings.useQuery()
     const [defaultAmount, setDefaultAmount] = useState(true)
 
     const { register, handleSubmit } = useForm<TReservationValidator.requestForPrepaymentForm>({
@@ -73,7 +73,7 @@ export const CreatePrepaymentModal = ({
                     <Label>Default Amount</Label>
                 </div>
                 <div>
-                    {defaultAmount ? <p>Default amount is {restaurantSettings?.prePayemntPricePerGuest! * reservation.guestCount}</p> : <Input
+                    {defaultAmount ? <p>Default amount is {restaurantSettings?.prePaymentPricePerGuest! * reservation.guestCount}</p> : <Input
                         type="number"
                         {...register('customPrepaymentAmount')}
                     />}
