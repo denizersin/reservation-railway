@@ -34,6 +34,7 @@ export async function processPaymentCheckJobBatch(
                     record: reservation, 
                     restaurantPaymentSetting: restaurantPrepaymentSettingMap.get(reservation.restaurant.id)! 
                 });
+                console.log(`Scheduling new job for reservation execution: ${jobData.executeAt}`);
                 schedulePaymentCheck(jobData);
             } else {
                 console.log(`Job already exists for reservation: ${reservation.reservation.id}`);

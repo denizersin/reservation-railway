@@ -55,7 +55,7 @@ function initializeCrons() {
   if (globalForJobs.isCronInitialized) return;
   console.log('CRONS INITIALIZED23')
   CRONS.initializePaymentCheckCron()
-  // CRONS.initializePaymentReminderCron()
+  CRONS.initializePaymentReminderCron()
   globalForJobs.isCronInitialized = true;
 }
 
@@ -63,7 +63,7 @@ function initializeCrons() {
 
 
 export function initCronsIntercepter(from?: "test-api") {
-  const canStart = from === "test-api" || env.NODE_ENV_2 === "production"
+  const canStart = env.NODE_ENV_2 === "production" ? true : from === "test-api"
   if (canStart) {
     initializeCrons()
   }

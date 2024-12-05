@@ -19,8 +19,7 @@ export const tblRestaurantGeneralSetting = mysqlTable('restaurant_general_settin
     defaultCountryId: int('default_country_id').notNull(),
     tableView: mysqlEnum('table_view', getEnumValues(EnumTableViewType)).default(EnumTableViewType.standartTable).notNull(),
 
-    //financial settings
-    prePayemntPricePerGuest: int('prepayment_price_per_guest').$default(() => 0).notNull(),
+    
 
 },);
 
