@@ -21,6 +21,7 @@ export async function processPaymentCheckJobBatch(
             lastProcessedId: lastProcessedId,
             pageSize: 100
         });
+        console.log(result.reservations.map((reservation) => reservation.reservation.id), 'cron result payment check')
 
         console.log('Processing reservations:', result.reservations.length);
 

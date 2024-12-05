@@ -2,13 +2,14 @@ import Nodemailer from 'nodemailer';
 import { MailtrapTransport } from "mailtrap";
 import { getHtmlTemplate } from '@/server/utils/mail';
 import { MailtrapResponse } from 'mailtrap/dist/types/transport';
+
 export const sendMail = async ({ to, subject, html }: { to: string, subject: string, html: string }) => {
 
 
-    if(subject.includes('example')){
+    if (subject.includes('example')) {
         return {
-            success:true,
-            message_ids:[]
+            success: true,
+            message_ids: []
         } as MailtrapResponse
     }
 
@@ -30,14 +31,21 @@ export const sendMail = async ({ to, subject, html }: { to: string, subject: str
     ];
 
 
-    const result = await transport
+    const result = await new Promise((resolve, reject) => transport
         .sendMail({
             from: sender,
             to: recipients,
             subject: subject,
             html: getHtmlTemplate(html),
             category: "Integration Test",
-        })
+
+        }, (err, info) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(info)
+            }
+        }))
 
     return result
 
