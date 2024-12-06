@@ -378,8 +378,8 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
             {row.original.guest.company?.companyName}
           </div>
           {row.original.guestNote && <div className='flex gap-1 '>
-            <IconClipboardText stroke={1} className=' size-4' />
-            <div className='text-xs '>
+            <IconClipboardText stroke={2} className=' size-4 text-black' />
+            <div className='text-xs font-bold'>
 
               {row.original.guestNote}
             </div>

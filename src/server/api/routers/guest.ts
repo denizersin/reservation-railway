@@ -9,13 +9,14 @@ export const guestRouter = createTRPCRouter({
     createGuest: ownerProcedure.input(guestValidator.createGuestSchema).mutation(async ({ input, ctx }) => {
         const { session: { user: { restaurantId } } } = ctx
         const fullPhone = await predefinedEntities.getFullPhone({ phone: input.phone, phoneCodeId: input.phoneCodeId })
-        await guestEntities.createGuest({
+        const newGuestId = await guestEntities.createGuest({
             guestData: {
                 ...input,
                 fullPhone,
                 restaurantId
             }
         });
+        return newGuestId
     }),
 
     updateGuest: ownerProcedure.input(guestValidator.updateGuestSchema).mutation(async ({ input, ctx }) => {

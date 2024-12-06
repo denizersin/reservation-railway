@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { api } from "@/server/trpc/react";
 import { DailySettingsModal } from "./dailiy-settings-modal";
+import { CreateReservationPageModal } from "../../reservation/page-modal";
 
 export type TReservationsViewType = 'list' | 'table'
 
@@ -64,6 +65,8 @@ export function ReservationHeader() {
         setOpen(true)
     }
 
+    const [createReservationModalIsOpen, setCreateReservationModalIsOpen] = useState(false)
+
     return (
         <div>
             <div className="text-card-foreground text-2xl mb-4 font-normal">
@@ -73,7 +76,8 @@ export function ReservationHeader() {
                 <div className="flex items-center space-x-2">
                     <Button
                         onClick={() => {
-                            router.push('/panel/owner/reservation')
+                            // router.push('/panel/owner/reservation')
+                            setCreateReservationModalIsOpen(true)
                         }}
                         variant="default" className="h-full">
                         Yeni Rezervasyon
@@ -189,6 +193,12 @@ export function ReservationHeader() {
             </div>
 
             <DailySettingsModal open={open} onOpenChange={setOpen} />
+
+
+            {createReservationModalIsOpen && <CreateReservationPageModal
+                isOpen={createReservationModalIsOpen}
+                setIsOpen={setCreateReservationModalIsOpen}
+            />}
         </div>
 
     )

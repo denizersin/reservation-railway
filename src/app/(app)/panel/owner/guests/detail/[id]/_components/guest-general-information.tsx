@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     Card,
     CardContent,
@@ -15,6 +15,8 @@ import {
 import { RouterOutputs } from '@/server/trpc/react'
 import { Badge } from '@/components/ui/badge'
 import { EnumVipLevel } from '@/shared/enums/predefined-enums'
+import { Button } from '@/components/custom/button'
+import GuestCrudModal from '../../../_components/guest-crud-modal'
 
 type Props = {
     guestDetail: RouterOutputs['guest']['getGuestDetail']
@@ -35,15 +37,22 @@ export const GuestGeneralInformation = ({ guestDetail }: Props) => {
         </TableRow>
     )
 
+    const [isEditGuestModalOpen, setIsEditGuestModalOpen] = useState(false)
+
     return (
         <Card className="w-full">
             <CardHeader>
-                <CardTitle>Misafir Bilgileri</CardTitle>
+                <CardTitle className='flex justify-between items-center'>
+                    <div>Misafir Bilgileri</div>
+                    <Button onClick={() => setIsEditGuestModalOpen(true)}>
+                        Misafiri Düzenle
+                    </Button>
+                </CardTitle>
                 <CardDescription>
                     Bu bölümden misafire ait genel bilgileri görebilirsiniz.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className='max-w-full'>
                 <Table>
                     <TableBody>
                         <InfoRow
@@ -57,7 +66,7 @@ export const GuestGeneralInformation = ({ guestDetail }: Props) => {
                             items={[
                                 { label: "E-posta", value: guestDetail.guest?.email },
                                 { label: "Toplam Rezervasyon", value: guestDetail.guestReservations?.length },
-                                { label: "Durum", value: <Badge>{guestDetail.guest?.vipLevel===EnumVipLevel.blackList ? "Black List" : "Active"}</Badge> }
+                                { label: "Vip Level", value: <Badge>{guestDetail.guest?.vipLevel === EnumVipLevel.blackList ? "Black List" : "Active"}</Badge> }
                             ]}
                         />
                         <InfoRow
@@ -70,6 +79,12 @@ export const GuestGeneralInformation = ({ guestDetail }: Props) => {
                     </TableBody>
                 </Table>
             </CardContent>
+
+            <GuestCrudModal
+                open={isEditGuestModalOpen}
+                setOpen={setIsEditGuestModalOpen}
+                guestId={guestDetail.guest?.id}
+            />
         </Card>
     )
 }

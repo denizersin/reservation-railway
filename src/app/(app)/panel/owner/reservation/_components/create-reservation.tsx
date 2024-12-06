@@ -18,12 +18,14 @@ import { useTranslation } from 'react-i18next';
 import GuestCrudModal from '../../guests/_components/guest-crud-modal';
 import { ReservationDateCalendar } from './reservation-date-calendar';
 import { TableStatues2 } from './v2/table-statues2';
+import { useStartOfDay } from '@/hooks/useStartOfDay';
+import { groupByWithKeyFn } from '@/lib/utils';
+import { GuestSelection } from './v2/guest-selection';
 
 type Props = {}
 
 export const CreateReservation = (props: Props) => {
 
-    const [isCreateGuestModalOpen, setIsCreateGuestModalOpen] = useState(false)
 
 
 
@@ -42,7 +44,7 @@ export const CreateReservation = (props: Props) => {
 
 
 
-    const [selectedGuestId, setSelectedGuestId] = useState<number | null>(2)
+    const [selectedGuestId, setSelectedGuestId] = useState<number | undefined>(2)
 
 
 
@@ -150,84 +152,97 @@ export const CreateReservation = (props: Props) => {
 
 
 
+
+
+
+
+
     return (
-        <div>
-            <div className='flex'>
-                <SearchableGuestSelect
-                    value={selectedGuestId?.toString()}
-                    onValueChange={(value) => setSelectedGuestId(Number(value))}
-                    isFormSelect={false}
+        <div className='flex gap-3'>
+            <div className=" w-1/2 ">
+                <GuestSelection
+                    selectedGuestId={selectedGuestId}
+                    setSelectedGuestId={setSelectedGuestId}
+                    guestNote={guestNote}
+                    setGuestNote={setGuestNote}
+                    reservationNote={reservationNote}
+                    setReservationNote={setReservationNote}
                 />
-                <Button variant={'link'} onClick={() => setIsCreateGuestModalOpen(true)}>Create Guest</Button>
             </div>
+            <div className=' w-1/2 '>
 
 
-            <ReservationDateCalendar date={date} setDate={setDate} />
+                <div className='flex flex-wrap justify-between items-center text-xl font-medium'>
+                    <span>{date.getDate()} {date.toLocaleString('tr-TR', { month: 'long', weekday: 'long' })} {date.getFullYear()}</span>
+                    <ReservationDateCalendar date={date} setDate={setDate} />
 
-            <MealTabs
-                selectedMealId={selectedMealId}
-                setSelectedMealId={setSelectedMealId}
-            />
-
-            <RoomTabs
-                selectedRoomId={selectedRoomId}
-                setSelectedRoomId={setSelectedRoomId}
-            />
-
-            {
-
-                <TableStatues2
-                    selectedTableId={selectedTableId}
-                    setSelectedTableId={setSelectedTableId}
-                    date={date}
-                    selectedRoomId={selectedRoomId}
-                    selectedMealId={selectedMealId}
-                    selectedHour={selectedHour}
-                    setSelectedHour={setSelectedHour}
-                    guestCount={guestCount}
-                    setGuestCount={setGuestCount}
-                />
-            }
-
-
-
-            <div className='flex flex-col md:flex-row gap-x-5 '>
-
-
-                <div className='flex-1'>
-                    <MultiSelect
-                        className='max-w-sm my-2'
-                        options={tagsToSelect}
-                        onValueChange={(value) => {
-                            setSelectedTagIds(value.map((v) => Number(v)))
-                            console.log(value, 'value23')
-                        }}
-                        value={selectedTagIds.map((tagId) => String(tagId))}
-                    />
-
-
-                    <div className="my-2">
-                        <Textarea
-                            value={reservationNote}
-                            onChange={(e) => setReservationNote(e.target.value)}
-                            placeholder="Reservation Note"
-                        />
-                    </div>
-                    <div className="my-2">
-                        <Textarea
-                            value={guestNote}
-                            onChange={(e) => setGuestNote(e.target.value)}
-                            placeholder="Guest Note"
-                        />
-                    </div>
                 </div>
-                <div className='flex-1'>
-                    <div className="text-lg font-bold text-center">Payment</div>
 
-                    <div className="my-4">
+                <MealTabs
+                    selectedMealId={selectedMealId}
+                    setSelectedMealId={setSelectedMealId}
+                />
+
+                <RoomTabs
+                    selectedRoomId={selectedRoomId}
+                    setSelectedRoomId={setSelectedRoomId}
+                />
+
+                {
+
+                    <TableStatues2
+                        selectedTableId={selectedTableId}
+                        setSelectedTableId={setSelectedTableId}
+                        date={date}
+                        selectedRoomId={selectedRoomId}
+                        selectedMealId={selectedMealId}
+                        selectedHour={selectedHour}
+                        setSelectedHour={setSelectedHour}
+                        guestCount={guestCount}
+                        setGuestCount={setGuestCount}
+                    />
+                }
+
+
+
+                <div className='flex flex-col md:flex-row gap-x-5 '>
+
+
+                    <div className='flex-1'>
+                        <MultiSelect
+                            className='max-w-sm my-2'
+                            options={tagsToSelect}
+                            onValueChange={(value) => {
+                                setSelectedTagIds(value.map((v) => Number(v)))
+                                console.log(value, 'value23')
+                            }}
+                            value={selectedTagIds.map((tagId) => String(tagId))}
+                        />
+
+
+                        <div className="my-2 flex gap-x-2">
+                            <Textarea
+                                value={guestNote}
+                                onChange={(e) => setGuestNote(e.target.value)}
+                                placeholder="Guest Note"
+                            />
+                            <Textarea
+                                value={reservationNote}
+                                onChange={(e) => setReservationNote(e.target.value)}
+                                placeholder="Reservation Note"
+                            />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div className='flex-1 border-y py-1'>
+                    <div className="text-lg font-bold ">Payment</div>
+
+                    <div className="my-2">
                         {/* <div className="text-lg font-bold">Prepayment Type</div> */}
                         <div className="flex flex-col">
-                            <div className="my-4">
+                            <div className="my-2">
                                 <RadioGroup value={String(selectedPrePaymentTypeId)} onValueChange={(value) => {
                                     setSelectedPrePaymentTypeId(Number(value))
                                     setDefineCustomPrepaymentAmount(false)
@@ -253,7 +268,7 @@ export const CreateReservation = (props: Props) => {
                                 />}
                                 <label className="ml-2">Define Custom Prepayment Amount</label>
                                 {defineCustomPrepaymentAmount && <Input
-                                    className='max-w-sm my-2'
+                                    className='max-w-[120px] my-2'
                                     value={customPrepaymentAmount}
                                     onChange={(e) => setCustomPrepaymentAmount(Number(e.target.value) || 0)}
                                 />}
@@ -277,22 +292,22 @@ export const CreateReservation = (props: Props) => {
                         </div>
                     </div>
                 </div>
+
+                <div className='flex justify-end'>
+
+                    <Button
+                        className='mt-2'
+                        loading={createReservationPending}
+                        onClick={handleCreateReservation}
+                    >
+                        Create Reservation
+                    </Button>
+                </div>
+
+
+
+
             </div>
-
-            <Button
-                loading={createReservationPending}
-                onClick={handleCreateReservation}
-            >
-                Create Reservation
-            </Button>
-
-
-            {isCreateGuestModalOpen && <GuestCrudModal
-                open={isCreateGuestModalOpen}
-                setOpen={setIsCreateGuestModalOpen}
-            />}
-
-
 
         </div>
     )

@@ -53,7 +53,7 @@ export default async function OwnerLayout({
                     sidelinks={ownerSidelinks}
                 />
                 <MaxWidthWrapper className="max-w-screen-2xl md:px-10 main h-screen overflow-y-scroll flex-1">
-                    <div className="flex pt-5 pb-5">
+                    <div className="flex pt-5 pb-2">
                         {/* <TopNav links={topNav} /> */}
 
                         <div className='ml-auto flex items-center space-x-4'>

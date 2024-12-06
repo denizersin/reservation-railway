@@ -268,7 +268,7 @@ export const getGuestDetail = async ({ guestId }: { guestId: number }) => {
             country: true,
             language: true,
             company: true,
-
+            phoneCodeCountry: true,
         },
         where: eq(tblGuest.id, guestId)
     })
@@ -277,6 +277,7 @@ export const getGuestDetail = async ({ guestId }: { guestId: number }) => {
         with: {
             reservationStatus: true,
             reservationExistenceStatus: true,
+            reservationNotes: true,
         },
         where: eq(tblReservation.guestId, guestId)
     })

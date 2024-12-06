@@ -18,7 +18,7 @@ export const SummaryCard = ({
     className?: string
 }) => {
     return <FrontCard className={cn("bg-gray-50 ", className)}  >
-        <FrontCard.Title>Summary2</FrontCard.Title>
+        <FrontCard.Title>Summary</FrontCard.Title>
 
         <div className="flex flex-col gap-y-4">
 

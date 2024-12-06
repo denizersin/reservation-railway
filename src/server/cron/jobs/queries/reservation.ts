@@ -4,10 +4,9 @@ import { getLocalTime, getStartAndEndOfDay } from "@/server/utils/server-utils";
 import { EnumNotificationMessageTypeNumeric, EnumNotificationStatus, EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums";
 import { and, between, eq, gt, isNotNull } from "drizzle-orm";
 
-import { tblGuest, tblReservationNotification, tblRestaurant, tblRestaurantPaymentSetting, TRestaurantPaymentSettingSelect } from "@/server/db/schema";
 import { groupByWithKeyFn } from "@/lib/utils";
-import { addHours, isBefore, subHours } from "date-fns";
-import { env } from "@/env";
+import { tblGuest, tblReservationNotification, tblRestaurant, tblRestaurantPaymentSetting, TRestaurantPaymentSettingSelect } from "@/server/db/schema";
+import { subHours } from "date-fns";
 
 export type TUnpaidReservationRecord = Awaited<ReturnType<typeof getUnpaidReservations>>['reservations'][number]
 
@@ -21,7 +20,7 @@ export const getUnpaidReservations = async ({
     pageSize?: number;
 }) => {
     const { start, end } = getStartAndEndOfDay({ date: getLocalTime(date) });
-
+    console.log(start, end, 'start and end')
     const result = await db.select()
         .from(tblRestaurant)
         .leftJoin(tblReservation, eq(tblReservation.restaurantId, tblRestaurant.id))

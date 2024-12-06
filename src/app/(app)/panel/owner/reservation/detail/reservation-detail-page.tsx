@@ -14,6 +14,8 @@ export const ReservationDetailPage = (props: Props) => {
 
     const { data: reservationDetailData } = api.reservation.getReservationDetail.useQuery({
         reservationId
+    },{
+        staleTime: 0
     })
 
     return (

@@ -1,15 +1,8 @@
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from "@/components/ui/card"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
 import { TTableStatuesRow } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
 import { EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
-import { CircleCheck, Clock, EllipsisVertical, Users } from 'lucide-react'
+import { CircleCheck, Clock, Users } from 'lucide-react'
 
 type Props = {
     statusTableRow: TTableStatuesRow,
@@ -17,17 +10,12 @@ type Props = {
     onClcikTable: (row: TTableStatuesRow) => void
     disabled?: boolean
 
-    //dropdown
-    removeTable?: (row: TTableStatuesRow) => void
-    unLinkReservation?: (row: TTableStatuesRow) => void
 }
 
 export const TableStatuesRowCard = ({
     statusTableRow,
     isSelected,
     onClcikTable,
-    unLinkReservation,
-    removeTable,
     disabled
 }: Props) => {
 
@@ -35,39 +23,7 @@ export const TableStatuesRowCard = ({
     const isReserved = Boolean(statusTableRow.reservation)
     const isAvailable = !isReserved
 
-    const hasOptions = removeTable || unLinkReservation
 
-    const optionDropdown = hasOptions && (
-        <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    className={cn('rounded-full px-1 py-1 size-6 ', {
-                        'bg-primary': isReserved
-                    })}
-                    variant="outline">
-                    <EllipsisVertical className={cn('size-4', {
-                        'text-white': isSelected
-                    })} />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-                {
-                    removeTable && <DropdownMenuItem
-                        onClick={() => removeTable(statusTableRow)}
-                    >
-                        Remove Table
-                    </DropdownMenuItem>
-                }
-                {
-                    unLinkReservation && <DropdownMenuItem
-                        onClick={() => unLinkReservation(statusTableRow)}
-                    >
-                        UnLink Reservation
-                    </DropdownMenuItem>
-                }
-            </DropdownMenuContent>
-        </DropdownMenu>
-    )
 
     const isHolding = statusTableRow.reservation?.reservationStatusId === EnumReservationStatusNumeric.holding
 
@@ -75,23 +31,20 @@ export const TableStatuesRowCard = ({
     return (
         <Card
             onClick={(() => !disabled && onClcikTable(statusTableRow))}
-            key={statusTableRow.table?.id} className={cn(' size-[150px] relative', {
+            key={statusTableRow.table?.id} className={cn(' size-[80px] relative', {
                 'bg-foreground text-background': isReserved,
                 'cursor-pointer hover:bg-muted': isAvailable,
                 'bg-gray-300 cursor-pointer hover:bg-muted': (!isAvailable && !isReserved),
                 "bg-orange-300": isHolding
             })}>
-            <CardContent className="p-4 flex flex-col gap-y-1">
+            <CardContent className="p-2 flex flex-col  ">
                 <div className="r r1 flex justify-between">
-                    <div className="text-xl font-bold">{statusTableRow.table?.no}</div>
-                    {optionDropdown}
-
-
+                    <div className="text-base font-bold">{statusTableRow.table?.no}</div>
                 </div>
                 <div className="text-sm flex">
-                    <div>{(isReserved && !isHolding) ? statusTableRow.guest?.name : '-'}</div>
+                    {/* <div>{(isReserved && !isHolding) ? statusTableRow.guest?.name : '-'}</div> */}
                 </div>
-                <div className="flex items-center text-xs mt-2">
+                <div className="flex items-center text-xs ">
                     <Clock className="w-3 h-3 mr-1" /> {statusTableRow.reservation?.hour}
                 </div>
                 <div className="flex items-center text-xs ">
