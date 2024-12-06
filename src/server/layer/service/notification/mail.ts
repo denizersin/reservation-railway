@@ -4,7 +4,12 @@ import { getHtmlTemplate } from '@/server/utils/mail';
 import { MailtrapResponse } from 'mailtrap/dist/types/transport';
 import Mailgun, { Interfaces, Enums } from 'mailgun.js';
 import formData from 'form-data';
-export const sendMail = async ({ to, subject, html }: { to: string, subject: string, html: string }) => {
+// const SibApiV3Sdk = require('sib-api-v3-sdk');
+
+
+
+
+export const sendMail2 = async ({ to, subject, html }: { to: string, subject: string, html: string }) => {
     console.log(to, subject, html)
 
     if (subject.includes('example')) {
@@ -55,21 +60,39 @@ export const sendMail = async ({ to, subject, html }: { to: string, subject: str
 }
 
 
-export const sendMail2 = async ({ to, subject, html }: { to: string, subject: string, html: string }) => {
+const brevoapi = "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"
 
 
-    const mailgun = new Mailgun(formData);
-    const mg = mailgun.client({username: 'api', key: '7164f0bbd9f42f37319f6a481393aeac-f55d7446-4923b5af'});
-    
-    mg.messages.create('sandbox049526f5440347c980e82ef20e33de60.mailgun.org', {
-        from: `Excited User <mailgun@sandbox049526f5440347c980e82ef20e33de60.mailgun.org>`,
-        to: ["ersindenim@gmail.com"],
-        subject: "Hello",
-        text: "Testing some Mailgun awesomeness!",
-        html: "<h1>Testing some Mailgun awesomeness!</h1>"
+
+export const sendMail = async ({ to, subject, html }: { to: string, subject: string, html: string }) => {
+    const transporter = Nodemailer.createTransport({
+        host: 'smtp-relay.brevo.com',
+        port: 587,                   // TLS için 587
+        secure: false,               // Güvenlik TLS üzerinden sağlanır
+        auth: {
+            user: '8165cc001@smtp-brevo.com', // SMTP kullanıcı adı
+            pass: "XGBLF9pqaCkTW06m",     // SMTP şifreniz (API anahtarı olabilir)
+        },
+    });
+
+    // E-posta içeriği
+    const mailOptions = {
+        from: 'ersindenim@gmail.com', // Gönderen
+        to,                 // Alıcı
+        subject: subject,           // Konu
+        text: "TURK FATIH TUTAK",   // Mesaj metni
+        html: html, // HTML mesajı
+    };
+
+    // E-postayı gönder
+    const result = await new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return console.log('Hata oluştu:', error);
+            }
+            console.log('E-posta başarıyla gönderildi:', info.response);
+            resolve(info)
+        })
     })
-    .then(msg => console.log(msg)) // logs response data
-    .catch(err => console.log(err.message)); // logs any error
-
-
+    return result
 }

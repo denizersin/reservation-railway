@@ -105,21 +105,17 @@ async function initDb() {
 // initDb()
 
 
-function testMail() {
-    mailService.sendMail({
-        to: 'ersindenizm@gmail.com',
-        subject: 'Test',
-        html: `
-        <h1>Test</h1>
-        `
-    }).then((res) => {
-        console.log(res)
-    }).catch((err) => {
-        console.error(err)
-    })
-}
+// function testMail() {
+//     mailService.sendMail3({
 
-testMail()
+//     }).then((res) => {
+//         console.log(res)
+//     }).catch((err) => {
+//         console.error(err)
+//     })
+// }
+
+// testMail()
 
 
 
