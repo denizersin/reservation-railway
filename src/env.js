@@ -61,10 +61,10 @@ export const env = createEnv({
     IYZIPAY_URI: process.env.NODE_ENV_2 === "production" ? process.env.IYZIPAY_PROD_URI : process.env.IYZIPAY_DEV_URI,
     IYZIPAY_API_KEY: process.env.NODE_ENV_2 === "production" ? process.env.IYZIPAY_PROD_API_KEY : process.env.IYZIPAY_DEV_API_KEY,
     IYZIPAY_SECRET_KEY: process.env.NODE_ENV_2 === "production" ? process.env.IYZIPAY_PROD_SECRET_KEY : process.env.IYZIPAY_DEV_SECRET_KEY,
-    DEV_BASE_URL: process.env.NODE_ENV_2 === "production" ? process.env.PROD_BASE_URL : process.env.DEV_BASE_URL,
+    DEV_BASE_URL: process.env.DEV_BASE_URL,
     PROD_BASE_URL: process.env.PROD_BASE_URL,
-    BASE_URL: process.env.BASE_URL,
-    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV_2 === "production" ?( process.env.PROD_BASE_URL + "/api/iyzipay/callback") : (process.env.DEV_BASE_URL + "/api/iyzipay/callback"),
+    BASE_URL: process.env.NODE_ENV_2 === "production" ? `https://${process.env.VERCEL_URL}` : process.env.DEV_BASE_URL,
+    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV_2 === "production" ? (`https://${process.env.VERCEL_URL}` + "/api/iyzipay/callback") : (process.env.DEV_BASE_URL + "/api/iyzipay/callback"),
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

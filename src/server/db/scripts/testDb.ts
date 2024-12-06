@@ -121,3 +121,7 @@ async function initDb() {
 
 // console.log(env.DATABASE_URL)
 
+console.log(
+    Object.entries(env)
+)
+
