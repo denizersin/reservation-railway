@@ -142,11 +142,13 @@ const seedFunctions = [
         await RoomEntities.createRoomWithTranslations({
             order: 1,
             restaurantId: 1,
+            image: 'tt-back.png',
             translations: [
                 {
                     languageId: languagesData.find(l => l.languageCode === EnumLanguage.tr)?.id!,
                     name: "Ana alan",
-                    description: 'Ana alan description'
+                    description: 'Ana alan description',
+                    
                 },
                 {
                     languageId: languagesData.find(l => l.languageCode === EnumLanguage.en)?.id!,
@@ -160,6 +162,7 @@ const seedFunctions = [
             order: 2,
 
             restaurantId: 1,
+            image: 'chef-table.png',
             translations: [
                 {
                     languageId: languagesData.find(l => l.languageCode === EnumLanguage.tr)?.id!,

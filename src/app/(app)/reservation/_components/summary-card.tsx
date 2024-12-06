@@ -18,42 +18,42 @@ export const SummaryCard = ({
     className?: string
 }) => {
     return <FrontCard className={cn("bg-gray-50 ", className)}  >
-        <FrontCard.Title>Summary</FrontCard.Title>
+        <FrontCard.Title>Summary2</FrontCard.Title>
 
-        <div className="flex flex-col gap-y-1">
+        <div className="flex flex-col gap-y-4">
 
 
             {/* location */}
             <div className="flex items-center">
-                <IconLocation className="size-5 mr-2 text-front-primary" />
+                <IconLocation className="size-6 mr-2 text-front-primary" />
                 <div className="text-sm text-front-primary">TURK FATIH TUTAK</div>
             </div>
 
             {/* date */}
             <div className="flex items-center">
-                <IconCalendar className="size-5 mr-2 text-front-primary" />
+                <IconCalendar className="size-6 mr-2 text-front-primary" />
                 <div className="text-sm text-front-primary">{date?.toLocaleDateString()}</div>
             </div>
 
             {/* time */}
             <div className="flex items-center">
-                <IconClock className="size-5 mr-2 text-front-primary" />
+                <IconClock className="size-6 mr-2 text-front-primary" />
                 <div className="text-sm text-front-primary">{time}</div>
             </div>
             {/* table */}
             <div className="flex items-center">
-                <IconTable className="size-5 mr-2 text-front-primary" />
+                <IconTable className="size-6 mr-2 text-front-primary" />
                 <div className="text-sm text-front-primary">{area}</div>
             </div>
             {/* guests */}
             <div className="flex items-center">
-                <IconGuests className="size-5 mr-2 text-front-primary" />
+                <IconGuests className="size-6 mr-2 text-front-primary" />
                 <div className="text-sm text-front-primary">{guestCount} Guests</div>
             </div>
 
 
             {prepaymentAmount && <div className="flex items-center">
-                <IconWallet className="size-5 mr-2 text-front-primary" />
+                <IconWallet className="size-6 mr-2 text-front-primary" />
                 <div className="text-sm text-front-primary">{prepaymentAmount} TL</div>
             </div>}
 

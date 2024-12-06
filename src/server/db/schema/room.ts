@@ -17,6 +17,7 @@ export const tblRoom = mysqlTable('room', {
     isWaitingRoom: boolean('is_waiting_room').default(false),
     layoutWidth: int('layout_width').notNull().default(1200),
     layoutRowHeight: int('layout_row_height').notNull().default(120),
+    image: varchar('image', { length: 256 }),
 }, (table) => ({
     // Index for room status lookups
     roomStatusIdx: index('idx_room_status').on(table.restaurantId, table.isActive, table.isWaitingRoom),

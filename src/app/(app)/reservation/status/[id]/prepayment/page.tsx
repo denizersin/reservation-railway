@@ -34,18 +34,24 @@ export default function ReservationSummaryPage() {
     const handleContinueToPrepaymentPage = () => {
         router.push(`/reservation/status/${reservationId}/prepayment/payment`)
     }
+    const amount = reservationData?.currentPrepayment?.amount;
 
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper>
-            <div className="mt-10"></div>
-            <ReservationStatusHeader showBackButton={false} onGoBack={onGoBack} />
+            
+            <ReservationStatusHeader
+                guestCount={reservationData?.guestCount!}
+                date={reservationData?.reservationDate!}
+                time={reservationData?.hour!}
+                showBackButton={false} onGoBack={onGoBack} />
             <div className="px-2">
                 <SummaryCard
                     guestCount={reservationData?.guestCount!}
                     area={reservationData?.roomName!}
                     date={reservationData?.reservationDate!}
                     time={reservationData?.hour!}
+                    prepaymentAmount={amount}
                 />
                 <Button onClick={handleContinueToPrepaymentPage} className="bg-front-primary rounded-sm w-full text-sm mt-4 h-[45px]">
                     Continue To Prepayment Page

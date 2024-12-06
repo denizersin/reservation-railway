@@ -18,7 +18,7 @@ export default function ReservationCancelPage() {
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper>
-            <div className="mt-10"></div>
+            
             <div className="px-2">
 
 

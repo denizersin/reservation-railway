@@ -292,6 +292,7 @@ CREATE TABLE `room` (
 	`is_waiting_room` boolean DEFAULT false,
 	`layout_width` int NOT NULL DEFAULT 1200,
 	`layout_row_height` int NOT NULL DEFAULT 120,
+	`image` varchar(256),
 	CONSTRAINT `room_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -357,7 +358,6 @@ CREATE TABLE `restaurant_general_setting` (
 	`default_language_id` int NOT NULL,
 	`default_country_id` int NOT NULL,
 	`table_view` enum('standartTable','floorPlan') NOT NULL DEFAULT 'standartTable',
-	`prepayment_price_per_guest` int NOT NULL,
 	CONSTRAINT `restaurant_general_setting_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint

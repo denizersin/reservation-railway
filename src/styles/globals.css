@@ -35,7 +35,7 @@
     --front-primary: 0 0% 20%;
     --front-primary-foreground: 0 0% 98%;
 
-    
+
 
   }
 
@@ -67,6 +67,20 @@
   }
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: inherit;
+  -webkit-box-shadow: 0 0 0px 1000px inherit inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -75,6 +89,11 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* //year-date-select */
+.rdp-vhidden {
+  @apply hidden;
 }
 
 
@@ -154,5 +173,3 @@ body>#root {
     @apply after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:hidden after:h-32 after:w-full after:bg-[linear-gradient(180deg, _transparent_10%, _hsl(var(--background))_70%)] after:md:block;
   }
 }
-
-

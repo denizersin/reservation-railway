@@ -1,6 +1,7 @@
 import { Button } from '@/components/custom/button'
 import { CustomComboSelect } from '@/components/custom/custom-combo-select'
 import { MultiSelect } from '@/components/custom/multi-select'
+import { YearCalendar } from '@/components/custom/year-date'
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -219,7 +220,9 @@ const GuestCrudModal = ({
                             <FormItem>
                                 <FormLabel>Birth Date</FormLabel>
                                 <FormItem className="flex flex-col">
-                                    <Popover>
+                                    <Popover
+                                        modal={false}
+                                    >
                                         <PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button
@@ -239,7 +242,8 @@ const GuestCrudModal = ({
                                             </FormControl>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
+                                            {/* <Calendar
+
                                                 mode="single"
                                                 selected={field.value}
                                                 onSelect={field.onChange}
@@ -247,7 +251,19 @@ const GuestCrudModal = ({
                                                     date < new Date("1900-01-01")
                                                 }
                                                 initialFocus
+                                            /> */}
+
+                                            <YearCalendar
+                                                mode="single"
+                                                captionLayout="dropdown"
+                                                
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                fromYear={1960}
+                                                toYear={2030}
                                             />
+
+
                                         </PopoverContent>
                                     </Popover>
                                     <FormMessage />

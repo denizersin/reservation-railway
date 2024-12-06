@@ -24,7 +24,7 @@ export const ReservationStatusHeader = ({
     const dateString = date?.toLocaleDateString?.() ?? reservationState?.date?.toLocaleDateString?.()
     const timeValue = time ?? reservationState?.time
 
-    return <div className="flex items-center mb-8">
+    return <div className="flex items-center mb-10">
         {showBackButton && <IconArrowLeft onClick={onGoBack} className="size-5 mr-2 text-front-primary cursor-pointer" />}
         <div className="text-lg flex-1 flex justify-center items-center">
             <IconAlarm className="size-5 mr-2 text-front-primary " />

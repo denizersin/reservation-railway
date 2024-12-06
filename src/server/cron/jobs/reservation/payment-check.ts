@@ -94,7 +94,7 @@ export const getUnpaidReservationJob = async ({ record, restaurantPaymentSetting
 
 
     const nowTest = new Date()
-    let test = new Date(nowTest.getTime() + 1000 * 60 * 2)
+    let test = new Date(nowTest.getTime() + 1000 * 60 * 5)
 
     prepaymentDeadline = test
 

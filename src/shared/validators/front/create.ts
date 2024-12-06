@@ -3,19 +3,31 @@ import { z } from "zod";
 
 const userInfoFormSchema = z.object({
     name: z.string().max(256).min(2, "Name must be at least 2 characters"),
-    surname: z.string().max(256).min(2, "Surname must be at least 2 characters"),
+    surname: z.string().max(256).min(2, "Surname must be at least 2 characters"), 
     email: z.string().email("Invalid email address"),
     phoneCodeId: z.number().int().positive(),
     phone: z.string().min(10, "Phone number must be at least 10 digits"),
     allergenWarning: z.boolean(),
-    guestNote: z.string().optional().refine((val) => {
-        if (val) {
-            return !(blockedAllergens.tr.includes(val.toLocaleLowerCase()) || blockedAllergens.en.includes(val.toLocaleLowerCase()))
-        }
-        return true
-    }, {
-        message: "We are not accepting this allergen",
-    }),
+    guestNote: z.string()
+        .superRefine((val, ctx) => {
+            console.log(val, 'val2323')
+            if (!val) return true;
+            
+            // Split the note into words and check each word against blocked allergens
+            const words = val.toLowerCase().split(/\s+/);
+            const hasBlockedAllergens = words.some(word => 
+                blockedAllergens.tr.includes(word) || 
+                blockedAllergens.en.includes(word)
+            );
+
+            if (hasBlockedAllergens) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "We do not accept reservations with these allergens: vegan, vegetarian, lactose intolerance, gluten allergy, celiac, onion, garlic, tomato, milk, butter, chicken stock, kosher",
+                });
+                return false;
+            }
+        }),
     reservationTags: z.array(z.number().int().positive()).optional(),
 
     allergenAccuracyConsent: z.boolean().refine((val) => val === true, {
@@ -53,7 +65,7 @@ const holdTableSchema = z.object({
 })
 
 const prePaymentFormSchema = z.object({
-    name: z.string().max(256).min(2, "Name must be at least 2 characters"),
+    name_and_surname: z.string().max(256).min(2, "Name must be at least 2 characters"),
     card_number: z.string().min(16, "Card number must be 16 digits"),
     expiry_date: z.string().regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Invalid expiry date (MM/YY)"),
     cvc: z.string().min(3, "CVC must be 3 digits"),

@@ -55,7 +55,7 @@ export function RoomCrudModal({
     })
 
     function onSubmit(data: FormValues) {
-        console.log(form.formState.errors,'errors')
+        console.log(form.formState.errors, 'errors')
         if (isUpdate && room) {
             updateRoomMutation.mutate({
                 roomId: room.id,
@@ -68,7 +68,7 @@ export function RoomCrudModal({
 
     useEffect(() => {
         if (restaurantLanguages) {
-            console.log(restaurantLanguages,'langss')
+            console.log(restaurantLanguages, 'langss')
             form.setValue('translations', restaurantLanguages.map(language => ({
                 languageId: language.languageId,
                 name: room?.translations.find(t => t.languageId === language.languageId)?.name ?? '',
@@ -84,10 +84,10 @@ export function RoomCrudModal({
     }, [isOpen])
 
     console.log(
-        form.formState.errors,'errors'
+        form.formState.errors, 'errors'
     )
 
-    console.log(form.getValues(),'values')
+    console.log(form.getValues(), 'values')
 
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
@@ -130,6 +130,20 @@ export function RoomCrudModal({
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="image"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Image</FormLabel>
+                                    <FormControl>
+                                        <Input type="text" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         {restaurantLanguages?.map((language, index) => (
                             <div key={language.languageId} className="space-y-4">
                                 <h3 className="text-lg font-semibold">{language.language.name} Translation</h3>

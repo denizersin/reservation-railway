@@ -102,11 +102,7 @@ export const getReservationsToRemind = async ({
 
             const reminderDate = subHours(reservationTime, reminderHoursBefore)
 
-
-            
-            const now = new Date()
-
-            const isTimeToSendReminder = env.NODE_ENV_2 === 'development' ? true : now >= reminderDate
+            const isTimeToSendReminder = true
 
             const isBeforeReminderDate = isTimeToSendReminder && !hasNotificationSent
 

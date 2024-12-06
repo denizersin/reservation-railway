@@ -52,7 +52,7 @@ export default function Page() {
     const form = useForm<TclientValidator.TPrePaymentForm>({
         resolver: zodResolver(clientValidator.prePaymentFormSchema),
         defaultValues: {
-            name: reservationStatusData?.guest?.name ?? "",
+            name_and_surname: reservationStatusData?.guest?.name ?? "",
             card_number: "1212121212121212",
             expiry_date: "12/24",
             cvc: "123",
@@ -116,7 +116,7 @@ export default function Page() {
     }
 
     useEffect(() => {
-        form.setValue("name", reservationStatusData?.guest?.name ?? "")
+        form.setValue("name_and_surname", reservationStatusData?.guest?.name ?? "")
     }, [reservationStatusData?.guest?.name])
 
     const [isThreeDModalOpen, setIsThreeDModalOpen] = useState(false)
@@ -143,20 +143,38 @@ export default function Page() {
                     showBackButton={false}
                 />
 
-                <div className="info-alert p-4 text-sm text-front-primary bg-gray-100/50 rounded-md mb-6">
+                <div className="info-alert p-4 text-sm text-front-primary bg-gray-100/80 rounded-md mb-6">
                     <span className="font-bold">{amount} TL</span> will be charged to your credit card to confirm your reservation.
                 </div>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 text-front-primary ">
+
+                        <div className="space-y-4">
+
+                            <FormField
+                                control={form.control}
+                                name="name_and_surname"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Input className="rounded-sm h-12" placeholder="Card holder name and surname" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+
+
+                        </div>
+
+
                         <FormField
                             control={form.control}
                             name="card_number"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="">Card Number</FormLabel>
                                     <FormControl>
-                                        <Input
+                                        <Input className="rounded-sm h-12"
                                             placeholder="Card number"
                                             {...field}
                                             maxLength={16}
@@ -177,9 +195,8 @@ export default function Page() {
                                 name="expiry_date"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Month/Year</FormLabel>
                                         <FormControl>
-                                            <Input
+                                            <Input className="rounded-sm h-12"
                                                 placeholder="MM/YY"
                                                 {...field}
                                                 maxLength={5}
@@ -202,9 +219,8 @@ export default function Page() {
                                 name="cvc"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>CVC</FormLabel>
                                         <FormControl>
-                                            <Input
+                                            <Input className="rounded-sm h-12"
                                                 placeholder="CVC"
                                                 {...field}
                                                 maxLength={3}
@@ -287,7 +303,7 @@ export default function Page() {
                                             <FormItem>
                                                 <FormLabel>First Name</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="First name" {...field} />
+                                                    <Input className="rounded-sm h-12" placeholder="First name" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -301,7 +317,7 @@ export default function Page() {
                                             <FormItem>
                                                 <FormLabel>Last Name</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Last name" {...field} />
+                                                    <Input className="rounded-sm h-12" placeholder="Last name" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -319,7 +335,7 @@ export default function Page() {
                                                 <CustomComboSelect
                                                     buttonClass='w-full'
                                                     data={phoneCodes}
-                                                    onValueChange={(value) => field.onChange(Number(value))}
+                                                    onValueChange={(value) => field.onChange(String(value))}
                                                     value={String(field.value)}
                                                 />
                                                 <FormMessage />
@@ -334,7 +350,7 @@ export default function Page() {
                                             <FormItem className="flex-1">
                                                 <FormLabel>Phone Number</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Phone number" {...field} />
+                                                    <Input className="rounded-sm h-12" placeholder="Phone number" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -437,7 +453,7 @@ export default function Page() {
                                                     <FormItem>
                                                         <FormLabel>TIN</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Tax Identification Number" {...field} />
+                                                            <Input className="rounded-sm h-12" placeholder="Tax Identification Number" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -451,7 +467,7 @@ export default function Page() {
                                                     <FormItem>
                                                         <FormLabel>Tax Office</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Tax Office" {...field} />
+                                                            <Input className="rounded-sm h-12" placeholder="Tax Office" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -466,7 +482,7 @@ export default function Page() {
                                                 <FormItem>
                                                     <FormLabel>Company Name</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="Company Name" {...field} />
+                                                        <Input className="rounded-sm h-12" placeholder="Company Name" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>

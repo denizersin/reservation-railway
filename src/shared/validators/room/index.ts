@@ -16,6 +16,7 @@ export const createRoomSchema = z.object({
     translations: z.array(roomTranslationSchema).min(1),
     layoutWidth: z.number().int().positive().optional(),
     layoutRowHeight: z.number().int().positive().optional(),
+    image: z.string().optional(),
 });
 
 // Schema for updating a room

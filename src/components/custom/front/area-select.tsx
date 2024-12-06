@@ -17,6 +17,7 @@ import {
 
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogHeader,
     DialogTitle
@@ -50,35 +51,12 @@ export const AreaSelect = ({
 }: Props) => {
 
     const { data: rooms } = api.room.getRooms.useQuery({
-        withWaitingRooms:false
+        withWaitingRooms: false
     })
-    const areas = [
-        {
-            id: 1,
-            name: 'Area 1',
-            image: <Image
-                className='max-w-full'
-                src={'/tt-back.png'} alt='area 1'
-                width={1264}
-                height={904}
-            />,
-            isAvailable: true
-        },
-        {
-            id: 2,
-            name: 'Area 2',
-            image: <Image
-                className='max-w-full'
-                src={'/chef-table.png'} alt='area 2'
-                width={1264}
-                height={904}
-            />,
-            isAvailable: false
-        }
-    ]
 
 
-    const { selectedDate, monthAvailabilityData, guestCount, selectedTime,setAreaName } = useContext(MonthAvailabilityContext)
+
+    const { selectedDate, monthAvailabilityData, guestCount, selectedTime, setAreaName } = useContext(MonthAvailabilityContext)
 
 
     const avaliableRooms = useMemo(() => {
@@ -87,7 +65,7 @@ export const AreaSelect = ({
 
         const row = monthAvailabilityData?.find(r => format(r.date, 'dd-mm-yy') === format(selectedDate, 'dd-mm-yy'))
 
-        const avaliableRooms = row?.roomStatus.map(roomRecord =>{
+        const avaliableRooms = row?.roomStatus.map(roomRecord => {
             const isRoomAvaliable = roomRecord.isRoomHasAvaliableTable && roomRecord.hours.some(hourRecord => hourRecord.isAvaliable && hourRecord.hour === selectedTime)
             return {
                 ...roomRecord,
@@ -104,6 +82,13 @@ export const AreaSelect = ({
     const currentRoomName = useMemo(() => {
         return rooms?.find(r => r.id === areaId)?.translations[0]?.name
     }, [rooms, areaId])
+
+    const [modalState, setModalState] = useState({
+        roomName: '',
+        image: ''
+    })
+
+
 
     const TriggerElement = <div className='w-full flex items-center py-5 px-2 cursor-pointer hover:bg-gray-50  justify-between text-base border-b'>
         <div className="c ">
@@ -128,11 +113,10 @@ export const AreaSelect = ({
 
     const handleShowImage = (imageIndex: number) => {
         setShowImage(true)
-        setCurrentImage(areas[imageIndex]?.name)
     }
 
 
-
+    
 
 
 
@@ -147,8 +131,10 @@ export const AreaSelect = ({
                         <SheetTitle className='mb-3'>Select number of guests</SheetTitle>
                         <SheetDescription>
                             {
-                                avaliableRooms.map((item,index) => {
-                                    const roomName=rooms?.find(r=>r.id===item.room)?.translations[0]?.name
+                                avaliableRooms.map((item, index) => {
+                                    const roomData = rooms?.find(r => r.id === item.room)
+                                    var roomName = roomData?.translations[0]?.name || ''
+                                    var image = roomData?.image || ''
                                     const isAvailable = item.isAvailableForTime
                                     return <div
 
@@ -161,6 +147,10 @@ export const AreaSelect = ({
                                         <div
                                             onClick={() => {
                                                 handleShowImage(index)
+                                                setModalState({
+                                                    roomName: roomName,
+                                                    image: image
+                                                })
                                             }}
                                             className="c flex flex-col items-center gap-y-2 p-1">
                                             <IconImage className="size-4 text-front-primary" />
@@ -194,45 +184,48 @@ export const AreaSelect = ({
                         {TriggerElement}
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] flex flex-col p-4 ">
-                        {
-                            avaliableRooms.map((item,index) => {
-                                const roomName=rooms?.find(r=>r.id===item.room)?.translations[0]?.name
-                                const isAvailable = item.isAvailableForTime
-                                return <div
+                    {
+                                avaliableRooms.map((item, index) => {
+                                    const roomData = rooms?.find(r => r.id === item.room)
+                                    var roomName = roomData?.translations[0]?.name || ''
+                                    var image = roomData?.image || ''
+                                    const isAvailable = item.isAvailableForTime
+                                    return <div
 
-                                    key={item.room}
-                                    className={cn('flex items-center gap-2 py-3 border-b ', {
-                                        'bg-muted': currentArea?.room === item.room,
-                                        'cursor-pointer hover:bg-muted': isAvailable,
-                                        'opacity-50 cursor-not-allowed': !isAvailable
-                                    })}>
-                                    <div
-                                        onClick={() => {
-                                            handleShowImage(index)
-                                        }}
-                                        className="c flex flex-col items-center gap-y-2 p-1">
-                                        <IconImage className="size-4 text-front-primary" />
-                                        <div className="text-sm text-front-primary border-none underline">
-                                            see image
-                                        </div>
-                                    </div>
-                                    <PopoverClose
-                                        onClick={() => {
-                                            if (isAvailable) {
-                                                setAreaId(item.room)
-                                                setAreaName(roomName)
-                                            }
-                                        }}
-                                        className={cn('flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center ', {
+                                        key={item.room}
+                                        className={cn('flex items-center gap-2 py-3 border-b ', {
+                                            'bg-muted': currentArea?.room === item.room,
                                             'cursor-pointer hover:bg-muted': isAvailable,
                                             'opacity-50 cursor-not-allowed': !isAvailable
                                         })}>
-                                        <div className="text-base font-medium">{roomName}</div>
-                                        <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
-                                    </PopoverClose>
-                                </div>
-                            })
-                        }
+                                        <div
+                                            onClick={() => {
+                                                handleShowImage(index)
+                                                setModalState({
+                                                    roomName: roomName,
+                                                    image: image
+                                                })
+                                            }}
+                                            className="c flex flex-col items-center gap-y-2 p-1">
+                                            <IconImage className="size-4 text-front-primary" />
+                                            <div className="text-sm text-front-primary border-none underline">
+                                                see image
+                                            </div>
+                                        </div>
+                                        <PopoverClose
+                                            onClick={() => {
+                                                if (isAvailable) {
+                                                    setAreaId(item.room)
+                                                    setAreaName(roomName)
+                                                }
+                                            }}
+                                            className="flex-1 px-4  max-w-[478px] flex flex-col items-center justify-center">
+                                            <div className="text-base font-medium text-primary">{roomName}</div>
+                                            <div className=" text-gray-600 text-xs">It has a maximum capacity of 2 people.</div>
+                                        </PopoverClose>
+                                    </div>
+                                })
+                            }
                     </PopoverContent>
                 </Popover>
             </div>
@@ -243,15 +236,21 @@ export const AreaSelect = ({
                 open={showImage}
                 onOpenChange={setShowImage}
             >
-                <DialogContent className="w-full max-w-[900px]">
+                <DialogContent className="w-full max-w-[900px] h-[90vh]">
                     <DialogHeader>
                         <DialogTitle>
-                            {currentImage}
+                            {modalState.roomName}
                         </DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center space-x-2">
-                        {currentImage &&
-                            areas.find((item) => item.name === currentImage)?.image
+                        {
+                            <Image
+                                src={'/' + modalState.image}
+                                className="max-w-full"
+                                alt={""}
+                                width={1264}
+                                height={904}
+                            />
                         }
                     </div>
                 </DialogContent>

@@ -77,7 +77,13 @@ export const handleConvertHoldingToReservation = async ({ reservationId, reserva
 
 
 export const cancelUnpaidReservation = async (reservationId: number) => {
+
+    
+    
     const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    if (reservation.reservationStatusId !== EnumReservationStatusNumeric.prepayment) return
+    
     if (reservation.reservationStatusId === EnumReservationStatusNumeric.prepayment) {
         await ReservationEntities.updateReservation({
             data: {

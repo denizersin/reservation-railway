@@ -32,7 +32,7 @@ export default function ReservationSummaryPage() {
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper>
-            <div className="mt-10"></div>
+            
             <ReservationStatusHeader showBackButton={false} onGoBack={onGoBack} />
             <div className="px-2">
                 <SummaryCard

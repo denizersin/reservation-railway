@@ -41,8 +41,7 @@ export default function HeadBanner({
                 }
 
             </div>
-            <div className='max-w-screen-2xl mx-auto flex justify-end mt-'>
-                
+            <div className='max-w-screen-xl mx-auto flex justify-end mt-3 md:mt-5 mb-3'>
                 <FrontLanguageDropDown />
             </div>
         </div>

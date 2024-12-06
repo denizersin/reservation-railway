@@ -171,14 +171,15 @@ export default function UserInfo() {
                                 render={({ field }) => (
                                     <FormItem >
                                         <FormLabel>Code</FormLabel>
-             
-                                            <FormControl>
-                                                <CustomComboSelect
-                                                    data={phoneCodesSelectData}
-                                                    onValueChange={(val) => field.onChange(Number(val))}
-                                                    value={String(field.value)}
-                                                />
-                                            </FormControl>
+
+                                        <FormControl>
+                                            <CustomComboSelect
+                                                buttonClass="w-full"
+                                                data={phoneCodesSelectData}
+                                                onValueChange={(val) => field.onChange(Number(val))}
+                                                value={String(field.value)}
+                                            />
+                                        </FormControl>
 
                                         <FormMessage />
                                     </FormItem>

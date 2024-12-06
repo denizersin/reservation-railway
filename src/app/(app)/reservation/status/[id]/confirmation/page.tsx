@@ -33,7 +33,7 @@ export default function ReservationConfirmationPage() {
     return <div>
         <HeadBanner showHoldingSection={false} />
         <FrontMaxWidthWrapper>
-            <div className="mt-10"></div>
+            
             <div className="px-2">
                 <SummaryCard
                     guestCount={reservationStatusData?.guestCount!}

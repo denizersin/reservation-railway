@@ -1,5 +1,6 @@
 "use client"
 import { Button } from "@/components/custom/button"
+import { CustomComboSelect } from "@/components/custom/custom-combo-select"
 import { FrontCard } from "@/components/custom/front/card"
 import FrontMaxWidthWrapper from "@/components/custom/front/front-max-w-wrapper"
 import HeadBanner from "@/components/custom/front/head-banner"
@@ -16,17 +17,11 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useReservationStates } from "@/hooks/front/useReservatoinStates"
 import { usePhoneCodesSelectData, useReservationTagsSelectData } from "@/hooks/predefined/predfined"
 import { useToast } from "@/hooks/use-toast"
+import { useShowLoadingModal } from "@/hooks/useShowLoadingModal"
 import { api } from "@/server/trpc/react"
 import { EnumMealNumeric } from "@/shared/enums/predefined-enums"
 import TclientValidator, { clientValidator } from "@/shared/validators/front/create"
@@ -36,8 +31,6 @@ import { RefObject, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { CookieContent } from "../_components/cookie-content"
 import { ReservationStatusHeader } from "../_components/reservation-status-header"
-import { useShowLoadingModal } from "@/hooks/useShowLoadingModal"
-import { CustomComboSelect } from "@/components/custom/custom-combo-select"
 export type UserInfoImperativeModalRefs = RefObject<{
     openCookieModal?: () => void
 }>
@@ -139,6 +132,8 @@ export default function UserInfo() {
     useShowLoadingModal([isUnHoldHoldedTableLoading])
 
 
+
+
     return (
         <div>
             <HeadBanner showHoldingSection={true} />
@@ -186,6 +181,7 @@ export default function UserInfo() {
                                         <FormLabel>Code</FormLabel>
                                         <FormControl>
                                             <CustomComboSelect
+                                            buttonClass="w-full"
                                                 data={phoneCodesSelectData}
                                                 onValueChange={(val) => field.onChange(Number(val))}
                                                 value={String(field.value)}
