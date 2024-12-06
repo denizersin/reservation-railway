@@ -105,6 +105,23 @@ async function initDb() {
 // initDb()
 
 
+function testMail() {
+    mailService.sendMail({
+        to: 'ersindenizm@gmail.com',
+        subject: 'Test',
+        html: `
+        <h1>Test</h1>
+        `
+    }).then((res) => {
+        console.log(res)
+    }).catch((err) => {
+        console.error(err)
+    })
+}
+
+testMail()
+
+
 
 // console.log(env.DATABASE_URL)
 

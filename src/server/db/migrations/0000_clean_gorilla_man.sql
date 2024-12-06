@@ -393,6 +393,7 @@ CREATE TABLE `restaurant_payment_setting` (
 	`prepayment_price_per_guest` int NOT NULL,
 	`convert_prepayment_to_sale` boolean NOT NULL,
 	`prepayment_cancellation_hours` int NOT NULL,
+	`cancellation_allowed_hours` int NOT NULL,
 	`prepayment_at_no_show` enum('convertToSale','refund','none') NOT NULL,
 	`notify_prepayment_reminder_hours_before` int DEFAULT 4,
 	CONSTRAINT `restaurant_payment_setting_id` PRIMARY KEY(`id`)

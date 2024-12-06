@@ -112,6 +112,24 @@ export const PaymentSettings = () => {
                             )}
                         />
 
+                        {/* cancellationAllowedHours */}
+                        <FormField
+                            control={form.control}
+                            name="cancellationAllowedHours"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Cancellation Allowed Hours</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            {...field}
+                                            onChange={e => field.onChange(Number(e.target.value))}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+
                         <FormField
                             control={form.control}
                             name="notifyPrepaymentReminderHoursBefore"

@@ -14,8 +14,12 @@ export const tblRestaurantPaymentSetting = mysqlTable('restaurant_payment_settin
 
     //misafir geldiginde ödeme işlemi yapılıyorsa, bu ödemeye ne yapılır?
     convertPrepaymentToSale: boolean('convert_prepayment_to_sale').$default(() => true).notNull(),
-    //misafir gelmeden önce ödeme iptali için kalan süre
-    prepaymentCancellationHours: int('prepayment_cancellation_hours').$default(() => 72).notNull(),
+    //odeme yapmasi icin taninan  süre
+    prepaymentCancellationHours: int('prepayment_cancellation_hours').$default(() => 24).notNull(),
+
+    //iptal edilebilme süresi
+    cancellationAllowedHours: int('cancellation_allowed_hours').$default(() => 72).notNull(),
+
 
     
     //misafir gelmezse ödeme nasıl işlenir?

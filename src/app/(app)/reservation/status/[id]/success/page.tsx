@@ -28,6 +28,8 @@ export default function ReservationSummaryPage() {
         router.back()
     }
 
+    
+
 
     const cancelReservationModalRef = useRef<ResponsiveModalHandleRef>({})
 
@@ -57,7 +59,7 @@ export default function ReservationSummaryPage() {
 
     useShowLoadingModal([isCancelingPublicReservation])
 
-    const canCancelReservation = reservationStatusData?.reservationStatus.status !== EnumReservationStatus.completed
+    const canCancelReservation = reservationStatusData?.canCancelReservation
 
     return <div>
         <HeadBanner showHoldingSection={false} />
@@ -93,6 +95,7 @@ export default function ReservationSummaryPage() {
                         Add to Calendar
                     </Button>
                     <Button
+                        tooltip={`You can cancel your reservation ${reservationStatusData?.cancellationAllowedHours} hours before the reservation date.`}
                         disabled={!canCancelReservation}
                         onClick={() => cancelReservationModalRef.current.openModal?.()}
                         variant={'outline'} className="rounded-sm flex-1 h-full border-destructive">

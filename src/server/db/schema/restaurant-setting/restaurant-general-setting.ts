@@ -20,6 +20,7 @@ export const tblRestaurantGeneralSetting = mysqlTable('restaurant_general_settin
     tableView: mysqlEnum('table_view', getEnumValues(EnumTableViewType)).default(EnumTableViewType.standartTable).notNull(),
 
     
+    
 
 },);
 

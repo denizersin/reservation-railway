@@ -377,7 +377,17 @@ export const getReservationStatusData = async ({
     const languageId = ctx.userPrefrences.language.id
     const result = await ReservationEntities.getReservationStatusData({ reservationId, languageId })
 
-    return result
+    const paymentSetting = await paymentSettingEntities.getRestaurantPaymentSetting({ restaurantId: ctx.restaurantId })
+
+    const reminedHourToReservation = Math.round((result.reservationDate.getTime() - new Date().getTime()) / (60 * 60 * 1000))
+    console.log(reminedHourToReservation, paymentSetting.cancellationAllowedHours, 'reminedHourToReservation, paymentSetting.cancellationAllowedHours')
+
+    const canCancelReservation = reminedHourToReservation > paymentSetting.cancellationAllowedHours
+
+    return {
+        ...result, canCancelReservation,
+        cancellationAllowedHours: paymentSetting.cancellationAllowedHours
+    }
 
 
 }
@@ -422,11 +432,11 @@ export const cancelPublicReservation = async ({
                 entityData: {
                     reservationId,
                     data: {
-                    currentPrepaymentId: null,
-                    reservationStatusId: EnumReservationStatusNumeric.cancel,
-                    canceledBy: 'Guest',
-                    canceledAt: new Date(),
-                },
+                        currentPrepaymentId: null,
+                        reservationStatusId: EnumReservationStatusNumeric.cancel,
+                        canceledBy: 'Guest',
+                        canceledAt: new Date(),
+                    },
                     trx
                 }
             })
@@ -448,8 +458,8 @@ export const cancelPublicReservation = async ({
             entityData: {
                 reservationId,
                 data: {
-                reservationStatusId: EnumReservationStatusNumeric.cancel,
-            },
+                    reservationStatusId: EnumReservationStatusNumeric.cancel,
+                },
                 trx
             }
         })
@@ -520,10 +530,10 @@ export const handleSuccessPrepaymentPublicReservation = async ({
             entityData: {
                 reservationId,
                 data: {
-                reservationStatusId: EnumReservationStatusNumeric.confirmed,
-                confirmedAt: new Date(),
-                confirmedBy: 'Guest',
-                isCreatedByOwner: false,
+                    reservationStatusId: EnumReservationStatusNumeric.confirmed,
+                    confirmedAt: new Date(),
+                    confirmedBy: 'Guest',
+                    isCreatedByOwner: false,
 
                 },
                 trx
@@ -573,10 +583,10 @@ export const confirmPublicReservation = async ({
             entityData: {
                 reservationId,
                 data: {
-                reservationStatusId: EnumReservationStatusNumeric.confirmed,
-                confirmedBy: 'Guest',
-                confirmedAt: new Date(),
-            },
+                    reservationStatusId: EnumReservationStatusNumeric.confirmed,
+                    confirmedBy: 'Guest',
+                    confirmedAt: new Date(),
+                },
                 trx
             }
         })
