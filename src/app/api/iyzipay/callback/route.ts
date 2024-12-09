@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { iyzipay } from "@/server/api/routers/payment";
+import { IYZIPAY } from "@/server/layer/entities/iyzipay";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const treedresult = await new Promise((resolve, reject) => {
-        iyzipay.threedsPayment.create({
+        IYZIPAY.threedsPayment.create({
           paymentId: paymentData.paymentId,
         } as any, function (err, result) {
           resolve(result);

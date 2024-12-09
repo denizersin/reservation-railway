@@ -23,12 +23,9 @@ import { notificationUseCases } from "../notification";
 import { env } from "@/env";
 import Iyzipay, { BASKET_ITEM_TYPE, LOCALE } from "iyzipay";
 import { invoiceEntity } from "@/server/layer/entities/reservation/invoice";
+import { IYZIPAY } from "@/server/layer/entities/iyzipay";
 
-export const iyzipay = new Iyzipay({
-    apiKey: env.IYZIPAY_API_KEY,
-    secretKey: env.IYZIPAY_SECRET_KEY,
-    uri: env.IYZIPAY_URI,
-});
+
 export const createPublicReservation = async ({
     input,
     ctx
@@ -691,7 +688,8 @@ export const makePrepayment = async ({
     input,
     ctx
 }: TUseCaseClientLayer<TclientValidator.TCreatePaymentSchema>) => {
-    type TPaymentData = Omit<Parameters<typeof iyzipay.threedsInitialize.create>[0], 'shippingAddress'>
+    
+    type TPaymentData = Omit<Parameters<typeof IYZIPAY.threedsInitialize.create>[0], 'shippingAddress'>
     type TResult = {
         status: string,
         locale: string,
@@ -763,7 +761,7 @@ export const makePrepayment = async ({
     }
 
     const result: TResult = await new Promise((resolve, reject) => {
-        iyzipay.threedsInitialize.create(request as any, function (err, result) {
+        IYZIPAY.threedsInitialize.create(request as any, function (err, result) {
             console.log(err, result);
             resolve(result as TResult);
         });
