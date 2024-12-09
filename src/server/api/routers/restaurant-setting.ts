@@ -5,7 +5,7 @@ import { paymentSettingValidator } from "@/shared/validators/restaurant-setting/
 import { reviewSettingsValidator } from "@/shared/validators/restaurant-setting/review";
 import { restaurantDailySettingValidator } from "@/shared/validators/restaurant-setting/daily";
 import { z } from "zod";
-import { createTRPCRouter, ownerProcedure } from "../trpc";
+import { clientProcedure, createTRPCRouter, ownerProcedure } from "../trpc";
 import { generalSettingUseCase } from "@/server/layer/use-cases/restaurant-setting";
 import { restaurantCalendarSettingValidator } from "@/shared/validators/restaurant-setting/calendar";
 
@@ -108,7 +108,7 @@ export const restaurantSettingRouter = createTRPCRouter({
             await calendarSettingEntities.updateCalendarSetting(input)
         }),
 
-    getDailySettings: ownerProcedure
+    getDailySettings: clientProcedure
         .input(z.object({ date: z.date() }))
         .query(async ({ input, ctx }) => {
             return await dailySettingEntities.getDailySettings({

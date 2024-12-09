@@ -16,11 +16,12 @@ import { EnumMealNumeric } from "@/shared/enums/predefined-enums";
 import { useRouter } from "next/navigation";
 import React, { createContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useStartOfDay } from "@/hooks/useStartOfDay";
 
 
 
 export type TMonthAvailabilityRow = RouterOutputs['reservation']['getMonthAvailabilityByGuestCount'][0]
-
+type TRestaurantDailySettingData = RouterOutputs['restaurantSetting']['getDailySettings']
 
 
 //define context
@@ -39,6 +40,7 @@ type TMonthAvailabilityContext = {
     month: Date,
     setMonth: (month: Date) => void,
     next3Months: Date[],
+    dailySettings: TRestaurantDailySettingData | undefined,
 
 }
 
@@ -50,7 +52,7 @@ export default function RootPage() {
 
     const { mutate: holdTable, isSuccess: isOccupiedTableSuccess, isPending: isOccupiedTableLoading } = api.reservation.holdTable.useMutation({})
 
- 
+
 
 
 
@@ -59,7 +61,7 @@ export default function RootPage() {
 
     const next3Months = useMemo(() => getNext3Months(), [])
 
-    const { getReservationState, updateReservationState, clearReservationState,updateWaitlistReservationState } = useReservationStates()
+    const { getReservationState, updateReservationState, clearReservationState, updateWaitlistReservationState } = useReservationStates()
 
     const [today, setToday] = useState(next3Months[0]!)
 
@@ -135,6 +137,14 @@ export default function RootPage() {
         enabled: !!guestCount
     })
 
+
+
+    const queryDateDailySettings = useStartOfDay(date);
+    const { data: dailySettings, isLoading: isLoadingDailySettings } = api.restaurantSetting.getDailySettings.useQuery({
+        date: queryDateDailySettings,
+    })
+
+
     // const { data: monthAvailabilityByGuestCountData, isLoading: isLoadingMonthAvailabilityByGuestCount } = api.reservation.getMonthAvailabilityByGuestCount.useQuery({
     //     month: month.getMonth(),
     //     mealId: EnumMealNumeric.dinner,
@@ -179,10 +189,12 @@ export default function RootPage() {
         month,
         setMonth,
         next3Months,
+        dailySettings
     }
 
 
     useShowLoadingModal([isLoadingMonthAvailability])
+
 
     return (
         <MonthAvailabilityContext.Provider value={contextValue}>

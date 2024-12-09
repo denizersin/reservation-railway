@@ -355,7 +355,7 @@ export default function UserInfo() {
                         </div>
 
                         <Button loading={isCreateWaitlistLoading} type="submit" className="w-full">
-                            Complete My Reservation
+                            Join Waitlist
                         </Button>
                     </form>
                 </Form>

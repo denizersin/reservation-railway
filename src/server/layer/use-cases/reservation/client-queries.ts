@@ -13,6 +13,7 @@ import { reservationLimitationEntities } from "../../entities/reservation-limita
 import { restaurantEntities } from "../../entities/restaurant";
 import { dailySettingEntities } from "../../entities/restaurant-setting";
 import { env } from "@/env";
+import { format } from "date-fns";
 
 
 
@@ -35,7 +36,7 @@ export const getMonthAvailabilityByGuestCount = async ({
         restaurantId
     })
 
-    const { closedDinnerHours: closedDinnerHoursLocal, closedAreas: closedAreIds } = getDailySettings
+    const { closedDinnerHours: closedDinnerHoursLocal, closedAreas: closedAreIds, onlineReservations: isTodayOpenForOnlineReservations } = getDailySettings
 
     const closedDinnerHours = closedDinnerHoursLocal.map(h => localHourToUtcHour(h))
 
@@ -89,7 +90,16 @@ export const getMonthAvailabilityByGuestCount = async ({
 
     // Ayın günlerini GMT+3'e göre filtrele
     let monthDays = getMonthDays(firstDate, endOfMonthDayLocal)
-        .filter((day) => !inActiveMealDays.includes(getLocalTime(day).getDay()));
+        .filter((day) => {
+            const isNotInActiveMealDay = !inActiveMealDays.includes(getLocalTime(day).getDay())
+            const isToday = format(todayLocal, 'dd-mm-yy') === format(day, 'dd-mm-yy')
+            const todayCondition = isToday ? isTodayOpenForOnlineReservations : true
+
+            const permanentLimitationCondition = permanentLimitation.filter(t => !t.roomId)
+                .some(p => p.startDate <= day && p.endDate >= day)
+
+            return isNotInActiveMealDay && todayCondition && !permanentLimitationCondition
+        });
 
 
     //filter closed months
@@ -129,8 +139,8 @@ export const getMonthAvailabilityByGuestCount = async ({
             const isClosedByClosedAreas = index === 0 && closedAreIds.includes(room.room)
 
 
-            
-            
+
+
             room.hours.forEach(hour => {
                 const isClosedByClosedHours = index === 0 && closedDinnerHours.includes(excludeSecondsFromTime(hour.hour))
                 hour.isAvaliable = hour.isAvaliable && !isClosedByClosedHours

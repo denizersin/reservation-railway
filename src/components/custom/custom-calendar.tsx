@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
 import { format } from "date-fns"
 import { MonthAvailabilityContext, TMonthAvailabilityRow } from "@/app/(app)/reservation/page"
+import { useStartOfDay } from "@/hooks/useStartOfDay"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
     date: Date | undefined
@@ -29,7 +30,7 @@ function CustomCalendar({
     ...props
 }: CalendarProps) {
 
-    const { monthAvailabilityData, guestCount, next3Months, month, setMonth } = React.useContext(MonthAvailabilityContext)
+    const { monthAvailabilityData, guestCount, next3Months, month, setMonth, dailySettings } = React.useContext(MonthAvailabilityContext)
 
     const dateMap = React.useMemo(() => {
         const newMap: DateMapWithGuestCount = {};
@@ -38,7 +39,7 @@ function CustomCalendar({
             newMap[format(date, 'dd-mm-yy')] = record
         })
         return newMap
-    }, [monthAvailabilityData,guestCount])
+    }, [monthAvailabilityData, guestCount])
 
 
     React.useEffect(() => {
@@ -151,8 +152,13 @@ function CustomCalendar({
 
                     const isDisabled = isInActiveDate || isFullyDate || !isBelongToMonth
 
+                    const startOfDay = useStartOfDay()
+
+                    const isToday = format(props.date, 'dd-mm-yy') === format(startOfDay, 'dd-mm-yy')
+                    console.log(isToday, 'isToday')
 
 
+                    const isWaitlist = isFullyDate && (isToday ? dailySettings?.waitlist : true)
                     // const isFull
                     return isBelongToMonth ? <Button
                         // disabled={!isBelongToMonth}
@@ -169,7 +175,7 @@ function CustomCalendar({
                         })}>
                         {props.date.getDate()}
                         {
-                            isFullyDate && <Button
+                            isWaitlist && <Button
                                 variant={'default'}
                                 size={'sm'}
                                 onClick={() => {

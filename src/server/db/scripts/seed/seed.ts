@@ -38,6 +38,9 @@ const room1TblCOunt=10
 
 const guestCount = 10
 
+const firstReservationDate = new Date()
+firstReservationDate.setDate(firstReservationDate.getDate() + 1)
+
 const seedFunctions = [
     async function createUsers() {
         const result_admin = await db.insert(tblUser).values({
@@ -365,7 +368,7 @@ const seedFunctions = [
 
         const reservationCreateionCount = reservationCount
         //add two day
-        const firstReservationDate = new Date()
+
 
         for (let i = 0; i < reservationCreateionCount; i++) {
             const newDate = new Date(firstReservationDate)

@@ -6,3 +6,5 @@ export const IYZIPAY = new Iyzipay({
     secretKey: env.IYZIPAY_SECRET_KEY,
     uri: env.IYZIPAY_URI,
 });
+
+// export const IYZIPAY = {}
