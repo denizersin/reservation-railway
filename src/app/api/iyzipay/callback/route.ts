@@ -101,6 +101,8 @@ export async function POST(req: NextRequest) {
   // There is no content-type by default!
   response.headers.set('Content-Type', 'text/html; charset=utf-8');
 
+  // X-Frame-Options: ALLOW-FROM https://yourdomain.com
+  response.headers.set('X-Frame-Options', `ALLOW-FROM ${env.BASE_URL}`);
   // set response headers, cookies, etc, if desired
   return response;
 }
