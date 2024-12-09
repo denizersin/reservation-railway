@@ -344,7 +344,6 @@ export const updateReservationTime = async ({
     input,
     ctx
 }: TUseCaseOwnerLayer<TReservationValidator.updateReservationTime>) => {
-
     const {
         reservationId,
         data,
@@ -362,16 +361,10 @@ export const updateReservationTime = async ({
 
     if (!reservation) throw new Error('Reservation not found')
 
-
     const isDateChanged = format(reservation.reservationDate, 'dd-MM-yyyy') !== format(data.reservationDate, 'dd-MM-yyyy')
-
     const isTimeChanged = reservation.hour !== hour
-    const isGuestCountChanged = reservation.guestCount !== data.guestCount
-
     const tableData = await RoomEntities.getTableById({ tableId: data.tableId })
-
     const isRoomChanged = reservation.roomId !== tableData.roomId
-
     const isTableChanged = reservation.tables.find(t => t.tableId === data.tableId) === undefined
 
     if (isTableChanged) {
@@ -382,11 +375,7 @@ export const updateReservationTime = async ({
     }
 
     if (isDateChanged || isRoomChanged) {
-
         const table = await RoomEntities.getTableById({ tableId: data.tableId })
-
-
-
         await reservationService.updateReservation({
             entityData: {
                 reservationId,
@@ -395,7 +384,6 @@ export const updateReservationTime = async ({
                 }
             }
         })
-
     }
 
     await reservationService.updateReservation({
@@ -404,12 +392,9 @@ export const updateReservationTime = async ({
             data: {
                 reservationDate: data.reservationDate,
                 hour,
-                guestCount: data.guestCount,
             }
         }
     })
-
-
 
     if (isTimeChanged || isDateChanged) {
         await notificationUseCases.handleReservationTimeChange({
@@ -420,17 +405,6 @@ export const updateReservationTime = async ({
             withSms,
         })
     }
-
-    if (isGuestCountChanged) {
-        await notificationUseCases.handleReservationGuestCountChange({
-            reservationId,
-            oldValue: reservation.guestCount.toString(),
-            newValue: data.guestCount.toString(),
-            withEmail,
-            withSms,
-        })
-    }
-
 }
 
 export const updateReservationTable = async ({
@@ -538,6 +512,36 @@ export const updateReservationTagAndNote = async ({
                 guestNote: note
             }
         }
+    })
+}
+
+export const updateReservationGuestCount = async ({
+    input,
+    ctx
+}: TUseCaseOwnerLayer<TReservationValidator.updateReservationGuestCount>) => {
+    const {
+        reservationId,
+        guestCount,
+        notificationOptions: { withEmail, withSms }
+    } = input
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId })
+
+    await reservationService.updateReservation({
+        entityData: {
+            reservationId,
+            data: {
+                guestCount
+            }
+        }
+    })
+
+    await notificationUseCases.handleReservationGuestCountChange({
+        reservationId,
+        oldValue: reservation.guestCount.toString(),
+        newValue: guestCount.toString(),
+        withEmail,
+        withSms,
     })
 }
 

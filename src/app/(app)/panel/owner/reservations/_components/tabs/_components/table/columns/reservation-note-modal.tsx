@@ -9,6 +9,7 @@ import { Button } from '@/components/custom/button'
 import { api } from '@/server/trpc/react'
 import { useMutationCallback } from '@/hooks/useMutationCallback'
 import { useToast } from '@/hooks/use-toast'
+import { InvoiceDetailModal } from './invoice-detail-modal'
 
 type Props = {
     reservation: TReservationRow
@@ -55,7 +56,7 @@ export const ReservationNoteModal = ({
     const { toast } = useToast()
 
 
-
+    const [invoiceDetailModalOpen, setInvoiceDetailModalOpen] = useState(false)
 
     return (
 
@@ -67,6 +68,14 @@ export const ReservationNoteModal = ({
                         <ReservationStatusGuestSection reservation={reservation} />
                     </div>
                     <div className="c c2 w-2/3 flex flex-col">
+
+                        {reservation.invoice &&
+                            <div className='bg-blue-100 p-2 rounded-md'> The guest requested invoice.
+                                <Button variant='link' onClick={() => setInvoiceDetailModalOpen(true)}>Invoice Detail</Button>
+                            </div>
+                        }
+
+
                         <div className='my-2'>
                             <div>Reservation Tags:</div>
                             <MultiSelect
@@ -97,6 +106,12 @@ export const ReservationNoteModal = ({
 
                     </div>
                 </div>
+
+                <InvoiceDetailModal
+                    reservation={reservation}
+                    isOpen={invoiceDetailModalOpen}
+                    setOpen={setInvoiceDetailModalOpen}
+                />
 
             </DialogContent>
         </Dialog>

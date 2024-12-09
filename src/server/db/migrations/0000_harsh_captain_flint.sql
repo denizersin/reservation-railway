@@ -644,6 +644,25 @@ CREATE TABLE `review_rating` (
 	CONSTRAINT `review_rating_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `invoices` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`reservation_id` int NOT NULL,
+	`invoice_type` enum('individual','corporate'),
+	`invoice_first_name` varchar(256),
+	`invoice_last_name` varchar(256),
+	`invoice_phone_code_id` int,
+	`invoice_phone` varchar(20),
+	`city` varchar(100),
+	`district` varchar(100),
+	`neighbourhood` varchar(100),
+	`address` varchar(500),
+	`company_name` varchar(256),
+	`tax_identification_number` varchar(50),
+	`tax_office` varchar(256),
+	`is_e_invoice_taxpayer` boolean DEFAULT false,
+	CONSTRAINT `invoices_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `waitlist` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`restaurant_id` int NOT NULL,
@@ -669,25 +688,6 @@ CREATE TABLE `meal_day` (
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `meal_day_id` PRIMARY KEY(`id`),
 	CONSTRAINT `unique_meal_day` UNIQUE(`meal_id`,`day`)
-);
---> statement-breakpoint
-CREATE TABLE `invoices` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`reservation_id` int NOT NULL,
-	`invoice_type` varchar(20) NOT NULL,
-	`invoice_first_name` varchar(256),
-	`invoice_last_name` varchar(256),
-	`invoice_phone_code` varchar(10),
-	`invoice_phone` varchar(20),
-	`city` varchar(100),
-	`district` varchar(100),
-	`neighbourhood` varchar(100),
-	`address` varchar(500),
-	`company_name` varchar(256),
-	`tax_identification_number` varchar(50),
-	`tax_office` varchar(256),
-	`is_e_invoice_taxpayer` boolean DEFAULT false,
-	CONSTRAINT `invoices_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 ALTER TABLE `refresh_token` ADD CONSTRAINT `refresh_token_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint

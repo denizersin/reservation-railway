@@ -1,4 +1,6 @@
+import { getEnumValues } from "@/server/utils/server-utils";
 import { blockedAllergens } from "@/shared/data";
+import { EnumInvoiceType } from "@/shared/enums/predefined-enums";
 import { z } from "zod";
 
 const userInfoFormSchema = z.object({
@@ -72,10 +74,10 @@ const prePaymentFormSchema = z.object({
 
     invoice: z.object({
         invoiceRequired: z.boolean().optional(),
-        invoiceType: z.enum(["individual", "corporate"]).optional(),
+        invoiceType: z.enum(getEnumValues(EnumInvoiceType)).optional(),
         invoiceFirstName: z.string().optional(),
         invoiceLastName: z.string().optional(),
-        invoicePhoneCodeId: z.string().optional(),
+        invoicePhoneCodeId: z.number().optional(),
         invoicePhone: z.string().optional(),
         city: z.string().optional(),
         district: z.string().optional(),
@@ -85,7 +87,47 @@ const prePaymentFormSchema = z.object({
         taxOffice: z.string().optional(),
         companyName: z.string().optional(),
         isEInvoiceTaxpayer: z.boolean().optional(),
-    }),
+    }).superRefine((data, ctx) => {
+        if (!data.invoiceRequired) return;
+
+        const requiredFields = {
+            invoiceType: "Invoice type",
+            invoiceFirstName: "First name",
+            invoiceLastName: "Last name",
+            invoicePhoneCodeId: "Phone code",
+            invoicePhone: "Phone number",
+            city: "City",
+            district: "District",
+            // neighbourhood: "Neighbourhood",
+            address: "Address",
+
+            
+            ...(data.invoiceType === EnumInvoiceType.corporate ? {
+                tin: "Tax ID number",
+                taxOffice: "Tax office", 
+                companyName: "Company name",
+                // isEInvoiceTaxpayer: "E-invoice taxpayer status"
+            } : {}),
+        } as const;
+
+        Object.entries(requiredFields).forEach(([field, label]) => {
+            if (!data[field as keyof typeof data]) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `${label} is required when invoice is required`,
+                    path: [field]
+                });
+            }
+        });
+
+        // if (data.isEInvoiceTaxpayer === undefined) {
+        //     ctx.addIssue({
+        //         code: z.ZodIssueCode.custom,
+        //         message: "E-invoice taxpayer status is required when invoice is required",
+        //         path: ["isEInvoiceTaxpayer"]
+        //     });
+        // }
+    }).optional(),
 
 
 
@@ -98,6 +140,11 @@ const prePaymentFormSchema = z.object({
     distance_sales_consent: z.boolean().refine((val) => val === true, {
         message: "You must accept the distance sales agreement",
     }),
+})
+
+const createPaymentSchema = z.object({
+    reservationId: z.number().int().positive(),
+    paymentData: prePaymentFormSchema,
 })
 
 
@@ -120,7 +167,8 @@ export const clientValidator = {
     holdTableSchema,
     createWaitlistSchema,
     waitlistFormSchema,
-    prePaymentFormSchema
+    prePaymentFormSchema,
+    createPaymentSchema,
 }
 
 
@@ -132,6 +180,7 @@ namespace TclientValidator {
     export type TCreateWaitlistSchema = z.infer<typeof createWaitlistSchema>
     export type TWaitlistForm = z.infer<typeof waitlistFormSchema>
     export type TPrePaymentForm = z.infer<typeof prePaymentFormSchema>
+    export type TCreatePaymentSchema = z.infer<typeof createPaymentSchema>
 }
 
 export default TclientValidator

@@ -25,6 +25,7 @@ export *  from './reservation/reservation-status';
 export *  from './reservation/confirmation-request';
 export *  from './reservation/reservation-holding';
 export *  from './reservation/review';
+export *  from './reservation/invoice';
 
 export *  from './waitlist';
 

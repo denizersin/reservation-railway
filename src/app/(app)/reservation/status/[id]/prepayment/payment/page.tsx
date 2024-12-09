@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { useReservationStatusContext } from "../../layout";
 import { ThreeDModal } from "./_components/ThreeDModal";
+import { EnumInvoiceType } from "@/shared/enums/predefined-enums";
 
 export default function Page() {
     const { selectData: phoneCodes, isLoading: isLoadingPhoneCodes } = usePhoneCodesSelectData();
@@ -57,9 +58,14 @@ export default function Page() {
             expiry_date: "12/24",
             cvc: "123",
 
+            invoice: {
+                invoiceRequired: false,
+                invoiceType: EnumInvoiceType.individual
+            },
             cancellation_policy_consent: true,
             preliminary_form_consent: true,
             distance_sales_consent: true,
+
 
         },
     })
@@ -72,8 +78,11 @@ export default function Page() {
         console.log(values)
         // Handle payment submission
         // makePrepayment({ reservationId: reservationStatusData?.id! })
+
+        
         createPayment({
-            reservationId: reservationStatusData?.id!
+            reservationId: reservationStatusData?.id!,
+            paymentData: values
         })
 
     }
@@ -91,7 +100,7 @@ export default function Page() {
                     title: data.status,
                     description: "Something went wrong",
                     variant: 'destructive',
-                    
+
                 })
             }
         }
@@ -117,6 +126,14 @@ export default function Page() {
 
     useEffect(() => {
         form.setValue("name_and_surname", reservationStatusData?.guest?.name ?? "")
+        const invoice = reservationStatusData?.invoice
+        if (invoice) {
+            form.setValue("invoice.invoiceRequired", true)
+
+            Object.keys(invoice).forEach((key) => {
+                form.setValue(`invoice.${key}` as any, invoice[key as keyof typeof invoice] ?? undefined)
+            })
+        }
     }, [reservationStatusData?.guest?.name])
 
     const [isThreeDModalOpen, setIsThreeDModalOpen] = useState(false)
@@ -130,6 +147,7 @@ export default function Page() {
 
     useShowLoadingModal([isCreatingPayment])
 
+    console.log(form.formState.errors)
 
     return (
         <div>
@@ -335,7 +353,7 @@ export default function Page() {
                                                 <CustomComboSelect
                                                     buttonClass='w-full'
                                                     data={phoneCodes}
-                                                    onValueChange={(value) => field.onChange(String(value))}
+                                                    onValueChange={(value) => field.onChange(Number(value))}
                                                     value={String(field.value)}
                                                 />
                                                 <FormMessage />
@@ -365,7 +383,7 @@ export default function Page() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>City</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                {/* <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select city" />
@@ -376,7 +394,10 @@ export default function Page() {
                                                         <SelectItem value="ankara">Ankara</SelectItem>
                                                         <SelectItem value="izmir">Izmir</SelectItem>
                                                     </SelectContent>
-                                                </Select>
+                                                </Select> */}
+                                                <FormControl>
+                                                    <Input className="rounded-sm h-12" placeholder="City" {...field} />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -388,7 +409,7 @@ export default function Page() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>District</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                {/* <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select district" />
@@ -399,7 +420,11 @@ export default function Page() {
                                                         <SelectItem value="besiktas">Beşiktaş</SelectItem>
                                                         <SelectItem value="sisli">Şişli</SelectItem>
                                                     </SelectContent>
-                                                </Select>
+                                                </Select> */}
+
+                                                <FormControl>
+                                                    <Input className="rounded-sm h-12" placeholder="District" {...field} />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -411,7 +436,7 @@ export default function Page() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Neighbourhood</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                {/* <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select neighbourhood" />
@@ -422,7 +447,10 @@ export default function Page() {
                                                         <SelectItem value="moda">Moda</SelectItem>
                                                         <SelectItem value="fenerbahce">Fenerbahçe</SelectItem>
                                                     </SelectContent>
-                                                </Select>
+                                                </Select> */}
+                                                <FormControl>
+                                                    <Input className="rounded-sm h-12" placeholder="Neighbourhood" {...field} />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -443,8 +471,9 @@ export default function Page() {
                                     )}
                                 />
 
-                                {invoiceType === "corporate" && (
-                                    <>
+                                {invoiceType === EnumInvoiceType.corporate && (
+                                    <div>
+
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <FormField
                                                 control={form.control}
@@ -474,42 +503,48 @@ export default function Page() {
                                                 )}
                                             />
                                         </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="invoice.companyName"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Company Name</FormLabel>
+                                                        <FormControl>
+                                                            <Input className="rounded-sm h-12" placeholder="Company Name" {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
 
-                                        <FormField
-                                            control={form.control}
-                                            name="invoice.companyName"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Company Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input className="rounded-sm h-12" placeholder="Company Name" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
 
-                                        <FormField
-                                            control={form.control}
-                                            name="invoice.isEInvoiceTaxpayer"
-                                            render={({ field }) => (
-                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                                    <FormControl>
-                                                        <Checkbox
-                                                            checked={field.value}
-                                                            onCheckedChange={field.onChange}
-                                                        />
-                                                    </FormControl>
-                                                    <div className="space-y-1 leading-none">
+                                            <FormField
+                                                control={form.control}
+                                                name="invoice.isEInvoiceTaxpayer"
+                                                render={({ field }) => (
+                                                    <FormItem className="flex flex-col">
                                                         <FormLabel>
-                                                            I am an e-invoice taxpayer
+                                                            Taxpayer Status
                                                         </FormLabel>
-                                                    </div>
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </>
+                                                        <FormControl>
+                                                            <div className="flex items-center space-x-2 flex-1">
+                                                                <Checkbox
+                                                                    checked={field.value}
+                                                                    onCheckedChange={field.onChange}
+                                                                />
+                                                                <span>I am an e-invoice taxpayer</span>
+                                                            </div>
+
+                                                        </FormControl>
+
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
                                 )}
+
                             </div>
                         )}
 

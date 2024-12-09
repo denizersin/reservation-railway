@@ -5,6 +5,7 @@ import { api } from '@/server/trpc/react'
 import { useMemo } from 'react'
 import { TableStatuesRowCard } from './table-statues-row-card'
 import { useStartOfDay } from '@/hooks/useStartOfDay'
+import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 
 type Props = {
     selectedTableId: number | undefined
@@ -14,8 +15,8 @@ type Props = {
     selectedMealId: number | undefined,
     selectedHour: string | undefined,
     setSelectedHour: (hour: string | undefined) => void
-    guestCount: number
-    setGuestCount: (count: number) => void
+    guestCount?: number
+    setGuestCount?: (count: number) => void
     isDateDisabled?: boolean
 }
 
@@ -35,7 +36,7 @@ export const TableStatues2 = ({
 
     const queryDate = useStartOfDay(date)
 
-    const { data: avaliableTablesData } = api.reservation.getTableStatues.useQuery({
+    const { data: avaliableTablesData,isLoading } = api.reservation.getTableStatues.useQuery({
         date: queryDate,
         mealId: selectedMealId!,
     }, {
@@ -106,7 +107,13 @@ export const TableStatues2 = ({
     const selectedTable = useMemo(() => {
         return currentTables?.find((table) => table.table?.id === selectedTableId)?.table
     }, [selectedTableId, currentTables])
-    console.log(mealHours, 'mealHours')
+
+
+    const hasGuestCount =  setGuestCount;
+
+    useShowLoadingModal([isLoading])
+
+
     return (
         <div>
             <div className='flex gap-x-2 my-2'>
@@ -124,7 +131,7 @@ export const TableStatues2 = ({
 
                             <div className={cn('text-sm', {
                                 'opacity-0': selectedHour !== hour.hour
-                            })}>{selectedHour === hour.hour ? currentHourGuestCounts:0}</div>
+                            })}>{selectedHour === hour.hour ? currentHourGuestCounts : 0}</div>
 
                         </div>
 
@@ -143,10 +150,10 @@ export const TableStatues2 = ({
                     )
                 }
             </div>
-            <div className='my-3'>
+            {hasGuestCount && <div className='my-3'>
                 <div className='flex gap-x-4 items-center'>
                     <div className="flex gap-2">
-                        {Array.from({length: 8}, (_, i) => i + 1).map((num) => (
+                        {Array.from({ length: 8 }, (_, i) => i + 1).map((num) => (
                             <div
                                 key={num}
                                 onClick={() => setGuestCount(num)}
@@ -167,7 +174,7 @@ export const TableStatues2 = ({
                     </div>}
 
                 </div>
-            </div>
+            </div>}
 
 
         </div >

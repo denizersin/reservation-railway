@@ -374,7 +374,8 @@ export const getReservationStatusData = async ({
             guest: true,
             currentPrepayment: true,
             reservationStatus: true,
-            review: true
+            review: true,
+            invoice: true
         }
     })
 

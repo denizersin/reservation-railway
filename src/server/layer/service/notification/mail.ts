@@ -65,6 +65,9 @@ const brevoapi = "xkeysib-c410760bf107abcb0da69653d8a1b93aa5399308e6ca382acadf2b
 
 
 export const sendMail = async ({ to, subject, html }: { to: string, subject: string, html: string }) => {
+
+    if (to.includes('example')) return
+
     const transporter = Nodemailer.createTransport({
         host: 'smtp-relay.brevo.com',
         port: 587,                   // TLS için 587

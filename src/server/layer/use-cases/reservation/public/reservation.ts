@@ -1,26 +1,34 @@
 import { db } from "@/server/db";
 import { tblRoom, tblTable, TGuestSelect, TReservationSelect, TTable } from "@/server/db/schema";
+import { predefinedEntities } from "@/server/layer/entities/predefined";
 import { ReservationLogEntities } from "@/server/layer/entities/reservation/reservation-log";
+import { paymentSettingEntities } from "@/server/layer/entities/restaurant-setting";
+import { reservationPaymentService, reservationService } from "@/server/layer/service/reservation";
 import { TUseCaseClientLayer } from "@/server/types/types";
 import { EnumCookieName, HOLDING_RESERVATION_GUEST_ID, HOLDING_TIMEOUT, OCCUPIED_TABLE_TIMEOUT } from "@/server/utils/server-constants";
 import { localHourToUtcHour } from "@/server/utils/server-utils";
-import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumReviewStatus, EnumWaitlistStatus } from "@/shared/enums/predefined-enums";
+import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric, EnumReviewStatus } from "@/shared/enums/predefined-enums";
 import TclientValidator from "@/shared/validators/front/create";
+import TClientReviewValidator from "@/shared/validators/front/reivew";
 import TClientReservationActionValidator from "@/shared/validators/front/reservation-actions";
 import { TRPCError } from "@trpc/server";
 import { and, eq, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { guestEntities } from "../../../entities/guest";
 import { ReservationEntities } from "../../../entities/reservation";
-import { restaurantEntities } from "../../../entities/restaurant";
 import { notificationUseCases } from "../notification";
-import { waitlistEntities } from "@/server/layer/entities/waitlist";
-import TClientReviewValidator from "@/shared/validators/front/reivew";
-import { getReservationById } from "@/server/layer/entities/reservation/waiting-session";
-import { predefinedEntities } from "@/server/layer/entities/predefined";
-import { reservationPaymentService, reservationService } from "@/server/layer/service/reservation";
-import { paymentSettingEntities, restaurantGeneralSettingEntities } from "@/server/layer/entities/restaurant-setting";
 
+
+
+import { env } from "@/env";
+import Iyzipay, { BASKET_ITEM_TYPE, LOCALE } from "iyzipay";
+import { invoiceEntity } from "@/server/layer/entities/reservation/invoice";
+
+export const iyzipay = new Iyzipay({
+    apiKey: env.IYZIPAY_API_KEY,
+    secretKey: env.IYZIPAY_SECRET_KEY,
+    uri: env.IYZIPAY_URI,
+});
 export const createPublicReservation = async ({
     input,
     ctx
@@ -679,3 +687,103 @@ export const createReservationReview = async ({
 
 
 
+export const makePrepayment = async ({
+    input,
+    ctx
+}: TUseCaseClientLayer<TclientValidator.TCreatePaymentSchema>) => {
+    type TPaymentData = Omit<Parameters<typeof iyzipay.threedsInitialize.create>[0], 'shippingAddress'>
+    type TResult = {
+        status: string,
+        locale: string,
+        systemTime: number,
+        conversationId: string,
+        threeDSHtmlContent: string,
+        paymentId: string,
+        signature: string
+    }
+    var request: TPaymentData = {
+        "locale": LOCALE.EN,
+        "price": "1.1",
+        "paidPrice": "1.1",
+        installments: 1,
+        "paymentChannel": "WEB",
+        "basketId": "B67832",
+        "paymentGroup": "PRODUCT",
+        "paymentCard": {
+            "cardHolderName": "Dev iyzico",
+            cardNumber: '5528790000000008',
+            expireMonth: '12',
+            expireYear: '2030',
+            cvc: '123',
+            cardAlias: '1234567890',
+
+        },
+        "buyer": {
+            "id": "BY789",
+            "name": "John",
+            "surname": "Doe",
+            "identityNumber": "74300864791",
+            "email": "email@email.com",
+            "city": "Istanbul",
+            "country": "Turkey",
+            "ip": "85.34.78.112",
+            "registrationAddress": "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
+
+            // optional
+            // "gsmNumber": "+905350000000",
+            // "registrationDate": "2013-04-21 15:12:09",
+            // "lastLoginDate": "2015-10-05 12:43:35",
+            // "zipCode": "34732",
+        },
+        "conversationId": `${input.reservationId}`,
+
+        //required
+        "billingAddress": {
+            "address": "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
+            "zipCode": "34742",
+            "contactName": "Jane Doe",
+            "city": "Istanbul",
+            "country": "Turkey"
+        },
+        "basketItems": [
+            {
+                "id": "BI101",
+                "price": "1.1",
+                "name": "Binocular",
+                "category1": "Collectibles",
+                "itemType": BASKET_ITEM_TYPE.VIRTUAL,
+                // optional
+                // "category2": "Accessories",
+            },
+        ],
+        "currency": "TRY",
+        "callbackUrl": env.IYZIPAY_CALLBACK_URL,
+
+
+    }
+
+    const result: TResult = await new Promise((resolve, reject) => {
+        iyzipay.threedsInitialize.create(request as any, function (err, result) {
+            console.log(err, result);
+            resolve(result as TResult);
+        });
+    });
+
+    const reservation = await ReservationEntities.getReservationById({ reservationId: input.reservationId })
+
+    const hasInvoice = input.paymentData.invoice?.invoiceRequired
+    if (hasInvoice) {
+        const { invoiceRequired, ...invoiceData } = input.paymentData.invoice!
+
+        if (reservation.invoiceId) {
+            await invoiceEntity.deleteInvoice(reservation.invoiceId)
+        }
+
+        const invoiceId = await invoiceEntity.createInvoice({
+            reservationId: input.reservationId,
+            ...invoiceData
+        })
+    }
+
+    return result
+}

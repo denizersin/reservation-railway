@@ -211,6 +211,11 @@ export const getReservations = async ({
             currentPrepayment:true,
             reservationExistenceStatus: true,
             reservationNotes: true,
+            invoice: {
+                with: {
+                    phoneCode: true
+                }
+            },
         },
         where: and(
             eq(tblReservation.restaurantId, restaurantId),

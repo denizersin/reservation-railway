@@ -117,7 +117,6 @@ const updateReservationTime = z.object({
         hour: z.string(),
         tableId: z.number().int().positive(),
         roomId: z.number().int().positive(),
-        guestCount: z.number().int().positive(),
     }),
     notificationOptions: baseNotificationOptionsSchema
 })
@@ -136,6 +135,12 @@ const updateReservationTagAndNote = z.object({
     reservationId: z.number().int().positive(),
     reservationTagIds: reservationTagIds,
     note: z.string(),
+})
+
+const updateReservationGuestCount = z.object({
+    reservationId: z.number().int().positive(),
+    guestCount: z.number().int().positive(),
+    notificationOptions: baseNotificationOptionsSchema
 })
 
 
@@ -173,6 +178,7 @@ export const reservationValidator = {
     cancelAndReturnPrepayment,
     turnCanceledToReservation,
     updateReservationTagAndNote,
+    updateReservationGuestCount,
 }
 
 namespace TReservationValidator {
@@ -207,6 +213,7 @@ namespace TReservationValidator {
     export type cancelAndReturnPrepayment = z.infer<typeof cancelAndReturnPrepayment>
     export type turnCanceledToReservation = z.infer<typeof turnCanceledToReservation>
     export type updateReservationTagAndNote = z.infer<typeof updateReservationTagAndNote>
+    export type updateReservationGuestCount = z.infer<typeof updateReservationGuestCount>
 }
 
 export default TReservationValidator

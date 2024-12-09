@@ -18,10 +18,11 @@ import { existenceStatuses, statuses } from '../data'
 import { ReservationStatusModal } from '../status-modal/reservation-status-modal'
 import { ExistenceCounter } from './_components/existence-counter'
 import { ReservationGridStatusModal } from './reservation-grid-status-modal'
-import { UpdateReservationTmeModal } from './update-reservation-time-modal'
 import { ReservationNoteModal } from './reservation-note-modal'
 import { Badge } from '@/components/ui/badge'
 import { IconCashRegister, IconClipboardText } from '@tabler/icons-react'
+import { UpdateReservationTimeModal } from './update-reservation-time-modal'
+import { UpdateGuestCountModal } from './update-guest-count-modal'
 
 
 // data
@@ -75,13 +76,16 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
         >
           <div
             onClick={() => setIsOpen(true)}
-            className='flex w-[100px] items-center cursor-pointer'
+            className='flex flex-col w-[100px] items-center cursor-pointer'
           >
 
             {
-              renderIcon && <div className='p-1'>{renderIcon}</div>
+              status.icon && <div className='p-1'>
+                <status.icon className='size-12 text-primary/80' />
+
+              </div>
             }
-            <span>{status.label}</span>
+            <span className='text-sm text-primary/70'>{status.label}</span>
           </div>
 
           <ReservationStatusModal
@@ -342,7 +346,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           onClick={() => setIsOpen(true)}>
           {row.original.hour}
         </div>
-        {<UpdateReservationTmeModal
+        {<UpdateReservationTimeModal
           reservation={row.original}
           isOpen={isOpen}
           setOpen={setIsOpen}
@@ -354,9 +358,39 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
 
   },
   {
-    accessorKey: 'guests',
+    accessorKey: 'guestCount',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Guest' />
+    ),
+    cell: ({ row }) => {
+      const [isOpen, setIsOpen] = useState(false)
+
+      return (
+        <div>
+          <div
+            onClick={() => setIsOpen(true)}
+            className="cursor-pointer hover:bg-accent p-2 rounded-md"
+          >
+            {row.original.guestCount}
+          </div>
+
+          <UpdateGuestCountModal
+            isOpen={isOpen}
+            setOpen={setIsOpen}
+            reservation={row.original}
+          />
+        </div>
+      )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+  },
+
+  {
+    accessorKey: 'guests',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Name Surname' />
     ),
     cell: ({ row }) => {
 
@@ -368,9 +402,6 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
           onClick={() => setIsOpen(true)}
 
         >
-          <div>
-            {row.original.guestCount} Kişi
-          </div>
           <div>
             {row.original.guest.name} {row.original.guest.surname}
           </div>
@@ -477,6 +508,7 @@ export const reservationColumns: ColumnDef<TReservationRow>[] = [
     id: 'actions',
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
+
 
 
 

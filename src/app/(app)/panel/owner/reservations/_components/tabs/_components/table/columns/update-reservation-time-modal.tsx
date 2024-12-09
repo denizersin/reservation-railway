@@ -21,14 +21,13 @@ type Props = {
     reservation: TReservationRow
 }
 
-export const UpdateReservationTmeModal = ({
+export const UpdateReservationTimeModal = ({
     isOpen,
     setOpen,
     reservation
 }: Props) => {
     // State for reservation data
     const [date, setDate] = useState<Date>(reservation.reservationDate)
-    const [guestCount, setGuestCount] = useState<number>(reservation.guestCount)
     const [selectedHour, setSelectedHour] = useState<string | undefined>(reservation.hour)
     const [selectedTableId, setSelectedTableId] = useState<number | undefined>(reservation.tables[0]?.tableId)
     const [selectedMealId, setSelectedMealId] = useState<number | undefined>(reservation.mealId)
@@ -37,7 +36,6 @@ export const UpdateReservationTmeModal = ({
     const [withEmail, setWithEmail] = useState(true)
     const [withSms, setWithSms] = useState(true)
 
-
     const { onSuccessReservationUpdate } = useMutationCallback()
 
     // Fetch meals
@@ -45,7 +43,6 @@ export const UpdateReservationTmeModal = ({
 
     //Fetch Rooms
     const { data: roomsData } = api.room.getRooms.useQuery({})
-
 
     // Update mutation
     const { mutate: updateReservationTime, isPending: updateReservationTimePending } =
@@ -56,11 +53,10 @@ export const UpdateReservationTmeModal = ({
             }
         })
 
-
     const { toast } = useToast()
+    
     // Handle update
     const handleUpdateReservation = () => {
-
         if (isDateChanged && !selectedTableId) {
             toast({
                 title: 'Lütfen masa seçiniz',
@@ -82,7 +78,6 @@ export const UpdateReservationTmeModal = ({
         updateReservationTime({
             reservationId: reservation.id,
             data: {
-                guestCount,
                 reservationDate: newDate,
                 hour,
                 tableId: selectedTableId!,
@@ -92,18 +87,9 @@ export const UpdateReservationTmeModal = ({
         })
     }
 
-
-
-
-
     // Loading states
     useShowLoadingModal([updateReservationTimePending])
     const isDateChanged = format(date, 'dd-MM-yyyy') !== format(reservation.reservationDate, 'dd-MM-yyyy')
-
-
- 
-
-
 
     useEffect(() => {
         if (isDateChanged) {
@@ -111,23 +97,14 @@ export const UpdateReservationTmeModal = ({
         }
     }, [isDateChanged])
 
-
     useEffect(() => {
         if (selectedRoomId === reservation.roomId && 
-            
             format(date, 'dd-MM-yyyy') === format(reservation.reservationDate, 'dd-MM-yyyy')) {
             setSelectedTableId(reservation.tables[0]?.tableId)
         } else {
             setSelectedTableId(undefined)
         }
     }, [date, selectedMealId, selectedRoomId])
-
-    // Find current room and meal for TableStatues2
-    const currentRoom = roomsData?.find(r => r.id === selectedRoomId)
-    const currentMeal = meals?.find(m => m.id === selectedMealId)
-
-    console.log(currentRoom, currentMeal, 'currentRoom, currentMeal')
-
 
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
@@ -137,10 +114,8 @@ export const UpdateReservationTmeModal = ({
                     <DialogTitle>{format(date, 'dd MMMM yyyy')}</DialogTitle>
                 </DialogHeader>
                 <div>
-
                     <ReservationDateCalendar date={date} setDate={setDate} />
 
-                    {/* Meal Selection */}
                     <MealTabs
                         selectedMealId={selectedMealId}
                         setSelectedMealId={setSelectedMealId}
@@ -150,7 +125,6 @@ export const UpdateReservationTmeModal = ({
                         setSelectedRoomId={setSelectedRoomId}
                     />
 
-                    {/* Hour Selection */}
                     {selectedMealId && selectedRoomId && <TableStatues2
                         selectedTableId={selectedTableId}
                         setSelectedTableId={setSelectedTableId}
@@ -159,8 +133,6 @@ export const UpdateReservationTmeModal = ({
                         selectedMealId={selectedMealId}
                         selectedHour={selectedHour}
                         setSelectedHour={setSelectedHour}
-                        guestCount={guestCount}
-                        setGuestCount={setGuestCount}
                     />}
 
                     <div className="my-2 flex flex-wrap gap-2">
@@ -180,23 +152,15 @@ export const UpdateReservationTmeModal = ({
                         </div>
                     </div>
 
-                    {/* Guest Count and Submit */}
                     <div>
-
-
                         <Button
-                            // disabled={!isChangedAndisAvailable}
                             loading={updateReservationTimePending}
                             onClick={handleUpdateReservation}
                         >
                             UPDATE
                         </Button>
                     </div>
-
                 </div>
-
-
-
             </DialogContent>
         </Dialog>
     )

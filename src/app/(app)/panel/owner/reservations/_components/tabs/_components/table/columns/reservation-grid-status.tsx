@@ -13,6 +13,8 @@ import { TSelectionRowState } from './reservation-grid-status-modal';
 import "/node_modules/react-grid-layout/css/styles.css";
 import "/node_modules/react-resizable/css/styles.css";
 import { useStartOfDay } from '@/hooks/useStartOfDay';
+import useFirstRender from '@/hooks/useFirstRender';
+import { useShowLoadingModal } from '@/hooks/useShowLoadingModal';
 
 const colors = ['blue', 'red', 'green', 'purple', 'pink', 'orange', 'gray', 'indigo', 'teal', 'cyan', 'lime', 'amber', 'brown', 'lightBlue', 'lightGreen', 'deepOrange', 'deepPurple', 'blueGray']
 
@@ -41,6 +43,7 @@ export const ReservationGridStatus = ({
     onSucessCrudTable: () => void
 }) => {
 
+
     const { data: roomsData } = api.room.getRooms.useQuery({})
     const [statusTableRow, setStatusTableRow] = useState<TTableStatuesRow | undefined>(undefined)
     const [count, setCount] = useState(0)
@@ -48,20 +51,20 @@ export const ReservationGridStatus = ({
 
     const { deSelectedRows, selectedRows } = selectionRowState
 
-    const [thisTableRows, setThisTableRows] = useState<TTableStatuesRow[]>([])
-
-
 
 
     const queryDate = useStartOfDay(reservation.reservationDate)
-    const { data: availableTableData } = api.reservation.getTableStatues.useQuery({
+    const { data: availableTableData, isLoading: isLoadingAvailableTableData,dataUpdatedAt } = api.reservation.getTableStatues.useQuery({
         date: queryDate,
         mealId: reservation.mealId
     }, {
         staleTime: 0
     })
 
+    useShowLoadingModal([isLoadingAvailableTableData])
+
     const [groupData, gridData] = useMemo(() => {
+        if (!availableTableData || !selectedRoom) return [[], []]
 
         const tables = availableTableData?.find(r => r.roomId === selectedRoom?.id)?.tables
         const groups = groupTableStatues(tables ?? [])
@@ -104,7 +107,7 @@ export const ReservationGridStatus = ({
                     targetId: table?.table?.id.toString()!,
                     targetAnchor: 'middle',
                     sourceAnchor: 'middle',
-                }))??[],
+                })) ?? [],
                 group,
                 isCurrentReservation: firstTable.reservation?.id === reservation.id
             }
@@ -162,21 +165,16 @@ export const ReservationGridStatus = ({
 
 
         return [groups, gridData]
-    }, [availableTableData, selectedRoom])
-
-    console.log(gridData, 'gridData')
-
+    }, [availableTableData, selectedRoom, dataUpdatedAt])
 
 
     useEffect(() => {
         if (roomsData) {
-            setSelectedRoom(roomsData.find((room) => room.id === statusTableRow?.reservation?.roomId))
+            setSelectedRoom(roomsData.find((room) => room.id === reservation.roomId))
         }
-    }, [roomsData, statusTableRow])
+    }, [roomsData, reservation])
 
     useEffect(() => {
-        console.log(availableTableData, 'availableTableData')
-        console.log(reservation.roomId, 'roomid')
         if (availableTableData) {
             const r = availableTableData
                 .find(r => r.roomId === reservation.roomId)?.tables
@@ -186,17 +184,11 @@ export const ReservationGridStatus = ({
         }
     }, [availableTableData])
 
-    console.log(statusTableRow, 'statusTableRow')
 
     const layout = useMemo(() => {
         return gridData.map((r, index) => r.layout)
     }, [gridData])
 
-    useEffect(() => {
-
-        const rows = groupData.find((group) => group.some((t) => t.reservation?.id === reservation.id))
-        setThisTableRows(rows ?? [])
-    }, [groupData])
 
 
 
