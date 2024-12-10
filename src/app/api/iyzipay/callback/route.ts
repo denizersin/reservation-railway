@@ -70,7 +70,8 @@ export async function POST(req: NextRequest) {
 
   console.log(jsonResult, 'jsonResult')
 
-  const response = new NextResponse(`
+
+  const html=`
 <!DOCTYPE html>
 <html lang="en">
 
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
 
         document.addEventListener("DOMContentLoaded", () => {
             const data = JSON.parse(jsonResult);
-            window.parent.postMessage(data, "*");
+            // window.parent.postMessage(data, "*");
         });
 
     </script>
@@ -96,13 +97,15 @@ export async function POST(req: NextRequest) {
 
 </html>
     
-    `);
+    `
+
+  const response = new NextResponse(html);
 
   // There is no content-type by default!
   response.headers.set('Content-Type', 'text/html; charset=utf-8');
 
   // X-Frame-Options: ALLOW-FROM https://yourdomain.com
-  response.headers.set('X-Frame-Options', `ALLOW-FROM ${env.BASE_URL}`);
+  response.headers.set('X-Frame-Options', `SAMEORIGIN`);
   // set response headers, cookies, etc, if desired
 
   //   Access-Control-Allow-Origin: https://yourdomain.com
@@ -112,6 +115,10 @@ export async function POST(req: NextRequest) {
   response.headers.set('Access-Control-Allow-Origin', `${env.BASE_URL}`);
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+
+
+
+
 
 
   return response;

@@ -19,7 +19,10 @@ export const ThreeDModal = ({
 
     useEffect(() => {
         // Iframe'den gelen mesajları dinle
+
         const handleIframeMessage = (event: any) => {
+            console.log(event.data, 'event.data')
+            console.log(event.data.from, 'event.data.from')
             if (event?.data?.from !== 'iyzipay') return
             console.log(event, 'event')
             console.log("Iframe'den gelen mesaj:", event.data);
@@ -51,6 +54,12 @@ export const ThreeDModal = ({
 
     console.log(parsedHTML, 'parsedHTML')
 
+    const bodyContent = useMemo(() => {
+        if (parsedHTML) {
+            
+        }
+    }, [parsedHTML])
+
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className='p-0 min-h-[500px]'>
@@ -60,7 +69,7 @@ export const ThreeDModal = ({
                     srcDoc={parsedHTML}
                     id="threeDSContent"
                 />
-                
+
             </DialogContent>
         </Dialog>
     )
