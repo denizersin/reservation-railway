@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
         document.addEventListener("DOMContentLoaded", () => {
             const data = JSON.parse(jsonResult);
-            // window.parent.postMessage(data, "*");
+            window.parent.postMessage(data, "*");
         });
 
     </script>
