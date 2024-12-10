@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter } from "../trpc";
 import { reservationUseCases } from "@/server/layer/use-cases/reservation";
 import { clientValidator } from "@/shared/validators/front/create";
+import { env } from "@/env";
 
 
 export const paymentRouter = createTRPCRouter({
@@ -12,9 +13,14 @@ export const paymentRouter = createTRPCRouter({
 
 
         const result = await reservationUseCases.makePrepayment(opts)
-        
-    
-        return result
+
+
+        return {
+            ...result,
+            baseUrl: env.BASE_URL,
+            callbackUrl2: env.IYZIPAY_CALLBACK_URL,
+            vercelUrl: process.env.VERCEL_URL,
+        }
 
     }),
 });
