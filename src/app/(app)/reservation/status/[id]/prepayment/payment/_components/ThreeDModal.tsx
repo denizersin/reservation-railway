@@ -49,6 +49,8 @@ export const ThreeDModal = ({
         }
     }, [threeDSContent])
 
+    console.log(parsedHTML, 'parsedHTML')
+
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className='p-0 min-h-[500px]'>
@@ -58,6 +60,7 @@ export const ThreeDModal = ({
                     srcDoc={parsedHTML}
                     id="threeDSContent"
                 />
+                
             </DialogContent>
         </Dialog>
     )

@@ -104,5 +104,15 @@ export async function POST(req: NextRequest) {
   // X-Frame-Options: ALLOW-FROM https://yourdomain.com
   response.headers.set('X-Frame-Options', `ALLOW-FROM ${env.BASE_URL}`);
   // set response headers, cookies, etc, if desired
+
+  //   Access-Control-Allow-Origin: https://yourdomain.com
+  // Access-Control-Allow-Methods: GET, POST
+  // Access-Control-Allow-Headers: Content-Type
+
+  response.headers.set('Access-Control-Allow-Origin', `${env.BASE_URL}`);
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+
+
   return response;
 }
