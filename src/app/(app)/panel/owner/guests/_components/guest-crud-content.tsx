@@ -94,7 +94,7 @@ const GuestCrudContent = ({
     }, {
         enabled: !!guestId,
         refetchOnMount: true,
-        
+
     })
 
 
@@ -286,7 +286,9 @@ const GuestCrudContent = ({
                     <FormItem>
                         <FormLabel>Anniversary Date</FormLabel>
                         <FormItem className="flex flex-col">
-                            <Popover>
+                            <Popover
+                                modal={false}
+                            >
                                 <PopoverTrigger asChild>
                                     <FormControl>
                                         <Button
@@ -306,15 +308,28 @@ const GuestCrudContent = ({
                                     </FormControl>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
+                                    {/* <Calendar
+
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) =>
+                                                    date < new Date("1900-01-01")
+                                                }
+                                                initialFocus
+                                            /> */}
+
+                                    <YearCalendar
                                         mode="single"
-                                        selected={field.value ?? new Date()}
+                                        captionLayout="dropdown"
+
+                                        selected={field.value ?? undefined}
                                         onSelect={field.onChange}
-                                        disabled={(date) =>
-                                            date < new Date("1900-01-01")
-                                        }
-                                        initialFocus
+                                        fromYear={1960}
+                                        toYear={2030}
                                     />
+
+
                                 </PopoverContent>
                             </Popover>
                             <FormMessage />

@@ -464,6 +464,8 @@ export const cancelPublicReservation = async ({
                 reservationId,
                 data: {
                     reservationStatusId: EnumReservationStatusNumeric.cancel,
+                    canceledAt: new Date(),
+                    canceledBy: 'Guest',
                 },
                 trx
             }

@@ -44,7 +44,7 @@ export const ReservationStatusModal = ({
                 {/* <DialogHeader>
                     CHange Status
                 </DialogHeader> */}
-                <div className=' flex '>
+                <div className=' flex w-full '>
                     <div className="c c1 w-1/4">
                         <ReservationStatusGuestSection reservation={reservation} />
                     </div>

@@ -37,10 +37,19 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
     }, [])
 
 
+    const lastConfirmationRequest = useMemo(() => {
+        return reservationDetailData?.confirmationRequests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]?.createdAt || new Date(0)
+    }, [reservationDetailData?.confirmationRequests])
+
+    const lastPrepaymentDate = useMemo(() => {
+        return reservationDetailData?.prepayments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]?.createdAt || new Date(0)
+    }, [reservationDetailData?.prepayments])
+
+
     return (
         <div className='flex flex-col  gap-2 mb-2'>
             <div className='order-0 flex gap-2  items-center justify-center mb-4'>
-                <span className='text-base font-semibold'>Status:</span>:<div  className='flex items-center gap-2 text-base'>
+                <span className='text-base font-semibold'>Status:</span>:<div className='flex items-center gap-2 text-base'>
                     {statusData && <statusData.icon className='size-6' />}
                     {reservation.reservationStatus.status}</div>
             </div>
@@ -54,26 +63,32 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
             </div>
             {reservationDetailData?.confirmationRequests && reservationDetailData?.confirmationRequests.length > 0 && (
                 <div className={cn('order-2 flex flex-col gap-2 border-b border-border  mb-2', {
-                    'order-3': isStatusConfirmation,
-                    'order-2': isStatusPrepayment,
+                    'order-3': lastConfirmationRequest > lastPrepaymentDate,
+                    'order-2': lastConfirmationRequest < lastPrepaymentDate,
                 })}>
                     <div className="text-sm font-semibold">Confirmation Requests</div>
                     {reservationDetailData?.confirmationRequests.map((confirmationRequest) => (
                         <div key={confirmationRequest.id}>
-                            {confirmationRequest.createdAt.toLocaleString()}
-                            {confirmationRequest.createdBy}
+                            {confirmationRequest.createdAt.toLocaleString()} sent by {confirmationRequest.createdBy}
                         </div>
                     ))}
+                    {
+                        reservationDetailData?.confirmedAt && (
+                            <div className='text-sm font-semibold'>
+                                Confirmed at {reservationDetailData?.confirmedAt.toLocaleString()} by {reservationDetailData?.confirmedBy}
+                            </div>
+                        )
+                    }
                 </div>
             )}
 
             {reservationDetailData?.prepayments && (
                 <div className={cn('order-3 border p-2', {
-                    'order-2': isStatusConfirmation,
-                    'order-3': isStatusPrepayment,
+                    'order-2': lastConfirmationRequest > lastPrepaymentDate,
+                    'order-3': lastConfirmationRequest < lastPrepaymentDate,
                 })}>
                     <div className='text-sm font-semibold text-center flex flex-col items-center gap-2 justify-center'>
-                         {
+                        {
                             prepaymentStatusData && <prepaymentStatusData.icon className='' />
                         }Prepayment</div>
                     <Table>
