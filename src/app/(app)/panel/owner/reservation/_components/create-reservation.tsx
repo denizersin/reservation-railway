@@ -44,7 +44,7 @@ export const CreateReservation = (props: Props) => {
 
 
 
-    const [selectedGuestId, setSelectedGuestId] = useState<number | undefined>(2)
+    const [selectedGuestId, setSelectedGuestId] = useState<number | undefined>(undefined)
 
 
 

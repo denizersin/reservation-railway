@@ -205,6 +205,9 @@ const GuestsList = (props: Props) => {
                 <GuestCrudModal
                     open={isCreateModalOpen}
                     setOpen={setIsCreateModalOpen}
+                    onSucsesCreateGuest={() => {
+                        setIsCreateModalOpen(false)
+                    }}
                 />
             )}
             {isUpdateModalOpen && updateGuestData && (
@@ -212,6 +215,9 @@ const GuestsList = (props: Props) => {
                     open={isUpdateModalOpen}
                     setOpen={setIsUpdateModalOpen}
                     guestData={updateGuestData}
+                    onSucsesUpdateGuest={() => {
+                        setIsUpdateModalOpen(false)
+                    }}
                 />
             )}
             {deleteGuestData && (

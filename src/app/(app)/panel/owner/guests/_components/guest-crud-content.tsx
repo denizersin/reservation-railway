@@ -61,6 +61,7 @@ const GuestCrudContent = ({
     const { toast } = useToast()
 
     const onSuccsessCrud = () => {
+        
         queryClient.invalidateQueries({
             queryKey: getQueryKey(api.guest.getGuestsPagination)
         })
