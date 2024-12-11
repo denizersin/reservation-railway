@@ -94,11 +94,11 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
     const isCreatedByOwner = Boolean(reservation.createdOwnerId)
     const canRequestForConfirmation = !isConfirmedOrCompleted && isCreatedByOwner && !hasCurrentPrepayment
 
-    const canConfirmReservation = !isConfirmedOrCompleted
+    const canConfirmReservation = !isConfirmedOrCompleted && !isCanceled
 
     const canRequestForPrepayment = !isConfirmedOrCompleted && !hasCurrentPrepayment && !isWaitingForConfirmation
 
-    const canCancelPayemntRequest = hasCurrentPrepayment && !isConfirmedOrCompleted
+    const canCancelPayemntRequest = hasCurrentPrepayment && !isConfirmedOrCompleted && !isCanceled
 
     const isPrepaymetPaid = hasCurrentPrepayment && reservationDetailData?.currentPrepayment?.status === EnumPrepaymentStatus.success
 

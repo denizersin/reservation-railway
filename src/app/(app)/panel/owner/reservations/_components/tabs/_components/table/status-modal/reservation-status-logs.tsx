@@ -33,7 +33,7 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
     }, [reservation.reservationStatusId])
 
     const prepaymentStatusData = useMemo(() => {
-        return statuses.find(status => status.value === reservation.reservationStatus.status)
+        return statuses.find(status => status.value === EnumReservationStatus.prepayment)
     }, [])
 
 
@@ -109,7 +109,7 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
 
             {
                 reservationDetailData?.confirmedAt && (
-                    <div className="order-1 border-b border-border pb-2 mb-2  bg-green-500 text-white p-3 rounded-md flex flex-col items-center justify-center">
+                    <div className="order-4 border-b border-border pb-2 mb-2  bg-green-500 text-white p-3 rounded-md flex flex-col items-center justify-center">
                         {<IconCircleCheckFilled className='text-white w-6 h-6' />}
                         <div>
                             Confirmed by <span className='font-semibold mx-1'>{reservationDetailData?.confirmedBy}</span>
@@ -121,7 +121,7 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
 
             {
                 isCanceled && (
-                    <div className="order-5 flex gap-2 items-center">
+                    <div className="order-5 flex gap-2 border-border pb-2 mb-2  bg-red-500 text-white p-3 rounded-md flex flex-col items-center justify-center">
                         Canceled By {reservationDetailData?.canceledBy} at {reservationDetailData?.canceledAt?.toLocaleString()}
                     </div>
                 )

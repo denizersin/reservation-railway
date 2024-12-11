@@ -48,7 +48,7 @@ export const ReservationStatusModal = ({
                     <div className="c c1 w-1/4">
                         <ReservationStatusGuestSection reservation={reservation} />
                     </div>
-                    <div className="c c2 w-2/3 flex-1 flex flex-col">
+                    <div className="c c2 w-full flex-1  flex flex-col">
                         <ReservationStatusLogs reservation={reservation} />
                         <ReservationStatusActions reservation={reservation} />
                         <ReservationStatusFooter reservation={reservation} />

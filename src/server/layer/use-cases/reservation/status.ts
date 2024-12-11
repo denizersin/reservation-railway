@@ -184,7 +184,7 @@ export const requestForConfirmation = async ({
             entityData: {
                 reservationId,
                 data: {
-                reservationStatusId: EnumReservationStatusNumeric.confirmation,
+                    reservationStatusId: EnumReservationStatusNumeric.confirmation,
                 },
             }
         })
@@ -226,8 +226,8 @@ export const cancelConfirmationRequest = async ({
             entityData: {
                 reservationId,
                 data: {
-                reservationStatusId: EnumReservationStatusNumeric.reservation,
-            },
+                    reservationStatusId: EnumReservationStatusNumeric.reservation,
+                },
                 trx
             }
         })
@@ -253,10 +253,10 @@ export const confirmReservation = async ({
             entityData: {
                 reservationId,
                 data: {
-                reservationStatusId: EnumReservationStatusNumeric.confirmed,
-                confirmedBy: owner.name,
-                confirmedAt: new Date(),
-            },
+                    reservationStatusId: EnumReservationStatusNumeric.confirmed,
+                    confirmedBy: owner.name,
+                    confirmedAt: new Date(),
+                },
                 trx
             }
         })
@@ -332,11 +332,11 @@ export const cancelReservation = async ({
                 entityData: {
                     reservationId,
                     data: {
-                    currentPrepaymentId: null,
-                    reservationStatusId: EnumReservationStatusNumeric.cancel,
-                    canceledBy: owner.name,
-                    canceledAt: new Date(),
-                },
+                        currentPrepaymentId: null,
+                        reservationStatusId: EnumReservationStatusNumeric.cancel,
+                        canceledBy: owner.name,
+                        canceledAt: new Date(),
+                    },
                     trx
                 }
             })
@@ -358,8 +358,10 @@ export const cancelReservation = async ({
             entityData: {
                 reservationId,
                 data: {
-                reservationStatusId: EnumReservationStatusNumeric.cancel,
-            },
+                    reservationStatusId: EnumReservationStatusNumeric.cancel,
+                    canceledBy: owner.name,
+                    canceledAt: new Date(),
+                },
                 trx
             }
         })
