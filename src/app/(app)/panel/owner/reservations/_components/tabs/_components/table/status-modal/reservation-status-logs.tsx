@@ -4,7 +4,7 @@ import { TReservationRow } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
 import { api } from '@/server/trpc/react'
 import { EnumReservationStatus, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { statuses } from '../data'
 import { IconCalendarPlus, IconCircleCheckFilled } from '@tabler/icons-react'
 
@@ -28,8 +28,23 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
 
     const creator = reservationDetailData?.isCreatedByOwner ? reservationDetailData?.createdOwner?.name : 'Guest '
 
+    const statusData = useMemo(() => {
+        return statuses.find(status => status.value === reservation.reservationStatus.status)
+    }, [reservation.reservationStatusId])
+
+    const prepaymentStatusData = useMemo(() => {
+        return statuses.find(status => status.value === reservation.reservationStatus.status)
+    }, [])
+
+
     return (
-        <div className='flex flex-col gap-2 mb-2'>
+        <div className='flex flex-col  gap-2 mb-2'>
+            <div className='order-0 flex gap-2  items-center justify-center mb-4'>
+                <span className='text-base font-semibold'>Status:</span>:<div  className='flex items-center gap-2 text-base'>
+                    {statusData && <statusData.icon className='size-6' />}
+                    {reservation.reservationStatus.status}</div>
+            </div>
+
             <div className="order-1 border-b border-border pb-2 mb-2  bg-orange-50 text-orange-500 p-3 rounded-md flex flex-col items-center justify-center">
                 {<IconCalendarPlus className='text-orange-500 w-6 h-6' />}
                 <div>
@@ -53,11 +68,14 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
             )}
 
             {reservationDetailData?.prepayments && (
-                <div className={cn('order-3', {
+                <div className={cn('order-3 border p-2', {
                     'order-2': isStatusConfirmation,
                     'order-3': isStatusPrepayment,
                 })}>
-
+                    <div className='text-sm font-semibold text-center flex flex-col items-center gap-2 justify-center'>
+                         {
+                            prepaymentStatusData && <prepaymentStatusData.icon className='' />
+                        }Prepayment</div>
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -109,9 +127,7 @@ export const ReservationStatusLogs = ({ reservation }: Props) => {
                 )
             }
 
-            <div className='order-5 flex gap-2 items-center'>
-                Status:{reservation.reservationStatus.status}
-            </div>
+
 
 
 

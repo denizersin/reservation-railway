@@ -40,15 +40,15 @@ export const ReservationStatusModal = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
-            <DialogContent className='md:max-w-[70vw] max-h-[90vh] overflow-y-auto'>
-                <DialogHeader>
+            <DialogContent className='md:max-w-[70vw] flex max-h-[90vh] overflow-y-auto'>
+                {/* <DialogHeader>
                     CHange Status
-                </DialogHeader>
-                <div className=' flex'>
+                </DialogHeader> */}
+                <div className=' flex '>
                     <div className="c c1 w-1/4">
                         <ReservationStatusGuestSection reservation={reservation} />
                     </div>
-                    <div className="c c2 w-2/3 flex flex-col">
+                    <div className="c c2 w-2/3 flex-1 flex flex-col">
                         <ReservationStatusLogs reservation={reservation} />
                         <ReservationStatusActions reservation={reservation} />
                         <ReservationStatusFooter reservation={reservation} />

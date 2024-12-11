@@ -8,9 +8,11 @@ import { useShowLoadingModal } from '@/hooks/useShowLoadingModal'
 import { TReservationRow } from '@/lib/reservation'
 import { api } from '@/server/trpc/react'
 import { EnumPrepaymentStatus, EnumReservationPrepaymentNumeric, EnumReservationStatusNumeric } from '@/shared/enums/predefined-enums'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { CreatePrepaymentModal } from './create-prepayment-modal'
 import { IconBellPlus, IconBellRinging2, IconCashRegister, IconCircleCheckFilled, IconCircleXFilled, IconHelpHexagonFilled } from '@tabler/icons-react'
+import { statuses } from '../data'
+import { Badge } from '@/components/ui/badge'
 
 type Props = {
     reservation: TReservationRow
@@ -230,12 +232,19 @@ export const ReservationStatusActions = ({ reservation }: Props) => {
 
     const [isOpenCreatePrepaymentModal, setIsOpenCreatePrepaymentModal] = useState(false)
 
-
+    const statusData = useMemo(() => {
+        return statuses.find(status => status.value === reservation.reservationStatus.status)
+    }, [reservation.reservationStatusId])
     useShowLoadingModal([isRequestForConfirmationPending])
 
     return (
-        <div>
-            <div className='flex flex-wrap gap-3 py-2 mt-4 mb-2'>
+        <div className='mt-4'>
+
+            <div className='flex flex-wrap gap-3 py-2  mb-2'>
+
+
+
+
 
                 {canCancelPayemntRequest && (<Button onClick={handleCancelPrepayment} variant={'destructive'}>
                     <IconCashRegister className='w-4 h-4 mr-2 text-white' />

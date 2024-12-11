@@ -351,7 +351,7 @@ export default function Page() {
                                             <FormItem className="">
                                                 <FormLabel>Phone Code</FormLabel>
                                                 <CustomComboSelect
-                                                    buttonClass='w-full'
+                                                    buttonClass='w-full h-12'
                                                     data={phoneCodes}
                                                     onValueChange={(value) => field.onChange(Number(value))}
                                                     value={String(field.value)}
