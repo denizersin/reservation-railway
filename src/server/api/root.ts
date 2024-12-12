@@ -1,17 +1,15 @@
-import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { userRouter } from "@/server/api/routers/user";
-import { restaurantRouter } from "./routers/restaurant";
+import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
+import { guestRouter } from "./routers/guest";
+import { languageRouter } from "./routers/language";
+import { paymentRouter } from "./routers/payment";
 import { predefinedRouter } from "./routers/predefined";
 import { reservationRouter } from "./routers/reservation";
-import { languageRouter } from "./routers/language";
+import { restaurantRouter } from "./routers/restaurant";
+import { restaurantSettingRouter } from "./routers/restaurant-setting";
 import { roomRouter } from "./routers/room";
-import { guestRouter } from "./routers/guest";
 import { testRouter } from "./routers/test";
 import { waitlistRouter } from "./routers/waitlist";
-import { restaurantSettingRouter } from "./routers/restaurant-setting";
-import { paymentRouter } from "./routers/payment";
-import { CRONS } from "../cron";
-import { env } from "@/env";
 
 
 /**
@@ -45,28 +43,3 @@ export type AppRouter = typeof appRouter;
  */
 export const createCaller = createCallerFactory(appRouter);
 
-
-const globalForJobs = global as unknown as {
-  isCronInitialized: boolean;
-};
-
-function initializeCrons() {
-
-  if (globalForJobs.isCronInitialized) return;
-  console.log('CRONS INITIALIZED23')
-  CRONS.initializePaymentCheckCron()
-  CRONS.initializePaymentReminderCron()
-  globalForJobs.isCronInitialized = true;
-}
-
-
-
-
-export function initCronsIntercepter(from?: "test-api") {
-  const canStart = env.NODE_ENV_2 === "production" ? true : from === "test-api"
-  if (canStart) {
-    initializeCrons()
-  }
-}
-
-initCronsIntercepter()

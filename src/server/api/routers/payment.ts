@@ -19,7 +19,6 @@ export const paymentRouter = createTRPCRouter({
             ...result,
             baseUrl: env.BASE_URL,
             callbackUrl2: env.IYZIPAY_CALLBACK_URL,
-            vercelUrl: process.env.VERCEL_URL,
         }
 
     }),

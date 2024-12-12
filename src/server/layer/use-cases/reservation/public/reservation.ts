@@ -21,7 +21,7 @@ import { notificationUseCases } from "../notification";
 
 
 import { env } from "@/env";
-import Iyzipay, { BASKET_ITEM_TYPE, LOCALE } from "iyzipay";
+import Iyzipay from "iyzipay";
 import { invoiceEntity } from "@/server/layer/entities/reservation/invoice";
 import { IYZIPAY } from "@/server/layer/entities/iyzipay";
 
@@ -702,7 +702,7 @@ export const makePrepayment = async ({
         signature: string
     }
     var request: TPaymentData = {
-        "locale": LOCALE.EN,
+        "locale": "EN",
         "price": "1.1",
         "paidPrice": "1.1",
         installments: 1,
@@ -751,7 +751,7 @@ export const makePrepayment = async ({
                 "price": "1.1",
                 "name": "Binocular",
                 "category1": "Collectibles",
-                "itemType": BASKET_ITEM_TYPE.VIRTUAL,
+                "itemType": "VIRTUAL",
                 // optional
                 // "category2": "Accessories",
             },

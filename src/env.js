@@ -1,3 +1,5 @@
+import { config } from 'dotenv'
+config()
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
@@ -63,8 +65,8 @@ export const env = createEnv({
     IYZIPAY_SECRET_KEY: process.env.NODE_ENV_2 === "production" ? process.env.IYZIPAY_PROD_SECRET_KEY : process.env.IYZIPAY_DEV_SECRET_KEY,
     DEV_BASE_URL: process.env.DEV_BASE_URL,
     PROD_BASE_URL: process.env.PROD_BASE_URL,
-    BASE_URL: process.env.NODE_ENV_2 === "production" ? `https://${process.env.VERCEL_URL}` : process.env.DEV_BASE_URL,
-    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV_2 === "production" ? (`https://${process.env.VERCEL_URL}` + "/api/iyzipay/callback") : (process.env.DEV_BASE_URL + "/api/iyzipay/callback"),
+    BASE_URL: process.env.NODE_ENV_2 === "production" ? process.env.PROD_BASE_URL : process.env.DEV_BASE_URL,
+    IYZIPAY_CALLBACK_URL: process.env.NODE_ENV_2 === "production" ? process.env.PROD_BASE_URL + "/api/iyzipay/callback" : process.env.DEV_BASE_URL + "/api/iyzipay/callback",
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

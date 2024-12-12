@@ -16,6 +16,7 @@ const config = {
     experimental: {
         serverComponentsExternalPackages: ["iyzipay"],
     },
+    output:'standalone',
     webpack: (config) => {
         //@ts-ignore
         const fileLoaderRule = config.module.rules.find((rule) =>

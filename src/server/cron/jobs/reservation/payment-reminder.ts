@@ -1,4 +1,3 @@
-import { env } from '@/env';
 import { TRestaurantPaymentSettingSelect } from '@/server/db/schema';
 import { paymentSettingEntities } from '@/server/layer/entities/restaurant-setting';
 import { notificationUseCases } from '@/server/layer/use-cases/reservation/notification';
