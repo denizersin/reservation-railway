@@ -3,7 +3,7 @@ import { processPaymentCheckJobBatch } from "./payment-check";
 
 
 
-export const reservationJobManager = {
+ const reservationJobManager = {
     cancelReservationJobs(reservationId: number) {
         const paymentJobId = `${reservationId}-payment_check`;
         const reminderJobId = `${reservationId}-reminder`;

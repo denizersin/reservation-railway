@@ -1,5 +1,6 @@
 
 import { env } from '@/env'
+import { initializeCrons } from '@/server/cron'
 import { createServer } from 'http'
 import next from 'next'
 import { parse } from 'url'
@@ -11,9 +12,8 @@ const dev = env.NODE_ENV_2 !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
 
-setTimeout(() => {
 
-}, (1000));
+
 
 app.prepare().then(async () => {
 

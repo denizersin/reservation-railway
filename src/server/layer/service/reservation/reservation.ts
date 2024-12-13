@@ -2,7 +2,6 @@ import { EnumReservationStatusNumeric } from "@/shared/enums/predefined-enums"
 import { ReservationEntities } from "../../entities/reservation"
 import { ReservationLogEntities } from "../../entities/reservation/reservation-log"
 import { notificationUseCases } from "../../use-cases/reservation/notification"
-import { reservationJobManager } from "@/server/cron/jobs/reservation"
 
 
 type TReservationCreatiionEntityData = Parameters<typeof ReservationEntities.createReservation>[0]
@@ -127,6 +126,5 @@ type TUpdateReservationEntityData = Parameters<typeof ReservationEntities.update
 export const updateReservation = async ({ entityData }: { entityData: TUpdateReservationEntityData }) => {
 
     await ReservationEntities.updateReservation(entityData)
-    reservationJobManager.rescheduleReservationJobs({ reservationId: entityData.reservationId })
-
+    
 }

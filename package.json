@@ -22,6 +22,9 @@
     "reset-db": "bun run re-create-db && bun run init-db && bun run seed-db",
     "update-db": "npm run db:generate && npm run db:migrate ",
     "dev-node": "npx tsx ./index.ts",
+    "dev-node2": "concurrently \"next dev\" \"npx tsx src/server/cron/index.ts\"",
+    "start-3":"concurrently \"next start\" \"npx tsx src/server/cron/index.ts\"",
+    
     "start-crons": "npx tsx src/server/cron/index.ts",
     "start-pm2": "pm2-runtime start ecosystem.config.cjs"
   },
@@ -60,6 +63,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "concurrently": "^9.1.0",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.24.0",
@@ -81,6 +85,7 @@
     "node-cron": "^3.0.3",
     "node-schedule": "^2.1.1",
     "nodemailer": "^6.9.16",
+    "pm2": "^5.4.3",
     "react": "^18.3.1",
     "react-archer": "^4.4.0",
     "react-day-picker": "^8.10.1",

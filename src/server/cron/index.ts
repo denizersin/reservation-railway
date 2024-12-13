@@ -15,7 +15,8 @@ const initializePaymentCheckCron = () => {
 const initializePaymentReminderCron = () => {
   //10sn'de bir kontrol simdilik 
   cron.schedule('*/10 * * * * *', async () => {
-    await processPaymentReminderJobBatch();
+    // await processPaymentReminderJobBatch();
+    console.log('cronn')
   });
 };
 
@@ -38,6 +39,6 @@ export function initializeCrons() {
   CRONS.initializePaymentReminderCron()
 }
 
-initializeCrons()
 
 
+initializeCrons();
